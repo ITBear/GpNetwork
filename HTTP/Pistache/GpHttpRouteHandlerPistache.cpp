@@ -19,6 +19,8 @@ GpHttpRouteHandlerPistache::~GpHttpRouteHandlerPistache (void) noexcept
 void    GpHttpRouteHandlerPistache::Handle (const Pistache::Rest::Request&  aRequest,
                                             Pistache::Http::ResponseWriter  aResponseWriter)
 {
+    microseconds_t beginTS = GpDateTimeOps::SHighResTS_us();
+
     Pistache::Http::Code    httpResCode = Pistache::Http::Code::Ok;
     std::string             httpResData;
 
@@ -26,6 +28,9 @@ void    GpHttpRouteHandlerPistache::Handle (const Pistache::Rest::Request&  aReq
     {
         GpHttpRequestHandler::SP    requestHandler  = iRequestHandlerFactory.VC().NewInstance();
         GpBytesArray                requestBody     = GpBytesArrayUtils::SMake(aRequest.body());
+
+        std::cout << "@@@[GpHttpRouteHandlerPistache::Handle]: RQ: " << std::string_view(reinterpret_cast<const char*>(requestBody.data()), requestBody.size()) << std::endl;
+
         GpHttpRequest::SP           request         = MakeSP<GpHttpRequest>(""_sv,
                                                                             ""_sv,
                                                                             std::move(requestBody));
@@ -52,6 +57,9 @@ void    GpHttpRouteHandlerPistache::Handle (const Pistache::Rest::Request&  aReq
     }
 
     aResponseWriter.send(httpResCode, httpResData);
+
+    microseconds_t endTS = GpDateTimeOps::SHighResTS_us();
+    std::cout << "@@@[GpHttpRouteHandlerPistache::Handle]: Total time: " << (endTS-beginTS).Value() << "us" << std::endl;
 }
 
 }//namespace GPlatform

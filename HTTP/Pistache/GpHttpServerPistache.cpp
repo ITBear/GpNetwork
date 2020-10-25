@@ -20,7 +20,7 @@ void    GpHttpServerPistache::OnStart (void)
                                       Pistache::Tcp::Options::ReusePort |
                                       Pistache::Tcp::Options::NoDelay   |
                                       Pistache::Tcp::Options::Linger)
-                               .maxRequestSize(8192)
+                               .maxRequestSize(8192*2)
                                .maxResponseSize(1024*512);
 
     iHttpRouteHandler = MakeSP<GpHttpRouteHandlerPistache>(iHttpRouter, RequestHandlerFactory());

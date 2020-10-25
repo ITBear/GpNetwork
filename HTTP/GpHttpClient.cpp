@@ -1,4 +1,5 @@
 #include "GpHttpClient.hpp"
+#include <iostream>
 
 #define CURL_STATICLIB
 #include <curl/curl.h>
@@ -7,7 +8,7 @@ namespace GPlatform {
 
 size_t GpHTTPClient_S_RQ_Data_reader (char* aOutBuffer, size_t aSize, size_t aNMemb, GpByteReader* aReader)
 {
-    const size_t    bytesLeft       = aReader->SizeLeft().ValueAs<size_t>();
+    const size_t    bytesLeft       = aReader->SizeLeft().As<size_t>();
     const size_t    outBufferSiz    = NumOps::SMul(aSize, aNMemb);
     const size_t    batchSize       = std::min(bytesLeft, outBufferSiz);
 
@@ -54,9 +55,12 @@ GpHttpResponse::SP  GpHttpClient::Do (GpHttpRequest::SP aRequest)
     GpByteWriterStorageByteArray    responseBodyStorage(responseBody);
     GpByteWriter                    responseBodyWriter(responseBodyStorage);
 
-    curl_easy_setopt(iCurl, CURLOPT_NOPROGRESS, 1L);
+    //curl_easy_setopt(iCurl, CURLOPT_NOPROGRESS, 1L);
     curl_easy_setopt(iCurl, CURLOPT_MAXREDIRS, 5L);
     curl_easy_setopt(iCurl, CURLOPT_TCP_KEEPALIVE, 1L);
+    curl_easy_setopt(iCurl, CURLOPT_TCP_KEEPIDLE, 120L);
+    curl_easy_setopt(iCurl, CURLOPT_TCP_KEEPINTVL, 60L);
+
     curl_easy_setopt(iCurl, CURLOPT_URL, request.Url().data());
     curl_easy_setopt(iCurl, CURLOPT_SSL_VERIFYPEER, 0);
     curl_easy_setopt(iCurl, CURLOPT_VERBOSE, 1);
@@ -80,7 +84,9 @@ GpHttpResponse::SP  GpHttpClient::Do (GpHttpRequest::SP aRequest)
     curl_easy_setopt(iCurl, CURLOPT_WRITEDATA, &responseBodyWriter);
 
     //Do request
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! BEGIN" << std::endl;
     CURLcode res_code = curl_easy_perform(iCurl);
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! END" << std::endl;
 
     //Check curl res
     THROW_GPE_COND_CHECK_M(res_code == CURLE_OK,
