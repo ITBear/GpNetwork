@@ -1,4 +1,5 @@
 #include "GpSocket.hpp"
+#include <iostream>
 
 namespace GPlatform {
 
@@ -7,11 +8,34 @@ GpSocket::GpSocket (const ProtocolTE        aProtocol,
 iProtocol(aProtocol),
 iFlags(aFlags)
 {
+    std::cout << "[GpSocket::GpSocket]:..." << std::endl;
 }
 
 GpSocket::~GpSocket (void) noexcept
 {
+    std::cout << "[GpSocket::~GpSocket]:..." << std::endl;
+
     Close();
+}
+
+void    GpSocket::WriteAll (GpRawPtrByteR aData)
+{
+    GpByteReaderStorage readerStorage(aData);
+    GpByteReader        reader(readerStorage);
+    while (reader.SizeLeft() > 0_byte)
+    {
+        Write(reader);
+    }
+}
+
+void    GpSocket::CheckForErrors (void) const
+{
+    int       error = 0;
+    socklen_t errlen = sizeof(error);
+    if (getsockopt(iId, SOL_SOCKET, SO_ERROR, static_cast<void*>(&error), &errlen) == 0)
+    {
+        THROW_GPE(strerror(error));
+    }
 }
 
 void    GpSocket::Bind (const GpSocketAddr& aAddr)
@@ -55,8 +79,8 @@ void    GpSocket::Create (IPvTE aIPv)
     const ProtocolTE protocol = Protocol();
 
     GpSocketAddr::SocketIdT socketID = socket(GpSocketIPv_SSFamily(iIPv),
-                                              GpSocketProtocol_Type(protocol),
-                                              GpSocketProtocol_Proto(protocol));
+                                              int(GpSocketProtocol_Type(protocol)),
+                                              int(GpSocketProtocol_Proto(protocol)));
 
     if (socketID == GpSocketAddr::sDefaultSocketId)
     {
@@ -81,6 +105,8 @@ void    GpSocket::SetFromRaw (const GpSocketAddr::SocketIdT aId)
     AddrRemote().RemoteFromSocketId(Id());
 
     iIPv = AddrLocal().IPv();
+
+    ApplyFlags();
 }
 
 void    GpSocket::ApplyFlags (void)
@@ -122,23 +148,12 @@ void    GpSocket::SetFlag_ReusePort (bool aValue)
 void    GpSocket::SetFlag_NoBlock (bool aValue)
 {
     int opts = fcntl(Id(), F_GETFL);
-    if (opts != 0)
-    {
-        THROW_GPE(GpErrno::SGetAndClear());
-    }
+    THROW_GPE_COND_CHECK_M(opts >= 0, GpErrno::SGetAndClear());
 
-    if (aValue)
-    {
-        opts = BitOps::Up(opts, O_NONBLOCK);
-    } else
-    {
-        opts = BitOps::Down(opts, O_NONBLOCK);
-    }
+    if (aValue) opts = BitOps::Up(opts, O_NONBLOCK);
+    else        opts = BitOps::Down(opts, O_NONBLOCK);
 
-    if (fcntl(Id(), F_SETFL, opts) != 0)
-    {
-        THROW_GPE(GpErrno::SGetAndClear());
-    }
+    THROW_GPE_COND_CHECK_M(fcntl(Id(), F_SETFL, opts) >= 0, GpErrno::SGetAndClear());
 }
 
 }//namespace GPlatform

@@ -1,9 +1,0 @@
-/*
-
-
-class GpPollerIOTask
-{
-public:
-    GpPollerTask();
-};
-*/

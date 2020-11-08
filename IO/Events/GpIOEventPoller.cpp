@@ -1,15 +1,61 @@
-/*
-#include "GpPollerIO.hpp"
+#include "GpIOEventPoller.hpp"
 
 namespace GPlatform {
 
-GpPollerIO::GpPollerIO (void) noexcept
+GpIOEventPoller::GpIOEventPoller (GpTaskFiberBarrierLock aStartDoneLock) noexcept:
+iStartDoneLock(std::move(aStartDoneLock))
 {
 }
 
-GpPollerIO::~GpPollerIO (void) noexcept
+GpIOEventPoller::~GpIOEventPoller (void) noexcept
 {
+}
+
+void    GpIOEventPoller::AddSubscriber (GpEventSubscriber::SP   aSubscriber,
+                                        const GpIOObjectId      aIOObjectId)
+{
+    std::scoped_lock lock(iSubscribersLock);
+
+    auto[e, r] = iSubscribers.emplace(aIOObjectId.RawValue(), aSubscriber);
+    THROW_GPE_COND_CHECK_M(r, "ID already added"_sv);
+
+    try
+    {
+        OnAddSubscriber(aSubscriber, aIOObjectId);
+    } catch(...)
+    {
+        iSubscribers.erase(aIOObjectId.RawValue());
+        throw;
+    }
+}
+
+void    GpIOEventPoller::RemoveSubscriber (const GpIOObjectId aIOObjectId)
+{
+    std::scoped_lock lock(iSubscribersLock);
+
+    auto iter = iSubscribers.find(aIOObjectId.RawValue());
+
+    THROW_GPE_COND_CHECK_M(iter != iSubscribers.end(), "ID not found"_sv);
+    iSubscribers.erase(iter);
+    OnRemoveSubscriber(aIOObjectId);
+}
+
+void    GpIOEventPoller::OnStart (void)
+{
+    GpTaskFiberBarrierLock startDoneLock(std::move(iStartDoneLock));
+    startDoneLock.Release();
+}
+
+GpTask::ResT    GpIOEventPoller::OnStep (EventOptRefT /*aEvent*/)
+{
+    return GpTask::ResT::WAITING;
+}
+
+void    GpIOEventPoller::OnStop  (void) noexcept
+{
+    std::scoped_lock lock(iSubscribersLock);
+
+    iSubscribers.clear();
 }
 
 }//GPlatform
-*/

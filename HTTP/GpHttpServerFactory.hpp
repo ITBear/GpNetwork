@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../GpNetwork_global.hpp"
+#include "../IO/Sockets/GpSocketAddr.hpp"
 
 namespace GPlatform {
 
@@ -10,16 +11,25 @@ class GpHttpRequestHandlerFactory;
 class GPNETWORK_API GpHttpServerFactory
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpServerFactory)
+    CLASS_REMOVE_CTRS(GpHttpServerFactory)
     CLASS_DECLARE_DEFAULTS(GpHttpServerFactory)
 
 protected:
-                                GpHttpServerFactory     (void) noexcept {}
+                                        GpHttpServerFactory     (const GpSocketAddr&                aListenSocketAddr,
+                                                                 GpSP<GpHttpRequestHandlerFactory>  aRequestHandlerFactory) noexcept;
 
 public:
-    virtual                     ~GpHttpServerFactory    (void) noexcept {}
+    virtual                             ~GpHttpServerFactory    (void) noexcept;
 
-    virtual GpSP<GpHttpServer>  NewInstance             (GpSP<GpHttpRequestHandlerFactory >aRequestHandlerFactory) const = 0;
+    virtual GpSP<GpHttpServer>          NewInstance             (void) const = 0;
+
+protected:
+    const GpSocketAddr&                 ListenSocketAddr        (void) const noexcept {return iListenSocketAddr;}
+    GpSP<GpHttpRequestHandlerFactory>   RequestHandlerFactory   (void) const {return iRequestHandlerFactory;}
+
+private:
+    const GpSocketAddr                  iListenSocketAddr;
+    GpSP<GpHttpRequestHandlerFactory>   iRequestHandlerFactory;
 };
 
 }//namespace GPlatform

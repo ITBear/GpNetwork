@@ -29,7 +29,7 @@ public:
                                                      const count_t          aMaxQueueSize);
     void                    Connect                 (const GpSocketAddr&    aAddr,
                                                      const milliseconds_t   aTimeout);
-    GpSocketTCP::SP         Accept                  (void);
+    GpSocketTCP::SP         Accept                  (const GpSocketFlags& aFlags);
 
     virtual size_byte_t     Read                    (GpByteWriter& aWriter) override final;
     virtual size_byte_t     Write                   (GpByteReader& aReader) override final;

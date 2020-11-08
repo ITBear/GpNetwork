@@ -33,10 +33,14 @@ public:
 
     virtual size_byte_t     Read                (GpByteWriter& aWriter) = 0;
     virtual size_byte_t     Write               (GpByteReader& aReader) = 0;
+    void                    WriteAll            (GpRawPtrByteR aData);
+
+    void                    CheckForErrors      (void) const;
+
+    void                    Close               (void) noexcept;
 
 protected:
     void                    Bind                (const GpSocketAddr& aAddr);
-    void                    Close               (void) noexcept;
     void                    Create              (IPvTE aIPv);
     GpSocketAddr&           AddrLocal           (void) noexcept {return iAddrLocal;}
     GpSocketAddr&           AddrRemote          (void) noexcept {return iAddrRemote;}

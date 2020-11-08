@@ -6,3 +6,6 @@
 #include "GpSocketFlags.hpp"
 #include "GpSocket.hpp"
 #include "GpSocketTCP.hpp"
+#include "GpSocketTask.hpp"
+#include "GpSocketTaskFactory.hpp"
+#include "GpTcpServerTask.hpp"

@@ -22,41 +22,44 @@ void    GpHttpRouteHandlerPistache::Handle (const Pistache::Rest::Request&  aReq
     microseconds_t beginTS = GpDateTimeOps::SHighResTS_us();
 
     Pistache::Http::Code    httpResCode = Pistache::Http::Code::Ok;
-    std::string             httpResData;
+    std::string             httpErrorData;
+    GpHttpResponse::SP      responce;
 
     try
     {
-        GpHttpRequestHandler::SP    requestHandler  = iRequestHandlerFactory.VC().NewInstance();
+        GpHttpRequestHandler::SP    requestHandler  = iRequestHandlerFactory->NewInstance();
         GpBytesArray                requestBody     = GpBytesArrayUtils::SMake(aRequest.body());
 
-        std::cout << "@@@[GpHttpRouteHandlerPistache::Handle]: RQ: " << std::string_view(reinterpret_cast<const char*>(requestBody.data()), requestBody.size()) << std::endl;
+        std::cout << "@@@[GpHttpRouteHandlerPistache::Handle]: RQ: " << GpRawPtrCharR(requestBody).AsStringView() << std::endl;
 
-        GpHttpRequest::SP           request         = MakeSP<GpHttpRequest>(""_sv,
-                                                                            ""_sv,
-                                                                            std::move(requestBody));
-        GpHttpResponse::SP          responce        = requestHandler.V().OnRequest(request);
-        const GpBytesArray&         responceBody    = responce.VC().Body();
-
-        httpResData = std::string(reinterpret_cast<const char*>(responceBody.data()), responceBody.size());
+        GpHttpRequest::SP request = MakeSP<GpHttpRequest>(""_sv, ""_sv, std::move(requestBody));
+        responce = requestHandler->OnRequest(request);
 
         //iResponseWriter.headers().add<Pistache::Http::Header::ContentType>(MIME(Application, Json));
         //iResponseWriter.headers().add<Pistache::Http::Header::Connection>(Pistache::Http::ConnectionControl::Close);
 
     } catch (const GpException& e)
     {
-        httpResCode = Pistache::Http::Code::Internal_Server_Error;
-        httpResData = std::string(e.what());
+        httpResCode     = Pistache::Http::Code::Internal_Server_Error;
+        httpErrorData   = std::string(e.what());
     } catch (const std::exception& e)
     {
-        httpResCode = Pistache::Http::Code::Internal_Server_Error;
-        httpResData = std::string(e.what());
+        httpResCode     = Pistache::Http::Code::Internal_Server_Error;
+        httpErrorData   = std::string(e.what());
     } catch (...)
     {
         httpResCode = Pistache::Http::Code::Internal_Server_Error;
-        httpResData.clear();
+        httpErrorData.clear();
     }
 
-    aResponseWriter.send(httpResCode, httpResData);
+    if (httpErrorData.length() > 0)
+    {
+        aResponseWriter.send(httpResCode, httpErrorData);
+    } else
+    {
+        GpRawPtrCharR responceBody(responce->Body());
+        aResponseWriter.send(httpResCode, responceBody.Ptr(), responceBody.SizeLeft().As<size_t>());
+    }
 
     microseconds_t endTS = GpDateTimeOps::SHighResTS_us();
     std::cout << "@@@[GpHttpRouteHandlerPistache::Handle]: Total time: " << (endTS-beginTS).Value() << "us" << std::endl;

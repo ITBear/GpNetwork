@@ -1,22 +1,23 @@
 #pragma once
 
-/*
-#include "../../Types/Enum/GpEnumFlags.hpp"
-
-#if defined(GP_USE_IO_UTILS)
+#include "GpIOEventType.hpp"
 
 namespace GPlatform {
 
-GP_ENUM(GPNETWORK_API, GpIODeviceEvent,
-    READY_TO_READ,
-    READY_TO_WRITE,
-    CLOSED,
-    ERROR_OCCURRED
-);
+class GpIOEvent final: public GpEvent
+{
+public:
+    CLASS_REMOVE_CTRS(GpIOEvent)
+    CLASS_DECLARE_DEFAULTS(GpIOEvent)
 
-using GpIODeviceEvents = GpEnumFlagsST<GpIODeviceEvent>;
+public:
+                            GpIOEvent       (const GpIOEventsTypes& aIOEvents) noexcept: iIOEvents(aIOEvents) {}
+    virtual                 ~GpIOEvent      (void) noexcept override final {}
 
-}//GPlatform
+    const GpIOEventsTypes&  Events          (void) const noexcept {return iIOEvents;}
 
-#endif//GP_USE_IO_UTILS
-*/
+private:
+    GpIOEventsTypes         iIOEvents;
+};
+
+}//namespace GPlatform

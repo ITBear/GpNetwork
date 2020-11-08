@@ -27,12 +27,6 @@ size_t GpHTTPClient_S_RS_Data_writer (void* aPtr, size_t aSize, size_t aNMemb, G
     return size;
 }
 
-/*size_t GpHTTPClient_S_header_callback(char* aBuffer, size_t aSize, size_t aNItems, GpBytesArray* aStream)
-{
-    aStream->AddBytes(aBuffer, aSize*aNItems);
-    return aSize*aNItems;
-}*/
-
 GpHttpClient::GpHttpClient (void) noexcept
 {
 }
@@ -103,8 +97,13 @@ GpHttpResponse::SP  GpHttpClient::Do (GpHttpRequest::SP aRequest)
                                "HTTP request failed (code "_sv + httpResponseCode + "): "_sv + responseBodyPtr.AsStringView());
     }
 
-    return MakeSP<GpHttpResponse>(GpHttpResponseCode::OK,
-                                  ""_sv,
+    //TODO add value reader from curl
+    return MakeSP<GpHttpResponse>(GpHttpVersion::HTTP_1_1,
+                                  GpHttpResponseCode::OK_200,
+                                  GpHttpContentType::APPLICATION_JSON,
+                                  GpHttpCharset::UTF_8,
+                                  GpHttpConnectionFlag::KEEP_ALIVE,
+                                  GpHttpCacheControl::NO_STORE,
                                   std::move(responseBody));
 }
 

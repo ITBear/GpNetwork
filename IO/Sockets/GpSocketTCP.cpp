@@ -70,7 +70,7 @@ void    GpSocketTCP::Connect (const GpSocketAddr&   aAddr,
     }
 }
 
-GpSocketTCP::SP GpSocketTCP::Accept (void)
+GpSocketTCP::SP GpSocketTCP::Accept (const GpSocketFlags& aFlags)
 {
     try
     {
@@ -79,12 +79,17 @@ GpSocketTCP::SP GpSocketTCP::Accept (void)
 
         const GpSocketAddr::SocketIdT incomingSocketId = accept(Id(), nullptr, nullptr);
 
+        if (incomingSocketId == EAGAIN)
+        {
+            return GpSocketTCP::SP::SNull();
+        }
+
         if (incomingSocketId == GpSocketAddr::sDefaultSocketId)
         {
             THROW_GPE(GpErrno::SGetAndClear());
         }
 
-        GpSocketTCP::SP connectedSocket = GpSocketTCP::SP::SNew(Flags());
+        GpSocketTCP::SP connectedSocket = GpSocketTCP::SP::SNew(aFlags);
 
         try
         {
@@ -135,12 +140,28 @@ GP_WARNING_POP()
 
 size_byte_t GpSocketTCP::Write (GpByteReader& aReader)
 {
-    const size_byte_t   sizeLeft    = aReader.SizeLeft();
-    ssize_t             sndSize     = send(Id(), aReader.Bytes(sizeLeft).PtrBegin(), sizeLeft.As<size_t>(), 0);
+    const size_byte_t sizeLeft = aReader.SizeLeft();
+
+    if (sizeLeft == 0_byte)
+    {
+        return 0_byte;
+    }
+
+    GpRawPtrByteR dataPtr = aReader.Bytes(sizeLeft);
+    ssize_t sndSize = send(Id(), dataPtr.PtrBegin(), dataPtr.SizeLeft().As<size_t>(), 0);
 
     if (sndSize < 0)
     {
-        THROW_GPE(GpErrno::SGetAndClear());
+GP_WARNING_PUSH()
+GP_WARNING_DISABLE(logical-op)
+        if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
+GP_WARNING_POP()
+        {
+            return 0_byte;
+        } else
+        {
+            THROW_GPE(GpErrno::SGetAndClear());
+        }
     }
 
     const size_byte_t sizeWrite = size_byte_t::SMake(size_t(sndSize));
@@ -189,7 +210,7 @@ void    GpSocketTCP::ConnectAsync (const GpSocketAddr& aAddr)
             THROW_GPE_COND_CHECK_M(GpTaskFiberCtx::SIsIntoFiber(), "NO_BLOCK mode available only from inside fiber task"_sv);
 
             //Wait
-            GpTaskFiberCtx::SYeld(GpTask::Res::WAITING);
+            GpTaskFiberCtx::SYeld(GpTask::ResT::WAITING);
 
             //TODO: implement event processing
             THROW_NOT_IMPLEMENTED();

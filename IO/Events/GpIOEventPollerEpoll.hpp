@@ -1,7 +1,6 @@
-/*
 #pragma once
 
-#include "GpPollerIO.hpp"
+#include "GpIOEventPoller.hpp"
 
 #if defined(GP_OS_LINUX)
 
@@ -9,27 +8,37 @@
 
 namespace GPlatform {
 
-class GPNETWORK_API GpEpoll final: public GpPollerIO
+class GPNETWORK_API GpIOEventPollerEpoll final: public GpIOEventPoller
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpEpoll)
-    CLASS_DECLARE_DEFAULTS(GpEpoll)
+    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpIOEventPollerEpoll)
+    CLASS_DECLARE_DEFAULTS(GpIOEventPollerEpoll)
 
     using EventT    = struct epoll_event;
     using EventsT   = GpVector<EventT>;
 
 public:
-                                GpEpoll         (void) noexcept;
-    virtual                     ~GpEpoll        (void) noexcept override final;
+                                GpIOEventPollerEpoll    (GpTaskFiberBarrierLock aStartDoneLock) noexcept;
+    virtual                     ~GpIOEventPollerEpoll   (void) noexcept override final;
 
-    virtual void                Init            (void) override final;
+    void                        Configure               (const milliseconds_t   aMaxStepTime,
+                                                         const count_t          aMaxEventsCnt);
+
+protected:
+    virtual void                OnStart                 (void) override final;
+    virtual ResT                OnStep                  (EventOptRefT aEvent) override final;
+    virtual void                OnStop                  (void) noexcept override final;
+
+    virtual void                OnAddSubscriber         (GpEventSubscriber::SP  aSubscriber,
+                                                         const GpIOObjectId     aIOObjectId) override final;
+    virtual void                OnRemoveSubscriber      (const GpIOObjectId     aIOObjectId) override final;
 
 private:
-    GpIODevice::DeviceIdT       iEpollId    = GpIODevice::DefaultId();
-    EventsT                     iEpollEvents;
+    milliseconds_t              iMaxStepTime;
+    int                         iEpollId    = -1;
+    EventsT                     iEvents;
 };
 
 }//GPlatform
 
 #endif//#if defined(GP_OS_LINUX)
-*/
