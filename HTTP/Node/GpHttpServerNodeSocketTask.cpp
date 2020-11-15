@@ -1,4 +1,5 @@
 #include "GpHttpServerNodeSocketTask.hpp"
+#include "../GpHttpRequestTask.hpp"
 #include "../GpHttpResponseSerializer.hpp"
 #include <iostream>
 
@@ -7,14 +8,34 @@ namespace GPlatform {
 //https://llhttp.org/
 //https://pypi.org/project/llhttp/
 
-GpHttpServerNodeSocketTask::GpHttpServerNodeSocketTask (GpIOEventPoller::WP aIOPooler,
-                                                        GpSocket::SP        aSocket) noexcept:
-GpSocketTask(std::move(aIOPooler), std::move(aSocket))
+GpHttpServerNodeSocketTask::GpHttpServerNodeSocketTask (GpIOEventPoller::WP             aIOPooler,
+                                                        GpSocket::SP                    aSocket,
+                                                        GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept:
+GpSocketTask(std::move(aIOPooler), std::move(aSocket)),
+iRequestHandlerFactory(std::move(aRequestHandlerFactory))
 {
 }
 
 GpHttpServerNodeSocketTask::~GpHttpServerNodeSocketTask (void) noexcept
 {
+}
+
+GpTask::ResT    GpHttpServerNodeSocketTask::OnStep (EventOptRefT aEvent)
+{
+    if (aEvent.has_value())
+    {
+        const GpEvent&  event           = aEvent.value().get();
+        const GpUUID    eventTypeUID    = event.TypeInfo().UID();
+        if (eventTypeUID == GpIOEvent::STypeUID())
+        {
+            return GpSocketTask::OnStep(aEvent);
+        } else if (eventTypeUID == GpHttpRequestDoneEvent::STypeUID())
+        {
+            return ProcessDoneEvent(static_cast<const GpHttpRequestDoneEvent&>(event));
+        }
+    }
+
+    return GpTask::ResT::WAITING;
 }
 
 GpTask::ResT    GpHttpServerNodeSocketTask::OnSockReadyToRead (GpSocket& aSocket)
@@ -31,25 +52,32 @@ GpTask::ResT    GpHttpServerNodeSocketTask::OnSockReadyToRead (GpSocket& aSocket
             ParseHttp(aSocket);
         }
 
-        if (iState == StateT::PROCESS_RQ)
+        if (iState == StateT::PROCESS_RQ_READY_TO)
         {
-            //TODO: Do something with iRequest
-            //iRq.
+            //Start request process task
+            GpHttpRequestTask::SP   requestTask     = MakeSP<GpHttpRequestTask>(iRq,
+                                                                                iRequestHandlerFactory->NewInstance(),
+                                                                                GetWeakPtr());
+            GpTaskScheduler::WP     taskScheduler   = GpTaskScheduler::SCurrentScheduler().value();
 
-            iRs     = MakeSP<GpHttpResponse>();
-            iState  = StateT::WRITE_RS;
-            return WriteToSocket(aSocket);
+            taskScheduler->AddTaskToReady(std::move(requestTask));
+            iState = StateT::PROCESS_RQ_IN_PROGRESS;
+            return GpTask::ResT::WAITING;
         }
 
-        if (iState == StateT::WRITE_RS)
+        if (   (iState == StateT::PROCESS_RQ_DONE_WRITE_RS)
+            || (iState == StateT::PROCESS_RQ_IN_PROGRESS))
+
         {
             //Data income while write RS
-            THROW_GPE("Data income while write RS"_sv);
+            THROW_GPE("Data income while RS in progress"_sv);
         }
     } catch (const GpHttpException& httpEx)
     {
-        iRs     = MakeSP<GpHttpResponse>(httpEx);
-        iState  = StateT::WRITE_RS;
+        iRs     = MakeSP<GpHttpResponse>();
+        iRs->SetFromException(httpEx);
+        iState  = StateT::PROCESS_RQ_DONE_WRITE_RS;
+        iRs.Vn().http_version = iRq.Vn().http_version;
         return WriteToSocket(aSocket);
     }
 
@@ -58,7 +86,6 @@ GpTask::ResT    GpHttpServerNodeSocketTask::OnSockReadyToRead (GpSocket& aSocket
 
 GpTask::ResT    GpHttpServerNodeSocketTask::OnSockReadyToWrite (GpSocket& aSocket)
 {
-    iIsReadyToWriteSocket = true;
     return WriteToSocket(aSocket);
 }
 
@@ -72,14 +99,20 @@ void    GpHttpServerNodeSocketTask::OnSockError (GpSocket& /*aSocket*/)
     ClearRqRsCycle();
 }
 
+GpTask::ResT    GpHttpServerNodeSocketTask::ProcessDoneEvent (const GpHttpRequestDoneEvent& aRequestDoneEvent)
+{
+    THROW_GPE_COND_CHECK_M(iState == StateT::PROCESS_RQ_IN_PROGRESS,
+                           "State expected to be 'PROCESS_RQ_IN_PROGRESS'"_sv);
+
+    iRs     = aRequestDoneEvent.Response();
+    iState  = StateT::PROCESS_RQ_DONE_WRITE_RS;
+    iRs.Vn().http_version = iRq.Vn().http_version;
+    return WriteToSocket(Socket());
+}
+
 GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
 {
-    if (iIsReadyToWriteSocket == false)
-    {
-        return GpTask::ResT::WAITING;
-    }
-
-    if (iState != StateT::WRITE_RS)
+    if (iState != StateT::PROCESS_RQ_DONE_WRITE_RS)
     {
         return GpTask::ResT::WAITING;
     }
@@ -115,7 +148,7 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
                 if (iRsWriteState == RsWriteStateT::WRITE_HEADERS)
                 {
                     //Check if there are body
-                    const GpBytesArray& body = iRs->Body();
+                    const GpBytesArray& body = iRs->body;
                     if (body.size() > 0)
                     {
                         iRsWriteState           = RsWriteStateT::WRITE_BODY;
@@ -132,14 +165,15 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
     }
 
     //Finish
-    if (iRs->ConnectionFlag() == GpHttpConnectionFlag::KEEP_ALIVE)
-    {
-        ClearRqRsCycle();
-        return  GpTask::ResT::WAITING;
-    } else
-    {
-        return GpTask::ResT::DONE;
-    }
+    //if (iRs.VCn().connection_flag == GpHttpConnectionFlag::KEEP_ALIVE)
+    //{
+    ClearRqRsCycle();
+    return  GpTask::ResT::WAITING;//TODO: add timeout
+    //} else
+    //{
+    //  ClearRqRsCycle();
+    //  return GpTask::ResT::DONE;
+    //}
 }
 
 void    GpHttpServerNodeSocketTask::InitRqRsCycle (void)
@@ -148,8 +182,14 @@ void    GpHttpServerNodeSocketTask::InitRqRsCycle (void)
     {
         llhttp_settings_init(&iHttpParserSettings);
 
-        iHttpParserSettings.on_message_begin    = SHTTP_HandleOnMessageBegin;
-        iHttpParserSettings.on_message_complete = SHTTP_HandleOnMessageComplete;
+        iHttpParserSettings.on_url              = SHTTP_OnURL;
+        iHttpParserSettings.on_header_field     = SHTTP_OnHeaderField;
+        iHttpParserSettings.on_header_value     = SHTTP_OnHeaderValue;
+        iHttpParserSettings.on_headers_complete = SHTTP_OnHeadersComplete;
+        iHttpParserSettings.on_body             = SHTTP_OnBody;
+
+        iHttpParserSettings.on_message_begin    = SHTTP_OnMessageBegin;
+        iHttpParserSettings.on_message_complete = SHTTP_OnMessageComplete;
 
         llhttp_init(&iHttpParser, HTTP_REQUEST, &iHttpParserSettings);
         iHttpParserSettings.iTask = this;
@@ -205,6 +245,11 @@ void    GpHttpServerNodeSocketTask::ParseHttp (GpSocket& aSocket)
 
     iRqDataLastBytesRead = aSocket.Read(writer);
 
+    if (iRqDataLastBytesRead == 0_byte)
+    {
+        return;
+    }
+
     GpRawPtrCharR requestData(iRqData);
     GpRawPtrCharR requestNewPartData = requestData.SubrangeEndOffset(iRqDataLastBytesRead.As<count_t>());
 
@@ -217,30 +262,122 @@ void    GpHttpServerNodeSocketTask::ParseHttp (GpSocket& aSocket)
                             llhttp_errno_name(httpParseRes));
 }
 
-int GpHttpServerNodeSocketTask::SHTTP_HandleOnMessageBegin (llhttp_t* aHttp)
+int GpHttpServerNodeSocketTask::SHTTP_OnURL (llhttp_t* aHttp, const char* aData, const size_t aLength)
 {
-    const http_settings_t& settings = *static_cast<const http_settings_t*>(aHttp->settings);
-    return settings.iTask->HTTP_HandleOnMessageBegin(aHttp);
+    return SHTTPSettings(aHttp).iTask->HTTP_OnURL(std::string_view(aData, aLength));
 }
 
-int GpHttpServerNodeSocketTask::HTTP_HandleOnMessageBegin (llhttp_t* /*aHttp*/)
+int GpHttpServerNodeSocketTask::HTTP_OnURL (std::string_view aValue)
 {
-    std::cout << "[GpHttpServerNodeSocketTask::HTTP_HandleOnMessageBegin]: Message begin..."_sv << std::endl;
+    iRq.Vn().url = aValue;
     return HPE_OK;
 }
 
-int GpHttpServerNodeSocketTask::SHTTP_HandleOnMessageComplete (llhttp_t* aHttp)
+int GpHttpServerNodeSocketTask::SHTTP_OnHeaderField (llhttp_t* aHttp, const char* aData, const size_t aLength)
 {
-    const http_settings_t& settings = *static_cast<const http_settings_t*>(aHttp->settings);
-    return settings.iTask->HTTP_HandleOnMessageComplete(aHttp);
+    return SHTTPSettings(aHttp).iTask->HTTP_OnHeaderField(std::string_view(aData, aLength));
 }
 
-int GpHttpServerNodeSocketTask::HTTP_HandleOnMessageComplete (llhttp_t* /*aHttp*/)
+int GpHttpServerNodeSocketTask::HTTP_OnHeaderField (std::string_view aValue)
 {
-    std::cout << "[GpHttpServerNodeSocketTask::HTTP_HandleOnMessageComplete]: Message complete..."_sv << std::endl;
 
-    iRq     = MakeSP<GpHttpRequest>();
-    iState  = StateT::PROCESS_RQ;
+    iHttpParserCurrentHeaderName = aValue;
+    return HPE_OK;
+}
+
+int GpHttpServerNodeSocketTask::SHTTP_OnHeaderValue (llhttp_t* aHttp, const char* aData, const size_t aLength)
+{
+    return SHTTPSettings(aHttp).iTask->HTTP_OnHeaderValue(std::string_view(aData, aLength));
+}
+
+int GpHttpServerNodeSocketTask::HTTP_OnHeaderValue (std::string_view aValue)
+{
+    iRq.Vn().headers.Add(std::move(iHttpParserCurrentHeaderName), aValue);
+
+    return HPE_OK;
+}
+
+int GpHttpServerNodeSocketTask::SHTTP_OnHeadersComplete (llhttp_t* aHttp)
+{
+    return SHTTPSettings(aHttp).iTask->HTTP_OnHeadersComplete(aHttp);
+}
+
+int GpHttpServerNodeSocketTask::HTTP_OnHeadersComplete (llhttp_t* /*aHttp*/)
+{
+    //TODO: add header check
+    bool hasContentLengthHeader = true;
+
+    //Check if there no body
+    if (!hasContentLengthHeader)
+    {
+        return 1;
+    }  else
+    {
+        return HPE_OK;
+    }
+}
+
+int GpHttpServerNodeSocketTask::SHTTP_OnBody (llhttp_t* aHttp, const char* aData, const size_t aLength)
+{
+    return SHTTPSettings(aHttp).iTask->HTTP_OnBody(std::string_view(aData, aLength));
+}
+
+int GpHttpServerNodeSocketTask::HTTP_OnBody (std::string_view aValue)
+{
+    iRq.Vn().body = GpBytesArrayUtils::SMake(aValue);
+    return HPE_OK;
+}
+
+int GpHttpServerNodeSocketTask::SHTTP_OnMessageBegin (llhttp_t* aHttp)
+{
+    return SHTTPSettings(aHttp).iTask->HTTP_OnMessageBegin(aHttp);
+}
+
+int GpHttpServerNodeSocketTask::HTTP_OnMessageBegin (llhttp_t* /*aHttp*/)
+{
+    //std::cout << "[GpHttpServerNodeSocketTask::HTTP_OnMessageBegin]: Message begin..."_sv << std::endl;
+    iRq = MakeSP<GpHttpRequest>();
+    return HPE_OK;
+}
+
+int GpHttpServerNodeSocketTask::SHTTP_OnMessageComplete (llhttp_t* aHttp)
+{
+    return SHTTPSettings(aHttp).iTask->HTTP_OnMessageComplete(aHttp);
+}
+
+int GpHttpServerNodeSocketTask::HTTP_OnMessageComplete (llhttp_t* aHttp)
+{
+    //std::cout << "[GpHttpServerNodeSocketTask::HTTP_OnMessageComplete]: Message complete..."_sv << std::endl;
+
+    //Version
+    {
+        iRq.Vn().SetHttpVersion(aHttp->http_major, aHttp->http_minor);
+    }
+
+    //Request type
+    {
+        GpHttpRequestType::EnumT httpRequestType;
+        switch (aHttp->method)
+        {
+            case HTTP_GET:      httpRequestType = GpHttpRequestType::GET; break;
+            case HTTP_HEAD:     httpRequestType = GpHttpRequestType::HEAD; break;
+            case HTTP_POST:     httpRequestType = GpHttpRequestType::POST; break;
+            case HTTP_PUT:      httpRequestType = GpHttpRequestType::PUT; break;
+            case HTTP_DELETE:   httpRequestType = GpHttpRequestType::DELETE; break;
+            case HTTP_CONNECT:  httpRequestType = GpHttpRequestType::CONNECT; break;
+            case HTTP_OPTIONS:  httpRequestType = GpHttpRequestType::OPTIONS; break;
+            case HTTP_TRACE:    httpRequestType = GpHttpRequestType::TRACE; break;
+            case HTTP_PATCH:    httpRequestType = GpHttpRequestType::PATCH; break;
+            default:
+            {
+                THROW_HTTP(GpHttpResponseCode::BAD_REQUEST_400, "Unsupported HTTP method"_sv);
+            }
+        }
+
+        iRq.Vn().request_type = httpRequestType;
+    }
+
+    iState  = StateT::PROCESS_RQ_READY_TO;
     return HPE_OK;
 }
 

@@ -3,7 +3,7 @@
 namespace GPlatform {
 
 GpHttpServerPistache::GpHttpServerPistache (GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept:
-GpHttpServer(aRequestHandlerFactory)
+GpHttpServer(std::move(aRequestHandlerFactory))
 {
 }
 
@@ -23,7 +23,8 @@ void    GpHttpServerPistache::OnStart (void)
                                .maxRequestSize(8192*2)
                                .maxResponseSize(1024*512);
 
-    iHttpRouteHandler = MakeSP<GpHttpRouteHandlerPistache>(iHttpRouter, RequestHandlerFactory());
+    iHttpRouteHandler = MakeSP<GpHttpRouteHandlerPistache>(iHttpRouter,
+                                                           RequestHandlerFactory());
 
     iHttpServer = std::make_shared<Pistache::Http::Endpoint>(addr);
     iHttpServer->init(opts);
@@ -33,9 +34,9 @@ void    GpHttpServerPistache::OnStart (void)
     std::cout << "[NetworkTest::StartHttpServer]: Wait for request..."_sv << std::endl;
 }
 
-void    GpHttpServerPistache::OnStep (EventOptRefT /*aEvent*/)
+GpTask::ResT    GpHttpServerPistache::OnStep (EventOptRefT /*aEvent*/)
 {
-    //NOP
+    return GpTask::ResT::WAITING;
 }
 
 void    GpHttpServerPistache::OnStop (void) noexcept

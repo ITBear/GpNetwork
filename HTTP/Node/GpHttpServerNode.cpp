@@ -23,9 +23,9 @@ void    GpHttpServerNode::OnStart (void)
     StartTcpServer();
 }
 
-void    GpHttpServerNode::OnStep (EventOptRefT /*aEvent*/)
+GpTask::ResT    GpHttpServerNode::OnStep (EventOptRefT /*aEvent*/)
 {
-    //NOP
+    return GpTask::ResT::WAITING;
 }
 
 void    GpHttpServerNode::OnStop (void) noexcept
@@ -39,7 +39,7 @@ void    GpHttpServerNode::StartIOPoller (void)
     iIOPoller = iEventPollerFactory->NewInstance(GpTaskFiberBarrierLock(ioPollerStartBarrier));
     GpTaskScheduler::SCurrentScheduler().value()->AddTaskToReady(iIOPoller);
 
-    GpTaskFiberBarrierWaiter ioPollerStartWaiter(ioPollerStartBarrier);
+    GpTaskFiberBarrierWaiter ioPollerStartWaiter(std::move(ioPollerStartBarrier));
     ioPollerStartWaiter.Wait(GetWeakPtr());
 }
 
@@ -49,10 +49,12 @@ void    GpHttpServerNode::StartTcpServer (void)
 
     //TODO: move to config
     GpTask::SP tcpServerTask = GpTcpServerTask::SConstruct(iListenSocketAddr,
-                                                           GpSocketFlags{GpSocketFlag::REUSE_ADDR, GpSocketFlag::REUSE_PORT},   //TODO: move to config
+                                                           GpSocketFlags{GpSocketFlag::REUSE_ADDR,
+                                                                         GpSocketFlag::REUSE_PORT,
+                                                                         GpSocketFlag::NO_DELAY},   //TODO: move to config
                                                            256_cnt, //TODO: move to config
                                                            iIOPoller,
-                                                           MakeSP<GpHttpServerNodeSocketTaskFactory>(),
+                                                           MakeSP<GpHttpServerNodeSocketTaskFactory>(RequestHandlerFactory()),
                                                            taskScheduler);
 
     //TODO: add waiting for iIOPoller OnStartDone()

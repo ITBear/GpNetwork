@@ -46,15 +46,9 @@ void    GpIOEventPoller::OnStart (void)
     startDoneLock.Release();
 }
 
-GpTask::ResT    GpIOEventPoller::OnStep (EventOptRefT /*aEvent*/)
-{
-    return GpTask::ResT::WAITING;
-}
-
 void    GpIOEventPoller::OnStop  (void) noexcept
 {
     std::scoped_lock lock(iSubscribersLock);
-
     iSubscribers.clear();
 }
 

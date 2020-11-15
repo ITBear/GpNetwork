@@ -32,8 +32,13 @@ void    GpHttpRouteHandlerPistache::Handle (const Pistache::Rest::Request&  aReq
 
         std::cout << "@@@[GpHttpRouteHandlerPistache::Handle]: RQ: " << GpRawPtrCharR(requestBody).AsStringView() << std::endl;
 
-        GpHttpRequest::SP request = MakeSP<GpHttpRequest>(""_sv, ""_sv, std::move(requestBody));
-        responce = requestHandler->OnRequest(request);
+        GpHttpRequest::SP request = MakeSP<GpHttpRequest>(GpHttpVersion::HTTP_1_1,
+                                                          GpHttpRequestType::GET,
+                                                          ""_sv,
+                                                          GpHttpHeaders(),
+                                                          std::move(requestBody));
+
+        responce = requestHandler->ProcessRequest(request.VC());
 
         //iResponseWriter.headers().add<Pistache::Http::Header::ContentType>(MIME(Application, Json));
         //iResponseWriter.headers().add<Pistache::Http::Header::Connection>(Pistache::Http::ConnectionControl::Close);
@@ -57,7 +62,7 @@ void    GpHttpRouteHandlerPistache::Handle (const Pistache::Rest::Request&  aReq
         aResponseWriter.send(httpResCode, httpErrorData);
     } else
     {
-        GpRawPtrCharR responceBody(responce->Body());
+        GpRawPtrCharR responceBody(responce->body);
         aResponseWriter.send(httpResCode, responceBody.Ptr(), responceBody.SizeLeft().As<size_t>());
     }
 

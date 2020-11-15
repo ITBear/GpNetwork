@@ -20,7 +20,7 @@ public:
 
 protected:
     virtual void                OnStart             (void) override final;
-    virtual void                OnStep              (EventOptRefT aEvent) override final;
+    virtual GpTask::ResT        OnStep              (EventOptRefT aEvent) override final;
     virtual void                OnStop              (void) noexcept override final;
 
 private:

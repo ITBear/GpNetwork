@@ -7,7 +7,7 @@ GpTcpServerTask::GpTcpServerTask (GpIOEventPoller::WP       aIOPooler,
                                   GpSocketTaskFactory::SP   aTaskFactory,
                                   GpTaskScheduler::WP       aTaskScheduler,
                                   GpSocketTCP::SP           aSocket) noexcept:
-GpSocketTask(aIOPooler, std::move(aSocket)),
+GpSocketTask(std::move(aIOPooler), std::move(aSocket)),
 iTaskFactory(std::move(aTaskFactory)),
 iTaskScheduler(std::move(aTaskScheduler))
 {
@@ -30,8 +30,8 @@ GpTcpServerTask::SP GpTcpServerTask::SConstruct (const GpSocketAddr&        aAdd
 
     //Create server task
     GpTcpServerTask::SP serverSocketTask = MakeSP<GpTcpServerTask>(aIOPooler,
-                                                                   aTaskFactory,
-                                                                   aTaskScheduler,
+                                                                   std::move(aTaskFactory),
+                                                                   std::move(aTaskScheduler),
                                                                    serverSocket);
 
     aIOPooler->AddSubscriber(serverSocketTask, serverSocket->Id());
@@ -39,31 +39,28 @@ GpTcpServerTask::SP GpTcpServerTask::SConstruct (const GpSocketAddr&        aAdd
     return serverSocketTask;
 }
 
-void    GpTcpServerTask::OnStart (void)
-{
-    GpSocketTask::OnStart();
-}
-
-GpTask::ResT    GpTcpServerTask::OnStep (EventOptRefT aEvent)
-{
-    return GpSocketTask::OnStep(aEvent);
-}
-
-void    GpTcpServerTask::OnStop (void) noexcept
-{
-    iTaskFactory.Clear();
-    iTaskScheduler.Clear();
-
-    GpSocketTask::OnStop();
-}
-
 GpTask::ResT    GpTcpServerTask::OnSockReadyToRead (GpSocket& aSocket)
 {
-    GpSocket::SP        inSocket        = static_cast<GpSocketTCP&>(aSocket).Accept(aSocket.Flags() | GpSocketFlag::NO_BLOCK);
-    GpSocketTask::SP    inSocketTask    = iTaskFactory.Vn().NewInstance(IOPooler(), inSocket);
+    //std::cout << "[GpTcpServerTask::OnSockReadyToRead]: BEGIN" << std::endl;
 
-    iTaskScheduler.Vn().AddTaskToWaiting(inSocketTask);
-    IOPooler()->AddSubscriber(inSocketTask, inSocket.VCn().Id());
+    GpSocketTCP& serverSocket = static_cast<GpSocketTCP&>(aSocket);
+
+    //Accept
+    GpSocket::SP inSocket;
+    while ((inSocket = serverSocket.Accept(aSocket.Flags() | GpSocketFlag::NO_BLOCK)).IsNotNULL())
+    {
+        //std::cout << "[GpTcpServerTask::OnSockReadyToRead]: Accept new connection!" << std::endl;
+
+        const GpSocketAddr::SocketIdT inSocketId = inSocket.VC().Id();
+
+        //Start task
+        GpSocketTask::SP inSocketTask = iTaskFactory.Vn().NewInstance(IOPooler(), std::move(inSocket));
+
+        iTaskScheduler.V().AddTaskToWaiting(inSocketTask);
+        IOPooler()->AddSubscriber(inSocketTask, inSocketId);
+    }
+
+    //std::cout << "[GpTcpServerTask::OnSockReadyToRead]: END" << std::endl;
 
     return GpTask::ResT::WAITING;
 }

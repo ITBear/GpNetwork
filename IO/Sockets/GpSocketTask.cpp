@@ -16,57 +16,22 @@ GpSocketTask::~GpSocketTask (void) noexcept
 }
 
 void    GpSocketTask::OnStart (void)
-{
+{   
     THROW_GPE_COND_CHECK_M(iSocket.IsNotNULL(), "Socket is null"_sv);
+
+    //std::cout << "[GpSocketTask::OnStart]: " << this << ": " <<  sock.AddrLocal().ToString() << std::endl;
+    //std::cout << "[GpSocketTask::OnStart]: " << this << ": " <<  sock.AddrRemote().ToString() << std::endl;
 }
 
 GpTask::ResT    GpSocketTask::OnStep (EventOptRefT aEvent)
 {
-    if (!aEvent.has_value())
+    if (aEvent.has_value())
     {
-        return ResT::WAITING;
-    }
-
-    const GpIOEvent&        ioEvent     = static_cast<const GpIOEvent&>(aEvent.value().get());
-    const GpIOEventsTypes&  eventsMask  = ioEvent.Events();
-    GpSocket&               socket      = iSocket.V();
-
-    if (eventsMask.Test(GpIOEventType::READY_TO_READ))
-    {
-        std::cout << "[SocketTask::OnStep]: event READY_TO_READ"_sv << std::endl;
-        if (OnSockReadyToRead(socket) == GpTask::ResT::DONE)
+        const GpEvent& event = aEvent.value().get();
+        if (event.TypeInfo().UID() == GpIOEvent::STypeUID())
         {
-            OnSockClosed(socket);
-            OnStop();
-            return GpTask::ResT::DONE;
+            ProcessIOEvent(static_cast<const GpIOEvent&>(event));
         }
-    }
-
-    if (eventsMask.Test(GpIOEventType::READY_TO_WRITE))
-    {
-        std::cout << "[SocketTask::OnStep]: event READY_TO_WRITE"_sv << std::endl;
-        if (OnSockReadyToWrite(socket) == GpTask::ResT::DONE)
-        {
-            OnSockClosed(socket);
-            OnStop();
-            return GpTask::ResT::DONE;
-        }
-    }
-
-    if (eventsMask.Test(GpIOEventType::CLOSED))
-    {
-        std::cout << "[SocketTask::OnStep]: event CLOSED"_sv << std::endl;
-        OnSockClosed(socket);
-        OnStop();
-        return GpTask::ResT::DONE;
-    }
-
-    if (eventsMask.Test(GpIOEventType::ERROR_OCCURRED))
-    {
-        std::cout << "[SocketTask::OnStep]: event ERROR_OCCURRED"_sv << std::endl;
-        OnSockError(socket);
-        OnStop();
-        return GpTask::ResT::DONE;
     }
 
     return GpTask::ResT::WAITING;
@@ -74,8 +39,8 @@ GpTask::ResT    GpSocketTask::OnStep (EventOptRefT aEvent)
 
 void    GpSocketTask::OnStop (void) noexcept
 {
-    if (    iSocket.IsNotNULL()
-         && iIOPooler.IsNotNULL())
+    if (   iSocket.IsNotNULL()
+        && iIOPooler.IsNotNULL())
     {
         GpSocket& sock = iSocket.Vn();
         GpSocketAddr::SocketIdT socketId = sock.Id();
@@ -84,7 +49,8 @@ void    GpSocketTask::OnStop (void) noexcept
         {
             try
             {
-                iIOPooler.Vn().RemoveSubscriber(socketId);
+                iIOPooler.V().RemoveSubscriber(socketId);
+                //TODO: add check on socket type (no need to close UDP, or server TCP)
                 sock.Close();
             } catch (const std::exception& e)
             {
@@ -92,11 +58,51 @@ void    GpSocketTask::OnStop (void) noexcept
             } catch (...)
             {
                 GpExceptionsSink::SSinkUnknown();
-            }           
+            }
         }
 
         iIOPooler.Clear();
         iSocket.Clear();
+    }
+}
+
+void    GpSocketTask::ProcessIOEvent (const GpIOEvent& aIOEvent)
+{
+    const GpIOEventsTypes&  eventsMask  = aIOEvent.Events();
+    GpSocket&               socket      = iSocket.V();
+
+    if (eventsMask.Test(GpIOEventType::READY_TO_READ))
+    {
+        //std::cout << "[SocketTask::OnStep]: event READY_TO_READ: "_sv << iSocket->Id() << std::endl;
+        if (OnSockReadyToRead(socket) == GpTask::ResT::DONE)
+        {
+            OnSockClosed(socket);
+            GpTaskFiberCtx::SYeld(GpTask::ResT::DONE);
+        }
+    }
+
+    if (eventsMask.Test(GpIOEventType::READY_TO_WRITE))
+    {
+        //std::cout << "[SocketTask::OnStep]: event READY_TO_WRITE: "_sv << iSocket->Id() << std::endl;
+        if (OnSockReadyToWrite(socket) == GpTask::ResT::DONE)
+        {
+            OnSockClosed(socket);
+            GpTaskFiberCtx::SYeld(GpTask::ResT::DONE);
+        }
+    }
+
+    if (eventsMask.Test(GpIOEventType::CLOSED))
+    {
+        //std::cout << "[SocketTask::OnStep]: event CLOSED: "_sv << iSocket->Id() << std::endl;
+        OnSockClosed(socket);
+        GpTaskFiberCtx::SYeld(GpTask::ResT::DONE);
+    }
+
+    if (eventsMask.Test(GpIOEventType::ERROR_OCCURRED))
+    {
+        //std::cout << "[SocketTask::OnStep]: event ERROR_OCCURRED: "_sv << iSocket->Id() << std::endl;
+        OnSockError(socket);
+        GpTaskFiberCtx::SYeld(GpTask::ResT::DONE);
     }
 }
 

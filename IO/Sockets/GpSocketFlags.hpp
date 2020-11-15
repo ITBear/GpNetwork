@@ -7,7 +7,9 @@ namespace GPlatform {
 GP_ENUM(GPNETWORK_API, GpSocketFlag,
     REUSE_ADDR,
     REUSE_PORT,
-    NO_BLOCK
+    NO_BLOCK,
+    LINGER_ZERO,
+    NO_DELAY
 
     /*SO_KEEPALIVE
     SO_LINGER

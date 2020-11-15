@@ -12,12 +12,12 @@ public:
     CLASS_DECLARE_DEFAULTS(GpHttpServerPistache)
 
 public:
-                            GpHttpServerPistache    (GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept;
+                            GpHttpServerPistache    (GpHttpRequestHandlerFactory::SP aRequestHandlerFactor) noexcept;
     virtual                 ~GpHttpServerPistache   (void) noexcept override final;
 
 protected:
     virtual void            OnStart                 (void) override final;
-    virtual void            OnStep                  (EventOptRefT aEvent) override final;
+    virtual GpTask::ResT    OnStep                  (EventOptRefT aEvent) override final;
     virtual void            OnStop                  (void) noexcept override final;
 
 private:

@@ -5,7 +5,8 @@ namespace GPlatform {
 
 GpHttpServerPistacheFactory::GpHttpServerPistacheFactory (const GpSocketAddr&               aListenSocketAddr,
                                                           GpHttpRequestHandlerFactory::SP   aRequestHandlerFactory) noexcept:
-GpHttpServerFactory(aListenSocketAddr, std::move(aRequestHandlerFactory))
+GpHttpServerFactory(aListenSocketAddr,
+                    std::move(aRequestHandlerFactory))
 {
 }
 

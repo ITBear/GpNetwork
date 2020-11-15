@@ -1,5 +1,4 @@
 #include "GpSocket.hpp"
-#include <iostream>
 
 namespace GPlatform {
 
@@ -8,13 +7,10 @@ GpSocket::GpSocket (const ProtocolTE        aProtocol,
 iProtocol(aProtocol),
 iFlags(aFlags)
 {
-    std::cout << "[GpSocket::GpSocket]:..." << std::endl;
 }
 
 GpSocket::~GpSocket (void) noexcept
 {
-    std::cout << "[GpSocket::~GpSocket]:..." << std::endl;
-
     Close();
 }
 
@@ -125,6 +121,16 @@ void    GpSocket::ApplyFlags (void)
     {
         SetFlag_NoBlock(true);
     }
+
+    if (iFlags.Test(GpSocketFlag::LINGER_ZERO))
+    {
+        SetFlag_LingerZero(true);
+    }
+
+    if (iFlags.Test(GpSocketFlag::NO_DELAY))
+    {
+        SetFlag_NoDelay(true);
+    }
 }
 
 void    GpSocket::SetFlag_ReuseAddr (bool aValue)
@@ -154,6 +160,26 @@ void    GpSocket::SetFlag_NoBlock (bool aValue)
     else        opts = BitOps::Down(opts, O_NONBLOCK);
 
     THROW_GPE_COND_CHECK_M(fcntl(Id(), F_SETFL, opts) >= 0, GpErrno::SGetAndClear());
+}
+
+void    GpSocket::SetFlag_LingerZero (bool aValue)
+{
+    struct linger sl;
+    sl.l_onoff  = aValue ? 1 : 0;
+    sl.l_linger = 0;
+    if (setsockopt(Id(), SOL_SOCKET, SO_LINGER, &sl, sizeof(sl)) != 0)
+    {
+        THROW_GPE(GpErrno::SGetAndClear());
+    }
+}
+
+void    GpSocket::SetFlag_NoDelay (bool aValue)
+{
+    int option = aValue ? 1 : 0;
+    if (setsockopt(Id(), SOL_TCP, TCP_NODELAY, &option, sizeof(option)) != 0)
+    {
+        THROW_GPE(GpErrno::SGetAndClear());
+    }
 }
 
 }//namespace GPlatform

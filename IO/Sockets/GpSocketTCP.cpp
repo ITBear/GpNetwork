@@ -1,5 +1,7 @@
 #include "GpSocketTCP.hpp"
 
+//#include <iostream>
+
 namespace GPlatform {
 
 GpSocketTCP::GpSocketTCP (const GpSocketFlags& aFlags) noexcept:
@@ -79,13 +81,15 @@ GpSocketTCP::SP GpSocketTCP::Accept (const GpSocketFlags& aFlags)
 
         const GpSocketAddr::SocketIdT incomingSocketId = accept(Id(), nullptr, nullptr);
 
-        if (incomingSocketId == EAGAIN)
-        {
-            return GpSocketTCP::SP::SNull();
-        }
+        //std::cout << "[GpSocketTCP::Accept]: incomingSocketId = " << incomingSocketId << std::endl;
 
         if (incomingSocketId == GpSocketAddr::sDefaultSocketId)
         {
+            if (errno == EAGAIN)
+            {
+                return GpSocketTCP::SP::SNull();
+            }
+
             THROW_GPE(GpErrno::SGetAndClear());
         }
 
@@ -185,6 +189,7 @@ void    GpSocketTCP::SetFromIncomingRawId (const GpSocketAddr::SocketIdT aId)
         iState = StateT::INCOMING;
     } catch (...)
     {
+        SetFlag_LingerZero(true);
         Close();
         iState = StateT::NOT_CONNECTED;
         throw;

@@ -26,7 +26,7 @@ public:
 
 protected:
     virtual void                OnStart                 (void) override final;
-    virtual ResT                OnStep                  (EventOptRefT aEvent) override final;
+    virtual GpTask::ResT        OnStep                  (EventOptRefT aEvent) override final;
     virtual void                OnStop                  (void) noexcept override final;
 
     virtual void                OnAddSubscriber         (GpEventSubscriber::SP  aSubscriber,
@@ -35,6 +35,7 @@ protected:
 
 private:
     milliseconds_t              iMaxStepTime;
+    milliseconds_t              iNextStepTime;
     int                         iEpollId    = -1;
     EventsT                     iEvents;
 };

@@ -11,13 +11,18 @@ public:
     CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpRequestHandler)
     CLASS_DECLARE_DEFAULTS(GpHttpRequestHandler)
 
+    CLASS_TAG(THREAD_SAFE)
+
 protected:
                                 GpHttpRequestHandler    (void) noexcept {}
 
 public:
     virtual                     ~GpHttpRequestHandler   (void) noexcept {}
 
-    virtual GpHttpResponse::SP  OnRequest               (GpHttpRequest::SP aRequest) = 0;
+    GpHttpResponse::SP          ProcessRequest          (const GpHttpRequest& aRequest) const;
+
+protected:
+    virtual GpHttpResponse::SP  OnRequest               (const GpHttpRequest& aRequest) const = 0;
 };
 
 }//namespace GPlatform

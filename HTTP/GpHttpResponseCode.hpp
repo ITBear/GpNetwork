@@ -18,4 +18,10 @@ GP_ENUM(GPNETWORK_API, GpHttpResponseCode,
     INTERNAL_SERVER_ERROR_500
 );
 
+class GPNETWORK_API GpHttpResponseCodeUtils
+{
+public:
+    static GpHttpResponseCode::EnumT    SFromId (const size_t aCodeId);
+};
+
 }//namespace GPlatform

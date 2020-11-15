@@ -1,17 +1,17 @@
 #pragma once
 
-#include "../../IO/Sockets/GpSocketTaskFactory.hpp"
+#include "../GpHttpServerSocketTaskFactory.hpp"
 
 namespace GPlatform {
 
-class GpHttpServerNodeSocketTaskFactory final: public GpSocketTaskFactory
+class GpHttpServerNodeSocketTaskFactory final: public GpHttpServerSocketTaskFactory
 {
 public:
     CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpServerNodeSocketTaskFactory)
     CLASS_DECLARE_DEFAULTS(GpHttpServerNodeSocketTaskFactory)
 
 public:
-                                GpHttpServerNodeSocketTaskFactory   (void) noexcept;
+                                GpHttpServerNodeSocketTaskFactory   (GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept;
     virtual                     ~GpHttpServerNodeSocketTaskFactory  (void) noexcept override final;
 
     virtual GpSocketTask::SP    NewInstance                         (GpIOEventPoller::WP    aIOPooler,

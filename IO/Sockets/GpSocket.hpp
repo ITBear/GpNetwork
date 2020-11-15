@@ -47,11 +47,13 @@ protected:
 
     void                    SetFromRaw          (const GpSocketAddr::SocketIdT aId);
 
-private:
+protected:
     void                    ApplyFlags          (void);
     void                    SetFlag_ReuseAddr   (bool aValue);
     void                    SetFlag_ReusePort   (bool aValue);
     void                    SetFlag_NoBlock     (bool aValue);
+    void                    SetFlag_LingerZero  (bool aValue);
+    void                    SetFlag_NoDelay     (bool aValue);
 
 private:
     GpSocketAddr::SocketIdT iId         = GpSocketAddr::sDefaultSocketId;

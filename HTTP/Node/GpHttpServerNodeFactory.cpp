@@ -6,7 +6,8 @@ namespace GPlatform {
 GpHttpServerNodeFactory::GpHttpServerNodeFactory (const GpSocketAddr&               aListenSocketAddr,
                                                   GpIOEventPollerFactory::SP        aEventPollerFactory,
                                                   GpHttpRequestHandlerFactory::SP   aRequestHandlerFactory) noexcept:
-GpHttpServerFactory(aListenSocketAddr, std::move(aRequestHandlerFactory)),
+GpHttpServerFactory(aListenSocketAddr,
+                    std::move(aRequestHandlerFactory)),
 iEventPollerFactory(std::move(aEventPollerFactory))
 {
 }

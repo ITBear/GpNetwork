@@ -5,7 +5,7 @@
 
 namespace GPlatform {
 
-class GPNETWORK_API GpIOEventPoller: public GpTaskBase
+class GPNETWORK_API GpIOEventPoller: public GpTaskFiberBase
 {
 public:
     CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpIOEventPoller)
@@ -27,7 +27,7 @@ public:
 
 protected:
     virtual void                    OnStart             (void) override;
-    virtual ResT                    OnStep              (EventOptRefT aEvent) override;
+    //virtual GpTask::ResT          OnStep              (EventOptRefT aEvent) override;
     virtual void                    OnStop              (void) noexcept override;
 
     virtual void                    OnAddSubscriber     (GpEventSubscriber::SP  aSubscriber,

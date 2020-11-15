@@ -25,7 +25,8 @@ void    GpIOEventPollerEpoll::Configure (const milliseconds_t   aMaxStepTime,
                                          const count_t          aMaxEventsCnt)
 {
     THROW_GPE_COND_CHECK_M(iEpollId == -1, "Already started"_sv);
-    iMaxStepTime = aMaxStepTime;
+    iMaxStepTime    = aMaxStepTime;
+    iNextStepTime   = aMaxStepTime;
     iEvents.resize(aMaxEventsCnt.As<size_t>());
 }
 
@@ -45,10 +46,26 @@ GpTask::ResT    GpIOEventPollerEpoll::OnStep (EventOptRefT /*aEvent*/)
     const int nfds = epoll_wait(iEpollId,
                                 eventsPtr,
                                 NumOps::SConvert<int>(iEvents.size()),
-                                NumOps::SConvert<int>(iMaxStepTime.Value()));
+                                NumOps::SConvert<int>(iNextStepTime.Value()));
+
+    //iNextStepTime = iMaxStepTime;
+
+    if (   (nfds < 0)
+        && (errno == EINTR))
+    {
+        return GpTask::ResT::READY_TO_EXEC;
+    }
 
     //Check for errors
     THROW_GPE_COND_CHECK_M(nfds >= 0, GpErrno::SGetAndClear());
+
+    if (nfds == 0)
+    {
+        return GpTask::ResT::READY_TO_EXEC;
+    } /*else
+    {
+        iNextStepTime = 0.0_si_ms;
+    }*/
 
     //Process events
     const size_t    eventsCount = NumOps::SConvert<size_t>(nfds);

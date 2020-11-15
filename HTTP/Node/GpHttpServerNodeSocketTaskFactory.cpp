@@ -3,7 +3,8 @@
 
 namespace GPlatform {
 
-GpHttpServerNodeSocketTaskFactory::GpHttpServerNodeSocketTaskFactory (void) noexcept
+GpHttpServerNodeSocketTaskFactory::GpHttpServerNodeSocketTaskFactory (GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept:
+GpHttpServerSocketTaskFactory(std::move(aRequestHandlerFactory))
 {
 }
 
@@ -15,7 +16,8 @@ GpSocketTask::SP    GpHttpServerNodeSocketTaskFactory::NewInstance (GpIOEventPol
                                                                     GpSocket::SP        aSocket) const
 {
     return MakeSP<GpHttpServerNodeSocketTask>(std::move(aIOPooler),
-                                              std::move(aSocket));
+                                              std::move(aSocket),
+                                              RequestHandlerFactory());
 }
 
 }//namespace GPlatform

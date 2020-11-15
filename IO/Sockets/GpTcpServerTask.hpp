@@ -27,10 +27,6 @@ public:
                                                      GpTaskScheduler::WP        aTaskScheduler);
 
 protected:
-    virtual void                OnStart             (void) override final;
-    virtual GpTask::ResT        OnStep              (EventOptRefT aEvent) override final;
-    virtual void                OnStop              (void) noexcept override final;
-
     virtual GpTask::ResT        OnSockReadyToRead   (GpSocket& aSocket) override final;
     virtual GpTask::ResT        OnSockReadyToWrite  (GpSocket& aSocket) override final;
     virtual void                OnSockClosed        (GpSocket& aSocket) override final;

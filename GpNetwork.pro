@@ -30,17 +30,27 @@ SOURCES += \
     GpNetwork.cpp \
     HTTP/GpHttpCacheControl.cpp \
     HTTP/GpHttpCharset.cpp \
-    HTTP/GpHttpClient.cpp \
+    HTTP/GpHttpClientCurl.cpp \
     HTTP/GpHttpConnectionFlag.cpp \
     HTTP/GpHttpContentType.cpp \
     HTTP/GpHttpException.cpp \
+    HTTP/GpHttpHeaderType.cpp \
+    HTTP/GpHttpHeaderValue.cpp \
+    HTTP/GpHttpHeaders.cpp \
     HTTP/GpHttpRequest.cpp \
+    HTTP/GpHttpRequestDoneEvent.cpp \
+    HTTP/GpHttpRequestHandler.cpp \
+    HTTP/GpHttpRequestRouteTable.cpp \
+    HTTP/GpHttpRequestRouterStatic.cpp \
     HTTP/GpHttpRequestSerializer.cpp \
+    HTTP/GpHttpRequestTask.cpp \
+    HTTP/GpHttpRequestType.cpp \
     HTTP/GpHttpResponse.cpp \
     HTTP/GpHttpResponseCode.cpp \
     HTTP/GpHttpResponseSerializer.cpp \
     HTTP/GpHttpServer.cpp \
     HTTP/GpHttpServerFactory.cpp \
+    HTTP/GpHttpServerSocketTaskFactory.cpp \
     HTTP/GpHttpVersion.cpp \
     HTTP/Node/GpHttpServerNode.cpp \
     HTTP/Node/GpHttpServerNodeFactory.cpp \
@@ -49,6 +59,7 @@ SOURCES += \
     HTTP/Pistache/GpHttpRouteHandlerPistache.cpp \
     HTTP/Pistache/GpHttpServerPistache.cpp \
     HTTP/Pistache/GpHttpServerPistacheFactory.cpp \
+    IO/Events/GpIOEvent.cpp \
     IO/Events/GpIOEventPoller.cpp \
     IO/Events/GpIOEventPollerEpoll.cpp \
     IO/Events/GpIOEventPollerEpollFactory.cpp \
@@ -69,19 +80,29 @@ HEADERS += \
     HTTP/GpHTTP.hpp \
     HTTP/GpHttpCacheControl.hpp \
     HTTP/GpHttpCharset.hpp \
-    HTTP/GpHttpClient.hpp \
+    HTTP/GpHttpClientCurl.hpp \
     HTTP/GpHttpConnectionFlag.hpp \
     HTTP/GpHttpContentType.hpp \
     HTTP/GpHttpException.hpp \
+    HTTP/GpHttpHeaderType.hpp \
+    HTTP/GpHttpHeaderValue.hpp \
+    HTTP/GpHttpHeaders.hpp \
     HTTP/GpHttpRequest.hpp \
+    HTTP/GpHttpRequestDoneEvent.hpp \
     HTTP/GpHttpRequestHandler.hpp \
     HTTP/GpHttpRequestHandlerFactory.hpp \
+    HTTP/GpHttpRequestRouteTable.hpp \
+    HTTP/GpHttpRequestRouter.hpp \
+    HTTP/GpHttpRequestRouterStatic.hpp \
     HTTP/GpHttpRequestSerializer.hpp \
+    HTTP/GpHttpRequestTask.hpp \
+    HTTP/GpHttpRequestType.hpp \
     HTTP/GpHttpResponse.hpp \
     HTTP/GpHttpResponseCode.hpp \
     HTTP/GpHttpResponseSerializer.hpp \
     HTTP/GpHttpServer.hpp \
     HTTP/GpHttpServerFactory.hpp \
+    HTTP/GpHttpServerSocketTaskFactory.hpp \
     HTTP/GpHttpVersion.hpp \
     HTTP/Node/GpHttpServerNode.hpp \
     HTTP/Node/GpHttpServerNodeFactory.hpp \
