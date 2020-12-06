@@ -127,7 +127,7 @@ std::string GpSocketAddr::ToString (void) const
        .append(", "_sv)
        .append(ToStringIP())
        .append(": "_sv)
-       .append(GpStringOps::SFromUI64(Port()));
+       .append(StrOps::SFromUI64(Port()));
 
     return res;
 }

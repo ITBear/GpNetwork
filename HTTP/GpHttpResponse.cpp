@@ -52,7 +52,7 @@ void    GpHttpResponse::SetFromException (const GpHttpException& aHttpEx)
     headers
         .SetContentType(GpHttpContentType::TEXT_PLAIN, GpHttpCharset::UTF_8)
         .SetConnection(GpHttpConnectionFlag::CLOSE)
-        .CacheControl(GpHttpCacheControl::NO_STORE);
+        .SetCacheControl(GpHttpCacheControl::NO_STORE);
 }
 
 void    GpHttpResponse::SetFromException (const GpException& aEx)
@@ -63,7 +63,7 @@ void    GpHttpResponse::SetFromException (const GpException& aEx)
     headers
         .SetContentType(GpHttpContentType::TEXT_PLAIN, GpHttpCharset::UTF_8)
         .SetConnection(GpHttpConnectionFlag::CLOSE)
-        .CacheControl(GpHttpCacheControl::NO_STORE);
+        .SetCacheControl(GpHttpCacheControl::NO_STORE);
 }
 
 void    GpHttpResponse::SetFromException (const std::exception& aEx)
@@ -74,7 +74,7 @@ void    GpHttpResponse::SetFromException (const std::exception& aEx)
     headers
         .SetContentType(GpHttpContentType::TEXT_PLAIN, GpHttpCharset::UTF_8)
         .SetConnection(GpHttpConnectionFlag::CLOSE)
-        .CacheControl(GpHttpCacheControl::NO_STORE);
+        .SetCacheControl(GpHttpCacheControl::NO_STORE);
 }
 
 void    GpHttpResponse::_SCollectStructProps (GpTypePropInfo::C::Vec::Val& aPropsOut)

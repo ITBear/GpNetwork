@@ -45,8 +45,10 @@ public:
     GpHttpHeaders&                      SetContentType      (const GpHttpContentType::EnumT aContentType,
                                                              const GpHttpCharset::EnumT     aCharset);
     GpHttpHeaders&                      SetContentType      (std::string                    aContentType);
+    GpHttpHeaders&                      SetContentLength    (const size_byte_t aLength);
+    GpHttpHeaders&                      SetContentLength    (const size_t aLength);
     GpHttpHeaders&                      SetConnection       (const GpHttpConnectionFlag::EnumT  aConnection);
-    GpHttpHeaders&                      CacheControl        (const GpHttpCacheControl::EnumT    aCacheControl);
+    GpHttpHeaders&                      SetCacheControl     (const GpHttpCacheControl::EnumT    aCacheControl);
 
 public:
     GpHttpHeaderValue::C::MapStr::SP    headers;

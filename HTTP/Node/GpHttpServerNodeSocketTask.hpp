@@ -102,7 +102,7 @@ private:
     GpBytesArray                        iRsHeadersData;
     GpHttpResponse::SP                  iRs;
     RsWriteStateT                       iRsWriteState           = RsWriteStateT::WRITE_HEADERS;
-    std::optional<GpByteReaderStorage>  iRsDataReaderStorage;
+    std::optional<GpByteReaderStorage>  iRsReaderStorage;
 };
 
 }//namespace GPlatform

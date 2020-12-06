@@ -52,14 +52,14 @@ void    GpHttpResponseSerializer::SHeaders (const GpHttpResponse&   aResponse,
                                             GpByteWriter&           aWriter)
 {
     const GpHttpResponse&   response    = aResponse;
-    const GpBytesArray&     body        = response.body;
+    //const GpBytesArray&   body        = response.body;
     const GpHttpHeaders&    headers     = response.headers;
 
     for (const auto&[name, header]: headers.headers)
     {
         aWriter.Bytes(name);
         aWriter.Bytes(": "_sv);
-        aWriter.Bytes(GpStringOps::SJoin<std::string_view>(header.VC().elements, ";"_sv));
+        aWriter.Bytes(StrOps::SJoin<std::string_view>(header.VC().elements, ";"_sv));
         aWriter.Bytes("\r\n"_sv);
     }
 

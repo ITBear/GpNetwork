@@ -72,7 +72,7 @@ GpHttpHeaders&  GpHttpHeaders::Replace (const GpHttpHeaderType::EnumT   aType,
 GpHttpHeaders&  GpHttpHeaders::Replace (const GpHttpHeaderType::EnumT   aType,
                                         const u_int_64                  aValue)
 {
-    return Replace(aType, GpStringOps::SFromUI64(aValue));
+    return Replace(aType, StrOps::SFromUI64(aValue));
 }
 
 GpHttpHeaders&  GpHttpHeaders::Replace (std::string         aName,
@@ -91,7 +91,7 @@ GpHttpHeaders&  GpHttpHeaders::Replace (std::string     aName,
 GpHttpHeaders&  GpHttpHeaders::Replace (std::string     aName,
                                         const u_int_64  aValue)
 {
-    return Replace(std::move(aName), GpStringOps::SFromUI64(aValue));
+    return Replace(std::move(aName), StrOps::SFromUI64(aValue));
 }
 
 GpHttpHeaders&  GpHttpHeaders::Add (const GpHttpHeaderType::EnumT   aType,
@@ -120,7 +120,7 @@ GpHttpHeaders&  GpHttpHeaders::Add (const GpHttpHeaderType::EnumT   aType,
 GpHttpHeaders&  GpHttpHeaders::Add (const GpHttpHeaderType::EnumT   aType,
                                     const u_int_64                  aValue)
 {
-    return Add(aType, GpStringOps::SFromUI64(aValue));
+    return Add(aType, StrOps::SFromUI64(aValue));
 }
 
 GpHttpHeaders&  GpHttpHeaders::Add (std::string         aName,
@@ -148,7 +148,7 @@ GpHttpHeaders&  GpHttpHeaders::Add (std::string     aName,
 GpHttpHeaders&  GpHttpHeaders::Add (std::string     aName,
                                     const u_int_64  aValue)
 {
-    return Add(std::move(aName), GpStringOps::SFromUI64(aValue));
+    return Add(std::move(aName), StrOps::SFromUI64(aValue));
 }
 
 GpHttpHeaders&  GpHttpHeaders::SetContentType (const GpHttpContentType::EnumT aContentType)
@@ -169,12 +169,22 @@ GpHttpHeaders&  GpHttpHeaders::SetContentType (std::string aContentType)
     return Replace(GpHttpHeaderType::CONTENT_TYPE, std::move(aContentType));
 }
 
+GpHttpHeaders&  GpHttpHeaders::SetContentLength (const size_byte_t aLength)
+{
+    return Replace(GpHttpHeaderType::CONTENT_LENGTH, aLength.As<u_int_64>());
+}
+
+GpHttpHeaders&  GpHttpHeaders::SetContentLength (const size_t aLength)
+{
+    return Replace(GpHttpHeaderType::CONTENT_LENGTH, NumOps::SConvert<u_int_64>(aLength));
+}
+
 GpHttpHeaders&  GpHttpHeaders::SetConnection (const GpHttpConnectionFlag::EnumT aConnection)
 {
     return Replace(GpHttpHeaderType::CONNECTION, sHttpConnectionFlag.at(size_t(aConnection)));
 }
 
-GpHttpHeaders&  GpHttpHeaders::CacheControl (const GpHttpCacheControl::EnumT aCacheControl)
+GpHttpHeaders&  GpHttpHeaders::SetCacheControl (const GpHttpCacheControl::EnumT aCacheControl)
 {
     return Replace(GpHttpHeaderType::CACHE_CONTROL, sHttpCacheControl.at(size_t(aCacheControl)));
 }

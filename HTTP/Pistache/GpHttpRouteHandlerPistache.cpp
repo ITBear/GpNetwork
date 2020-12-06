@@ -30,7 +30,8 @@ void    GpHttpRouteHandlerPistache::Handle (const Pistache::Rest::Request&  aReq
         GpHttpRequestHandler::SP    requestHandler  = iRequestHandlerFactory->NewInstance();
         GpBytesArray                requestBody     = GpBytesArrayUtils::SMake(aRequest.body());
 
-        std::cout << "@@@[GpHttpRouteHandlerPistache::Handle]: RQ: " << GpRawPtrCharR(requestBody).AsStringView() << std::endl;
+        std::cout << "@@@[GpHttpRouteHandlerPistache::Handle]: --------------------- RQ ---------------------\n "
+                  << GpRawPtrCharR(requestBody).AsStringView() << std::endl;
 
         GpHttpRequest::SP request = MakeSP<GpHttpRequest>(GpHttpVersion::HTTP_1_1,
                                                           GpHttpRequestType::GET,
@@ -63,6 +64,10 @@ void    GpHttpRouteHandlerPistache::Handle (const Pistache::Rest::Request&  aReq
     } else
     {
         GpRawPtrCharR responceBody(responce->body);
+
+        std::cout << "@@@[GpHttpRouteHandlerPistache::Handle]: RS:\n "
+                  << responceBody.AsStringView() << std::endl;
+
         aResponseWriter.send(httpResCode, responceBody.Ptr(), responceBody.SizeLeft().As<size_t>());
     }
 

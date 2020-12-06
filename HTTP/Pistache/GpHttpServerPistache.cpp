@@ -18,8 +18,7 @@ void    GpHttpServerPistache::OnStart (void)
                                .threads(1)
                                .flags(Pistache::Tcp::Options::ReuseAddr |
                                       Pistache::Tcp::Options::ReusePort |
-                                      Pistache::Tcp::Options::NoDelay   |
-                                      Pistache::Tcp::Options::Linger)
+                                      Pistache::Tcp::Options::NoDelay)
                                .maxRequestSize(8192*2)
                                .maxResponseSize(1024*512);
 

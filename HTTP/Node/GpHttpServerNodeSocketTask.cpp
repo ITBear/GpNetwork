@@ -120,18 +120,21 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
     //Serialize rs headers
     if (iRsHeadersData.size() == 0)
     {
+        const GpBytesArray& body = iRs->body;
+        iRs->headers.SetContentLength(body.size());
+
         iRsHeadersData.reserve(512);//TODO: move to config
         GpByteWriterStorageByteArray    rsHeadersDataStorage(iRsHeadersData);
         GpByteWriter                    rsHeadersWriter(rsHeadersDataStorage);
         GpHttpResponseSerializer::SSerializeHeaders(iRs.VC(), rsHeadersWriter);
 
-        iRsDataReaderStorage = GpByteReaderStorage(iRsHeadersData);
+        iRsReaderStorage = GpByteReaderStorage(iRsHeadersData);
     }
 
     //Write headers/body
-    if (iRsDataReaderStorage.has_value())
+    if (iRsReaderStorage.has_value())
     {
-        GpByteReaderStorage& rsDataReaderStorage = iRsDataReaderStorage.value();
+        GpByteReaderStorage& rsDataReaderStorage = iRsReaderStorage.value();
 
         if (rsDataReaderStorage.SizeLeft() > 0_byte)
         {
@@ -151,8 +154,8 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
                     const GpBytesArray& body = iRs->body;
                     if (body.size() > 0)
                     {
-                        iRsWriteState           = RsWriteStateT::WRITE_BODY;
-                        iRsDataReaderStorage    = GpByteReaderStorage(body);
+                        iRsWriteState       = RsWriteStateT::WRITE_BODY;
+                        iRsReaderStorage    = GpByteReaderStorage(body);
 
                         return WriteToSocket(aSocket);
                     }
@@ -205,7 +208,7 @@ void    GpHttpServerNodeSocketTask::InitRqRsCycle (void)
     iRsHeadersData.clear();
     iRs.Clear();
     iRsWriteState = RsWriteStateT::WRITE_HEADERS;
-    iRsDataReaderStorage.reset();
+    iRsReaderStorage.reset();
 
     iState = StateT::PARSE_RQ;
 }
@@ -231,7 +234,7 @@ void    GpHttpServerNodeSocketTask::ClearRqRsCycle (void)
     iRsHeadersData.clear();
     iRs.Clear();
     iRsWriteState = RsWriteStateT::WRITE_HEADERS;
-    iRsDataReaderStorage.reset();
+    iRsReaderStorage.reset();
 
     iState = StateT::WAIT_FOR_RQ;
 }
