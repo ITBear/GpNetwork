@@ -119,6 +119,7 @@ size_byte_t GpSocketTCP::Read (GpByteWriter& aWriter)
     ssize_t                     rcvSize;
     size_byte_t                 totalRcvSize = 0_byte;
 
+    //TODO: implement without copy
     while ((rcvSize = recv(Id(), buffer.data(), buffer.size(), 0)) > 0)
     {
         totalRcvSize += size_byte_t::SMake(size_t(rcvSize));

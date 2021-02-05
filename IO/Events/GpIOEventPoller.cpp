@@ -11,8 +11,11 @@ GpIOEventPoller::~GpIOEventPoller (void) noexcept
 {
 }
 
-void    GpIOEventPoller::AddSubscriber (GpEventSubscriber::SP   aSubscriber,
-                                        const GpIOObjectId      aIOObjectId)
+void    GpIOEventPoller::AddSubscriber
+(
+    GpEventSubscriber::SP   aSubscriber,
+    const GpIOObjectId      aIOObjectId
+)
 {
     std::scoped_lock lock(iSubscribersLock);
 

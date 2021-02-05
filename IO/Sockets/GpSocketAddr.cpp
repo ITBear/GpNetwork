@@ -88,12 +88,13 @@ void    GpSocketAddr::RemoteFromSocketId (SocketIdT aSocketId)
 
     socklen_t sockLen = sizeof(decltype(iAddr));
 
-    if (getpeername(aSocketId,
+    //TODO debug
+    /*if (getpeername(aSocketId,
                     Raw_sockaddr(),
                     &sockLen) != 0)
     {
         THROW_GPE(GpErrno::SGetAndClear());
-    }
+    }*/
 
     if (sockLen == sizeof(sockaddr_in))
     {

@@ -3,10 +3,13 @@
 
 namespace GPlatform {
 
-GpTcpServerTask::GpTcpServerTask (GpIOEventPoller::WP       aIOPooler,
-                                  GpSocketTaskFactory::SP   aTaskFactory,
-                                  GpTaskScheduler::WP       aTaskScheduler,
-                                  GpSocketTCP::SP           aSocket) noexcept:
+GpTcpServerTask::GpTcpServerTask
+(
+    GpIOEventPoller::WP     aIOPooler,
+    GpSocketTaskFactory::SP aTaskFactory,
+    GpTaskScheduler::WP     aTaskScheduler,
+    GpSocketTCP::SP         aSocket
+) noexcept:
 GpSocketTask(std::move(aIOPooler), std::move(aSocket)),
 iTaskFactory(std::move(aTaskFactory)),
 iTaskScheduler(std::move(aTaskScheduler))
@@ -17,22 +20,28 @@ GpTcpServerTask::~GpTcpServerTask (void) noexcept
 {
 }
 
-GpTcpServerTask::SP GpTcpServerTask::SConstruct (const GpSocketAddr&        aAddr,
-                                                 const GpSocketFlags&       aFlags,
-                                                 const count_t              aMaxListenQueueSize,
-                                                 GpIOEventPoller::SP        aIOPooler,
-                                                 GpSocketTaskFactory::SP    aTaskFactory,
-                                                 GpTaskScheduler::WP        aTaskScheduler)
+GpTcpServerTask::SP GpTcpServerTask::SConstruct
+(
+    const GpSocketAddr&     aAddr,
+    const GpSocketFlags&    aFlags,
+    const count_t           aMaxListenQueueSize,
+    GpIOEventPoller::SP     aIOPooler,
+    GpSocketTaskFactory::SP aTaskFactory,
+    GpTaskScheduler::WP     aTaskScheduler
+)
 {
     //Create socket
     GpSocketTCP::SP serverSocket = MakeSP<GpSocketTCP>(aFlags | GpSocketFlag::NO_BLOCK);
     serverSocket->Listen(aAddr, aMaxListenQueueSize);
 
     //Create server task
-    GpTcpServerTask::SP serverSocketTask = MakeSP<GpTcpServerTask>(aIOPooler,
-                                                                   std::move(aTaskFactory),
-                                                                   std::move(aTaskScheduler),
-                                                                   serverSocket);
+    GpTcpServerTask::SP serverSocketTask = MakeSP<GpTcpServerTask>
+    (
+        aIOPooler,
+        std::move(aTaskFactory),
+        std::move(aTaskScheduler),
+        serverSocket
+    );
 
     aIOPooler->AddSubscriber(serverSocketTask, serverSocket->Id());
 
@@ -41,16 +50,12 @@ GpTcpServerTask::SP GpTcpServerTask::SConstruct (const GpSocketAddr&        aAdd
 
 GpTask::ResT    GpTcpServerTask::OnSockReadyToRead (GpSocket& aSocket)
 {
-    //std::cout << "[GpTcpServerTask::OnSockReadyToRead]: BEGIN" << std::endl;
-
     GpSocketTCP& serverSocket = static_cast<GpSocketTCP&>(aSocket);
 
     //Accept
     GpSocket::SP inSocket;
     while ((inSocket = serverSocket.Accept(aSocket.Flags() | GpSocketFlag::NO_BLOCK)).IsNotNULL())
     {
-        //std::cout << "[GpTcpServerTask::OnSockReadyToRead]: Accept new connection!" << std::endl;
-
         const GpSocketAddr::SocketIdT inSocketId = inSocket.VC().Id();
 
         //Start task
@@ -59,8 +64,6 @@ GpTask::ResT    GpTcpServerTask::OnSockReadyToRead (GpSocket& aSocket)
         iTaskScheduler.V().AddTaskToWaiting(inSocketTask);
         IOPooler()->AddSubscriber(inSocketTask, inSocketId);
     }
-
-    //std::cout << "[GpTcpServerTask::OnSockReadyToRead]: END" << std::endl;
 
     return GpTask::ResT::WAITING;
 }

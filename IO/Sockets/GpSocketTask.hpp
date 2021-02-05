@@ -32,7 +32,7 @@ protected:
     virtual void            OnSockError         (GpSocket& aSocket) = 0;
 
 private:
-    void                    ProcessIOEvent      (const GpIOEvent& aIOEvent);
+    GpTask::ResT            ProcessIOEvent      (const GpIOEvent& aIOEvent);
 
 private:
     GpIOEventPoller::WP     iIOPooler;

@@ -21,8 +21,11 @@ GpIOEventPollerEpoll::~GpIOEventPollerEpoll (void) noexcept
 {   
 }
 
-void    GpIOEventPollerEpoll::Configure (const milliseconds_t   aMaxStepTime,
-                                         const count_t          aMaxEventsCnt)
+void    GpIOEventPollerEpoll::Configure
+(
+    const milliseconds_t    aMaxStepTime,
+    const count_t           aMaxEventsCnt
+)
 {
     THROW_GPE_COND_CHECK_M(iEpollId == -1, "Already started"_sv);
     iMaxStepTime    = aMaxStepTime;
@@ -43,12 +46,13 @@ GpTask::ResT    GpIOEventPollerEpoll::OnStep (EventOptRefT /*aEvent*/)
     EventT* eventsPtr = iEvents.data();
 
     //Poll wait...
-    const int nfds = epoll_wait(iEpollId,
-                                eventsPtr,
-                                NumOps::SConvert<int>(iEvents.size()),
-                                NumOps::SConvert<int>(iNextStepTime.Value()));
-
-    //iNextStepTime = iMaxStepTime;
+    const int nfds = epoll_wait
+    (
+        iEpollId,
+        eventsPtr,
+        NumOps::SConvert<int>(iEvents.size()),
+        NumOps::SConvert<int>(iNextStepTime.Value())
+    );
 
     if (   (nfds < 0)
         && (errno == EINTR))
@@ -62,10 +66,7 @@ GpTask::ResT    GpIOEventPollerEpoll::OnStep (EventOptRefT /*aEvent*/)
     if (nfds == 0)
     {
         return GpTask::ResT::READY_TO_EXEC;
-    } /*else
-    {
-        iNextStepTime = 0.0_si_ms;
-    }*/
+    }
 
     //Process events
     const size_t    eventsCount = NumOps::SConvert<size_t>(nfds);
@@ -118,16 +119,19 @@ void    GpIOEventPollerEpoll::OnStop (void) noexcept
     GpIOEventPoller::OnStop();
 }
 
-void    GpIOEventPollerEpoll::OnAddSubscriber (GpEventSubscriber::SP    aSubscriber,
-                                               const GpIOObjectId       aIOObjectId)
+void    GpIOEventPollerEpoll::OnAddSubscriber
+(
+    GpEventSubscriber::SP   aSubscriber,
+    const GpIOObjectId      aIOObjectId
+)
 {
     const int fd = aIOObjectId.As<int>();
 
     EventT listenev;
-    listenev.data.u64  = 0LL;
-    listenev.data.fd   = fd;
-    listenev.data.ptr  = aSubscriber.P();
-    listenev.events = EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLERR | EPOLLHUP | EPOLLET;
+    listenev.data.u64   = 0LL;
+    listenev.data.fd    = fd;
+    listenev.data.ptr   = aSubscriber.P();
+    listenev.events     = EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLERR | EPOLLHUP | EPOLLET;
 
     if (epoll_ctl(iEpollId, EPOLL_CTL_ADD, fd, &listenev) != 0)
     {
