@@ -18,8 +18,11 @@ void    GpSocketTCP::Listen (const GpSocketAddr&    aAddr,
 {
     try
     {
-        THROW_GPE_COND_CHECK_M(iState == StateT::NOT_CONNECTED,
-                               "TCP socket state must be NOT_CONNECTED"_sv);
+        THROW_GPE_COND
+        (
+            iState == StateT::NOT_CONNECTED,
+            "TCP socket state must be NOT_CONNECTED"_sv
+        );
 
         Bind(aAddr);
 
@@ -42,8 +45,11 @@ void    GpSocketTCP::Connect (const GpSocketAddr&   aAddr,
 {
     try
     {
-        THROW_GPE_COND_CHECK_M(iState == StateT::NOT_CONNECTED,
-                               "TCP socket state must be NOT_CONNECTED"_sv);
+        THROW_GPE_COND
+        (
+            iState == StateT::NOT_CONNECTED,
+            "TCP socket state must be NOT_CONNECTED"_sv
+        );
 
         Create(aAddr.IPv());
         SetUserTimeout(aTimeout);
@@ -76,8 +82,11 @@ GpSocketTCP::SP GpSocketTCP::Accept (const GpSocketFlags& aFlags)
 {
     try
     {
-        THROW_GPE_COND_CHECK_M(iState == StateT::LISTEN,
-                               "TCP socket state must be LISTEN"_sv);
+        THROW_GPE_COND
+        (
+            iState == StateT::LISTEN,
+            "TCP socket state must be LISTEN"_sv
+        );
 
         const GpSocketAddr::SocketIdT incomingSocketId = accept(Id(), nullptr, nullptr);
 
@@ -183,8 +192,11 @@ void    GpSocketTCP::SetFromIncomingRawId (const GpSocketAddr::SocketIdT aId)
 {
     try
     {
-        THROW_GPE_COND_CHECK_M(iState == StateT::NOT_CONNECTED,
-                               "TCP socket state must be NOT_CONNECTED"_sv);
+        THROW_GPE_COND
+        (
+            iState == StateT::NOT_CONNECTED,
+            "TCP socket state must be NOT_CONNECTED"_sv
+        );
 
         SetFromRaw(aId);
         iState = StateT::INCOMING;
@@ -213,13 +225,17 @@ void    GpSocketTCP::ConnectAsync (const GpSocketAddr& aAddr)
 
         if (errno == EINPROGRESS)
         {
-            THROW_GPE_COND_CHECK_M(GpTaskFiberCtx::SIsIntoFiber(), "NO_BLOCK mode available only from inside fiber task"_sv);
+            THROW_GPE_COND
+            (
+                GpTaskFiberCtx::SIsIntoFiber(),
+                "NO_BLOCK mode available only from inside fiber task"_sv
+            );
 
             //Wait
             GpTaskFiberCtx::SYeld(GpTask::ResT::WAITING);
 
             //TODO: implement event processing
-            THROW_NOT_IMPLEMENTED();
+            THROW_GPE_NOT_IMPLEMENTED();
             /*//Check result
             const GpIODeviceEvents& ioEvents = GpTaskCoroutineCtx::STaskSignal<GpIODeviceSignal>().VCn().Events();
 

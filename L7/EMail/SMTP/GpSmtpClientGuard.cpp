@@ -22,7 +22,7 @@ GpSmtpClient&   GpSmtpClientGuard::Client (void)
     if (iSmtpClient.IsNULL())
     {
         auto res = iPool.Acquire();
-        THROW_GPE_COND_CHECK_M(res.has_value(), "Smtp clients limit exceeded"_sv);
+        THROW_GPE_COND(res.has_value(), "Smtp clients limit exceeded"_sv);
         iSmtpClient = res.value();
     }
 

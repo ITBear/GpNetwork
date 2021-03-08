@@ -20,7 +20,7 @@ GpSocketTask::~GpSocketTask (void) noexcept
 
 void    GpSocketTask::OnStart (void)
 {   
-    THROW_GPE_COND_CHECK_M(iSocket.IsNotNULL(), "Socket is null"_sv);
+    THROW_GPE_COND(iSocket.IsNotNULL(), "Socket is null"_sv);
 }
 
 GpTask::ResT    GpSocketTask::OnStep (EventOptRefT aEvent)

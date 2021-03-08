@@ -22,7 +22,7 @@ GpHttpClient&   GpHttpClientGuard::Client (void)
     if (iHttpClient.IsNULL())
     {
         auto res = iPool.Acquire();
-        THROW_GPE_COND_CHECK_M(res.has_value(), "HTTP clients limit exceeded"_sv);
+        THROW_GPE_COND(res.has_value(), "HTTP clients limit exceeded"_sv);
         iHttpClient = res.value();
     }
 

@@ -114,8 +114,11 @@ void    GpHttpServerNodeSocketTask::OnSockError (GpSocket& /*aSocket*/)
 
 GpTask::ResT    GpHttpServerNodeSocketTask::ProcessDoneEvent (const GpHttpRequestDoneEvent& aRequestDoneEvent)
 {
-    THROW_GPE_COND_CHECK_M(iState == StateT::PROCESS_RQ_IN_PROGRESS,
-                           "State expected to be 'PROCESS_RQ_IN_PROGRESS'"_sv);
+    THROW_GPE_COND
+    (
+        iState == StateT::PROCESS_RQ_IN_PROGRESS,
+        "State expected to be 'PROCESS_RQ_IN_PROGRESS'"_sv
+    );
 
     iRs     = aRequestDoneEvent.Response();
     iState  = StateT::PROCESS_RQ_DONE_WRITE_RS;

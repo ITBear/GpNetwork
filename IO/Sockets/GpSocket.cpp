@@ -154,12 +154,21 @@ void    GpSocket::SetFlag_ReusePort (bool aValue)
 void    GpSocket::SetFlag_NoBlock (bool aValue)
 {
     int opts = fcntl(Id(), F_GETFL);
-    THROW_GPE_COND_CHECK_M(opts >= 0, GpErrno::SGetAndClear());
+
+    THROW_GPE_COND
+    (
+        opts >= 0,
+        GpErrno::SGetAndClear()
+    );
 
     if (aValue) opts = BitOps::Up(opts, O_NONBLOCK);
     else        opts = BitOps::Down(opts, O_NONBLOCK);
 
-    THROW_GPE_COND_CHECK_M(fcntl(Id(), F_SETFL, opts) >= 0, GpErrno::SGetAndClear());
+    THROW_GPE_COND
+    (
+        fcntl(Id(), F_SETFL, opts) >= 0,
+        GpErrno::SGetAndClear()
+    );
 }
 
 void    GpSocket::SetFlag_LingerZero (bool aValue)

@@ -72,7 +72,7 @@ std::string GpSmtpClientCurl::Send (const GpEmail& aEmail)
 
     //From
     std::string_view fromAddr = aEmail.from.addr;
-    THROW_GPE_COND_CHECK_M
+    THROW_GPE_COND
     (
         fromAddr.length() > 0,
         "From is empty"_sv
@@ -103,7 +103,7 @@ std::string GpSmtpClientCurl::Send (const GpEmail& aEmail)
     CURLcode curlResCode = curl_easy_perform(iCurl);
 
     //Check
-    THROW_GPE_COND_CHECK_M
+    THROW_GPE_COND
     (
         curlResCode == CURLE_OK,
         "curl_easy_perform failed: "_sv + curl_easy_strerror(curlResCode)
@@ -130,7 +130,12 @@ void    GpSmtpClientCurl::CurlInit (void)
     }
 
     iCurl = curl_easy_init();
-    THROW_GPE_COND_CHECK_M(iCurl != nullptr, "Failed to create curl instance"_sv);
+
+    THROW_GPE_COND
+    (
+        iCurl != nullptr,
+        "Failed to create curl instance"_sv
+    );
 }
 
 void    GpSmtpClientCurl::CurlClear (void) noexcept
@@ -154,7 +159,7 @@ void    GpSmtpClientCurl::FillAddrs
     {
         std::string_view addr = element.VC().addr;
 
-        THROW_GPE_COND_CHECK_M
+        THROW_GPE_COND
         (
             addr.length() > 0,
             "Addr is empty"_sv

@@ -27,7 +27,7 @@ void    GpIOEventPollerEpoll::Configure
     const count_t           aMaxEventsCnt
 )
 {
-    THROW_GPE_COND_CHECK_M(iEpollId == -1, "Already started"_sv);
+    THROW_GPE_COND(iEpollId == -1, "Already started"_sv);
     iMaxStepTime    = aMaxStepTime;
     iNextStepTime   = aMaxStepTime;
     iEvents.resize(aMaxEventsCnt.As<size_t>());
@@ -36,7 +36,7 @@ void    GpIOEventPollerEpoll::Configure
 void    GpIOEventPollerEpoll::OnStart (void)
 {
     iEpollId = epoll_create1(EPOLL_CLOEXEC);
-    THROW_GPE_COND_CHECK_M(iEpollId >= 0, GpErrno::SGetAndClear());
+    THROW_GPE_COND(iEpollId >= 0, GpErrno::SGetAndClear());
 
     GpIOEventPoller::OnStart();
 }
@@ -61,7 +61,7 @@ GpTask::ResT    GpIOEventPollerEpoll::OnStep (EventOptRefT /*aEvent*/)
     }
 
     //Check for errors
-    THROW_GPE_COND_CHECK_M(nfds >= 0, GpErrno::SGetAndClear());
+    THROW_GPE_COND(nfds >= 0, GpErrno::SGetAndClear());
 
     if (nfds == 0)
     {

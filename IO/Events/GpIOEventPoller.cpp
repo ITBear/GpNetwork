@@ -20,7 +20,7 @@ void    GpIOEventPoller::AddSubscriber
     std::scoped_lock lock(iSubscribersLock);
 
     auto[e, r] = iSubscribers.emplace(aIOObjectId.RawValue(), aSubscriber);
-    THROW_GPE_COND_CHECK_M(r, "ID already added"_sv);
+    THROW_GPE_COND(r, "ID already added"_sv);
 
     try
     {
@@ -38,7 +38,7 @@ void    GpIOEventPoller::RemoveSubscriber (const GpIOObjectId aIOObjectId)
 
     auto iter = iSubscribers.find(aIOObjectId.RawValue());
 
-    THROW_GPE_COND_CHECK_M(iter != iSubscribers.end(), "ID not found"_sv);
+    THROW_GPE_COND(iter != iSubscribers.end(), "ID not found"_sv);
     iSubscribers.erase(iter);
     OnRemoveSubscriber(aIOObjectId);
 }

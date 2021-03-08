@@ -164,8 +164,11 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
     //std::cout << "---------------------------------- END --------------------------------" << std::endl;
 
     //Check curl res
-    THROW_GPE_COND_CHECK_M(res_code == CURLE_OK,
-                           "curl_easy_perform failed: "_sv + curl_easy_strerror(res_code));
+    THROW_GPE_COND
+    (
+        res_code == CURLE_OK,
+        "curl_easy_perform failed: "_sv + curl_easy_strerror(res_code)
+    );
 
 
     long httpResponseCode = 0;
@@ -203,7 +206,11 @@ void    GpHttpClientCurl::CurlInit (void)
     }
 
     iCurl = curl_easy_init();
-    THROW_GPE_COND_CHECK_M(iCurl != nullptr, "Failed to create curl instance"_sv);
+    THROW_GPE_COND
+    (
+        iCurl != nullptr,
+        "Failed to create curl instance"_sv
+    );
 }
 
 void    GpHttpClientCurl::CurlClear (void) noexcept
