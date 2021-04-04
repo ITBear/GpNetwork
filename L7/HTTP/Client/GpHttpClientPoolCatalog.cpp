@@ -2,19 +2,18 @@
 
 namespace GPlatform {
 
-GpHttpClientPoolCatalog::GpHttpClientPoolCatalog (void) noexcept
+GpHttpClientPoolCatalog::GpHttpClientPoolCatalog
+(
+    GpHttpClientFactory::SP aFactory,
+    const count_t           aMaxCalientCountPerPool
+) noexcept:
+iFactory(std::move(aFactory)),
+iMaxCalientCountPerPool(aMaxCalientCountPerPool)
 {
 }
 
 GpHttpClientPoolCatalog::~GpHttpClientPoolCatalog (void) noexcept
 {
-    iPools.Clear();
-}
-
-GpHttpClientPoolCatalog&    GpHttpClientPoolCatalog::S (void) noexcept
-{
-    static GpHttpClientPoolCatalog sDbGlobal;
-    return sDbGlobal;
 }
 
 void    GpHttpClientPoolCatalog::Clear (void)
@@ -22,7 +21,7 @@ void    GpHttpClientPoolCatalog::Clear (void)
     iPools.Clear();
 }
 
-void    GpHttpClientPoolCatalog::SetPoolDefaultFactory
+/*void  GpHttpClientPoolCatalog::SetPoolDefaultFactory
 (
     GpHttpClientFactory::SP aFactory,
     const count_t           aInitCount,
@@ -32,22 +31,32 @@ void    GpHttpClientPoolCatalog::SetPoolDefaultFactory
     iDefaultFactory     = aFactory;
     iDefaultInitCount   = aInitCount;
     iDefaultMaxCount    = aMaxCount;
-}
+}*/
 
-void    GpHttpClientPoolCatalog::AddPool
+/*void  GpHttpClientPoolCatalog::AddPool
 (
     GpHttpClientPool::SP    aPool,
     std::string_view        aName
 )
 {
+    ?
     iPools.Register(std::string(aName), std::move(aPool));
-}
+}*/
 
 GpHttpClientPool&   GpHttpClientPoolCatalog::Pool (std::string_view aName)
 {
-    auto res = iPools.Find(aName);
+    return iPools.FindOrRegister
+    (
+        aName,
+        [&]()
+        {
+            GpHttpClientPool::SP httpClientPool = MakeSP<GpHttpClientPool>(iFactory);
+            httpClientPool->Init(0_cnt, iMaxCalientCountPerPool);
+            return httpClientPool;
+        }
+    ).V();
 
-    if (res.has_value())
+    /*if (res.has_value())
     {
         return res.value().get().V();
     } else if (iDefaultFactory.IsNotNULL())
@@ -59,7 +68,7 @@ GpHttpClientPool&   GpHttpClientPoolCatalog::Pool (std::string_view aName)
     } else
     {
         THROW_GPE("Http client pool was not found by name '"_sv + aName + "'"_sv);
-    }
+    }*/
 }
 
 }//namespace GPlatform

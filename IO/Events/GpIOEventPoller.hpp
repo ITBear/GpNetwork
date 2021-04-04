@@ -15,8 +15,8 @@ public:
 
     using SubscribersT = GpMap<GpIOObjectId::RawT, GpEventSubscriber::SP>;
 
-protected:
-                                    GpIOEventPoller     (GpTaskFiberBarrierLock aStartDoneLock) noexcept;
+protected:  
+                                    GpIOEventPoller     (GpTaskFiberBarrier::SP aStartBarrier) noexcept;
 
 public:
     virtual                         ~GpIOEventPoller    (void) noexcept override;
@@ -34,10 +34,12 @@ protected:
                                                          const GpIOObjectId     aIOObjectId) = 0;
     virtual void                    OnRemoveSubscriber  (const GpIOObjectId     aIOObjectId) = 0;
 
+    void                            ReleaseStartBarrier (void);
+
 private:
     mutable GpSpinlock              iSubscribersLock;
     SubscribersT                    iSubscribers;
-    GpTaskFiberBarrierLock          iStartDoneLock;
+    GpTaskFiberBarrier::SP          iStartBarrier;
 };
 
 }//GPlatform

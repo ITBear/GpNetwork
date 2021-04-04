@@ -1,15 +1,8 @@
 #pragma once
 
+#include "Client/GpHttpClientInc.hpp"
 #include "GpHttpServer.hpp"
 #include "GpHttpServerFactory.hpp"
-#include "GpHttpClient.hpp"
-#include "GpHttpClientFactory.hpp"
-#include "GpHttpClientGuard.hpp"
-#include "GpHttpClientCurl.hpp"
-#include "GpHttpClientCurlFactory.hpp"
-#include "GpHttpClientPool.hpp"
-#include "GpHttpClientPoolCatalog.hpp"
-
 #include "GpHttpRequest.hpp"
 #include "GpHttpRequestHandler.hpp"
 #include "GpHttpRequestHandlerFactory.hpp"

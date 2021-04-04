@@ -24,9 +24,12 @@ void    GpSocketAddr::Clear (void) noexcept
     iAddr.ss_family = GpSocketIPv_SSFamily(IPvTE::IPv4);
 }
 
-void    GpSocketAddr::Init (const IPvTE         aIPv,
-                            std::string_view    aIP,
-                            const u_int_16      aPort)
+void    GpSocketAddr::Init
+(
+    const IPvTE         aIPv,
+    std::string_view    aIP,
+    const u_int_16      aPort
+)
 {
     //For windows https://docs.microsoft.com/en-us/windows/desktop/api/ws2tcpip/nf-ws2tcpip-inetptonw
 

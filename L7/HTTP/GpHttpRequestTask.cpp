@@ -3,9 +3,12 @@
 
 namespace GPlatform {
 
-GpHttpRequestTask::GpHttpRequestTask (GpHttpRequest::CSP        aHttpRequest,
-                                      GpHttpRequestHandler::SP  aHttpRequestHandler,
-                                      GpEventSubscriber::SP     aHttpRequestDoneSbr) noexcept:
+GpHttpRequestTask::GpHttpRequestTask
+(
+    GpHttpRequest::CSP          aHttpRequest,
+    GpHttpRequestHandler::SP    aHttpRequestHandler,
+    GpEventSubscriber::SP       aHttpRequestDoneSbr
+) noexcept:
 iHttpRequest(std::move(aHttpRequest)),
 iHttpRequestHandler(std::move(aHttpRequestHandler)),
 iHttpRequestDoneSbr(std::move(aHttpRequestDoneSbr))
@@ -23,10 +26,16 @@ void    GpHttpRequestTask::OnStart (void)
 
 GpTask::ResT    GpHttpRequestTask::OnStep (EventOptRefT /*aEvent*/)
 {
-    GpHttpResponse::SP httpResponse = iHttpRequestHandler.VC().ProcessRequest(iHttpRequest.VC());
+    GpHttpResponse::SP httpResponse = iHttpRequestHandler.V().ProcessRequest(iHttpRequest.VC());
 
-    iHttpRequestDoneSbr->PushEvent(MakeSP<GpHttpRequestDoneEvent>(std::move(iHttpRequest),
-                                                                  std::move(httpResponse)));
+    iHttpRequestDoneSbr->PushEvent
+    (
+        MakeSP<GpHttpRequestDoneEvent>
+        (
+            std::move(iHttpRequest),
+            std::move(httpResponse)
+        )
+    );
 
     return GpTask::ResT::DONE;
 }

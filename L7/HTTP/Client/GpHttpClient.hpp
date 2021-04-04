@@ -1,7 +1,7 @@
 #pragma once
 
-#include "GpHttpRequest.hpp"
-#include "GpHttpResponse.hpp"
+#include "../GpHttpRequest.hpp"
+#include "../GpHttpResponse.hpp"
 
 namespace GPlatform {
 

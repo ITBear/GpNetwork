@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GpHttpClient.hpp"
 #include "GpHttpClientFactory.hpp"
 
 namespace GPlatform {
@@ -14,7 +13,7 @@ public:
 
 public:
                                     GpHttpClientPool    (GpHttpClientFactory::SP aFactory) noexcept;
-                                    ~GpHttpClientPool   (void) noexcept override final;
+    virtual                         ~GpHttpClientPool   (void) noexcept override final;
 
 protected:
     virtual void                    PreInit             (const count_t aCount) override final;

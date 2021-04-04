@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GpHttpClient.hpp"
 #include "GpHttpClientPool.hpp"
 
 namespace GPlatform {

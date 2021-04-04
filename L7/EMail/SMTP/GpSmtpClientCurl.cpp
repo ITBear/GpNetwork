@@ -106,7 +106,7 @@ std::string GpSmtpClientCurl::Send (const GpEmail& aEmail)
     THROW_GPE_COND
     (
         curlResCode == CURLE_OK,
-        "curl_easy_perform failed: "_sv + curl_easy_strerror(curlResCode)
+        [&](){return "curl_easy_perform failed: "_sv + curl_easy_strerror(curlResCode);}
     );
 
     return messageId;

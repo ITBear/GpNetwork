@@ -6,8 +6,11 @@
 
 namespace GPlatform {
 
-GpIOEventPollerEpollFactory::GpIOEventPollerEpollFactory (const milliseconds_t  aMaxStepTime,
-                                                          const count_t         aMaxEventsCnt) noexcept:
+GpIOEventPollerEpollFactory::GpIOEventPollerEpollFactory
+(
+    const milliseconds_t    aMaxStepTime,
+    const count_t           aMaxEventsCnt
+) noexcept:
 iMaxStepTime(aMaxStepTime),
 iMaxEventsCnt(aMaxEventsCnt)
 {
@@ -17,9 +20,9 @@ GpIOEventPollerEpollFactory::~GpIOEventPollerEpollFactory (void) noexcept
 {
 }
 
-GpIOEventPoller::SP GpIOEventPollerEpollFactory::NewInstance (GpTaskFiberBarrierLock aStartDoneLock) const
+GpIOEventPoller::SP GpIOEventPollerEpollFactory::NewInstance (GpTaskFiberBarrier::SP aStartBarrier) const
 {
-    GpIOEventPollerEpoll::SP epollSP = MakeSP<GpIOEventPollerEpoll>(std::move(aStartDoneLock));
+    GpIOEventPollerEpoll::SP epollSP = MakeSP<GpIOEventPollerEpoll>(std::move(aStartBarrier));
     epollSP->Configure(iMaxStepTime, iMaxEventsCnt);
     return epollSP;
 }

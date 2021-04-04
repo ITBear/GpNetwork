@@ -2,8 +2,8 @@
 
 namespace GPlatform {
 
-GpIOEventPoller::GpIOEventPoller (GpTaskFiberBarrierLock aStartDoneLock) noexcept:
-iStartDoneLock(std::move(aStartDoneLock))
+GpIOEventPoller::GpIOEventPoller (GpTaskFiberBarrier::SP aStartBarrier) noexcept:
+iStartBarrier(std::move(aStartBarrier))
 {
 }
 
@@ -45,14 +45,18 @@ void    GpIOEventPoller::RemoveSubscriber (const GpIOObjectId aIOObjectId)
 
 void    GpIOEventPoller::OnStart (void)
 {
-    GpTaskFiberBarrierLock startDoneLock(std::move(iStartDoneLock));
-    startDoneLock.Release();
+    //NOP
 }
 
 void    GpIOEventPoller::OnStop  (void) noexcept
 {
     std::scoped_lock lock(iSubscribersLock);
     iSubscribers.clear();
+}
+
+void    GpIOEventPoller::ReleaseStartBarrier (void)
+{
+    iStartBarrier->Release();
 }
 
 }//GPlatform

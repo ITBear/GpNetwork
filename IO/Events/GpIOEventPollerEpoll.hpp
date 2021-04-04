@@ -18,7 +18,7 @@ public:
     using EventsT   = GpVector<EventT>;
 
 public:
-                                GpIOEventPollerEpoll    (GpTaskFiberBarrierLock aStartDoneLock) noexcept;
+                                GpIOEventPollerEpoll    (GpTaskFiberBarrier::SP aStartBarrier) noexcept;
     virtual                     ~GpIOEventPollerEpoll   (void) noexcept override final;
 
     void                        Configure               (const milliseconds_t   aMaxStepTime,

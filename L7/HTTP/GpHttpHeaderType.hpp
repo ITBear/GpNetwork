@@ -8,7 +8,8 @@ GP_ENUM(GPNETWORK_API, GpHttpHeaderType,
     CONTENT_TYPE,
     CONTENT_LENGTH,
     CONNECTION,
-    CACHE_CONTROL
+    CACHE_CONTROL,
+    AUTHORIZATION
 );
 
 }//namespace GPlatform

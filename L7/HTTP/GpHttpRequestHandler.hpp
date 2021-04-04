@@ -19,10 +19,10 @@ protected:
 public:
     virtual                     ~GpHttpRequestHandler   (void) noexcept {}
 
-    GpHttpResponse::SP          ProcessRequest          (const GpHttpRequest& aRequest) const;
+    GpHttpResponse::SP          ProcessRequest          (const GpHttpRequest& aRequest);
 
 protected:
-    virtual GpHttpResponse::SP  OnRequest               (const GpHttpRequest& aRequest) const = 0;
+    virtual GpHttpResponse::SP  OnRequest               (const GpHttpRequest& aRequest) = 0;
 };
 
 }//namespace GPlatform

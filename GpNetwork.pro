@@ -38,12 +38,13 @@ SOURCES += \
 	L7/EMail/GpEmailHeaderType.cpp \
 	L7/EMail/GpEmailHeaders.cpp \
 	L7/EMail/GpEmailPart.cpp \
+	L7/HTTP/Client/GpHttpClientCurl.cpp \
+	L7/HTTP/Client/GpHttpClientCurlAsync.cpp \
+	L7/HTTP/Client/GpHttpClientCurlFactory.cpp \
+	L7/HTTP/Client/GpHttpClientGuard.cpp \
+	L7/HTTP/Client/GpHttpClientPool.cpp \
+	L7/HTTP/Client/GpHttpClientPoolCatalog.cpp \
 	L7/HTTP/GpHttpCacheControl.cpp \
-	L7/HTTP/GpHttpClientCurl.cpp \
-	L7/HTTP/GpHttpClientCurlFactory.cpp \
-	L7/HTTP/GpHttpClientGuard.cpp \
-	L7/HTTP/GpHttpClientPool.cpp \
-	L7/HTTP/GpHttpClientPoolCatalog.cpp \
 	L7/HTTP/GpHttpConnectionFlag.cpp \
 	L7/HTTP/GpHttpException.cpp \
 	L7/HTTP/GpHttpHeaderType.cpp \
@@ -108,15 +109,17 @@ HEADERS += \
 	L7/EMail/GpEmails.hpp \
 	L7/EMail/IMAP/GpIMAP.hpp \
 	L7/GpNetworkL7.hpp \
+	L7/HTTP/Client/GpHttpClient.hpp \
+	L7/HTTP/Client/GpHttpClientCurl.hpp \
+	L7/HTTP/Client/GpHttpClientCurlAsync.hpp \
+	L7/HTTP/Client/GpHttpClientCurlFactory.hpp \
+	L7/HTTP/Client/GpHttpClientFactory.hpp \
+	L7/HTTP/Client/GpHttpClientGuard.hpp \
+	L7/HTTP/Client/GpHttpClientInc.hpp \
+	L7/HTTP/Client/GpHttpClientPool.hpp \
+	L7/HTTP/Client/GpHttpClientPoolCatalog.hpp \
 	L7/HTTP/GpHTTP.hpp \
 	L7/HTTP/GpHttpCacheControl.hpp \
-	L7/HTTP/GpHttpClient.hpp \
-	L7/HTTP/GpHttpClientCurl.hpp \
-	L7/HTTP/GpHttpClientCurlFactory.hpp \
-	L7/HTTP/GpHttpClientFactory.hpp \
-	L7/HTTP/GpHttpClientGuard.hpp \
-	L7/HTTP/GpHttpClientPool.hpp \
-	L7/HTTP/GpHttpClientPoolCatalog.hpp \
 	L7/HTTP/GpHttpConnectionFlag.hpp \
 	L7/HTTP/GpHttpException.hpp \
 	L7/HTTP/GpHttpHeaderType.hpp \

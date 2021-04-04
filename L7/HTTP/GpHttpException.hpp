@@ -30,8 +30,42 @@ private:
     const CodeTE            iCode;
 };
 
-#define THROW_HTTP(CODE, MSG)                       throw GpHttpException((CODE), (MSG))
-#define THROW_HTTP_COND_CHECK(COND, CODE)           if (!(COND)) throw GpHttpException((CODE), ("Condition not met: "#COND))
-#define THROW_HTTP_COND_CHECK_M(COND, CODE, MSG)    if (!(COND)) throw GpHttpException((CODE), (MSG))
+[[noreturn]] inline void    THROW_HTTP
+(
+    GpHttpResponseCode::EnumT   aHttpCode,
+    std::string_view            aMsg,
+    const SourceLocationT&      aSourceLocation = SourceLocationT::current()
+)
+{
+    throw GpHttpException(aHttpCode, aMsg, aSourceLocation);
+}
+
+inline void THROW_HTTP_COND
+(
+    const bool                  aCondition,
+    GpHttpResponseCode::EnumT   aHttpCode,
+    std::string_view            aMsg,
+    const SourceLocationT&      aSourceLocation = SourceLocationT::current()
+)
+{
+    if (!aCondition)
+    {
+        throw GpHttpException(aHttpCode, aMsg, aSourceLocation);
+    }
+}
+
+inline void THROW_HTTP_COND
+(
+    const bool                  aCondition,
+    GpHttpResponseCode::EnumT   aHttpCode,
+    ThrowMsgGenT                aMsgGenFn,
+    const SourceLocationT&      aSourceLocation = SourceLocationT::current()
+)
+{
+    if (!aCondition)
+    {
+        throw GpHttpException(aHttpCode, aMsgGenFn(), aSourceLocation);
+    }
+}
 
 }//namespace GPlatform

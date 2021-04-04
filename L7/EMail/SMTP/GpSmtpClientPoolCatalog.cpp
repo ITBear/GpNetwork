@@ -45,7 +45,7 @@ void    GpSmtpClientPoolCatalog::AddPool
 
 GpSmtpClientPool&   GpSmtpClientPoolCatalog::Pool (std::string_view aName)
 {
-    auto res = iPools.Find(aName);
+    auto res = iPools.TryFind(aName);
 
     if (res.has_value())
     {

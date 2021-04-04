@@ -11,7 +11,7 @@ public:
     CLASS_DECLARE_DEFAULTS(GpSmtpClientPoolCatalog)
     CLASS_TAG(THREAD_SAFE)
 
-    using PoolsT = GpElementsCatalog<std::string, GpSmtpClientPool::SP, GpMap>;
+    using PoolsT = GpElementsCatalog<std::string, GpSmtpClientPool::SP>;
 
 private:
                                     GpSmtpClientPoolCatalog     (void) noexcept;

@@ -2,7 +2,7 @@
 
 namespace GPlatform {
 
-GpHttpResponse::SP  GpHttpRequestHandler::ProcessRequest (const GpHttpRequest& aRequest) const
+GpHttpResponse::SP  GpHttpRequestHandler::ProcessRequest (const GpHttpRequest& aRequest)
 {
     GpHttpResponse::SP res;
 

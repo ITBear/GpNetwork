@@ -158,7 +158,7 @@ void    GpSocket::SetFlag_NoBlock (bool aValue)
     THROW_GPE_COND
     (
         opts >= 0,
-        GpErrno::SGetAndClear()
+        [&](){return GpErrno::SGetAndClear();}
     );
 
     if (aValue) opts = BitOps::Up(opts, O_NONBLOCK);
@@ -167,7 +167,7 @@ void    GpSocket::SetFlag_NoBlock (bool aValue)
     THROW_GPE_COND
     (
         fcntl(Id(), F_SETFL, opts) >= 0,
-        GpErrno::SGetAndClear()
+        [&](){return GpErrno::SGetAndClear();}
     );
 }
 

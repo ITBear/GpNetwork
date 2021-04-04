@@ -12,8 +12,8 @@
 
 namespace GPlatform {
 
-GpIOEventPollerEpoll::GpIOEventPollerEpoll (GpTaskFiberBarrierLock aStartDoneLock) noexcept:
-GpIOEventPoller(std::move(aStartDoneLock))
+GpIOEventPollerEpoll::GpIOEventPollerEpoll (GpTaskFiberBarrier::SP aStartBarrier) noexcept:
+GpIOEventPoller(std::move(aStartBarrier))
 {
 }
 
@@ -35,10 +35,12 @@ void    GpIOEventPollerEpoll::Configure
 
 void    GpIOEventPollerEpoll::OnStart (void)
 {
-    iEpollId = epoll_create1(EPOLL_CLOEXEC);
-    THROW_GPE_COND(iEpollId >= 0, GpErrno::SGetAndClear());
-
     GpIOEventPoller::OnStart();
+
+    iEpollId = epoll_create1(EPOLL_CLOEXEC);
+    THROW_GPE_COND(iEpollId >= 0, [&](){return GpErrno::SGetAndClear();});
+
+    ReleaseStartBarrier();
 }
 
 GpTask::ResT    GpIOEventPollerEpoll::OnStep (EventOptRefT /*aEvent*/)
@@ -61,7 +63,7 @@ GpTask::ResT    GpIOEventPollerEpoll::OnStep (EventOptRefT /*aEvent*/)
     }
 
     //Check for errors
-    THROW_GPE_COND(nfds >= 0, GpErrno::SGetAndClear());
+    THROW_GPE_COND(nfds >= 0, [&](){return GpErrno::SGetAndClear();});
 
     if (nfds == 0)
     {

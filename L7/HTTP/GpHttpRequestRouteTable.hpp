@@ -11,7 +11,7 @@ public:
     CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpRequestRouteTable)
     CLASS_DECLARE_DEFAULTS(GpHttpRequestRouteTable)
 
-    using HandlersCatalogT = GpElementsCatalog<std::string, GpHttpRequestHandlerFactory::SP, GpMap>;
+    using HandlersCatalogT = GpElementsCatalog<std::string, GpHttpRequestHandlerFactory::SP>;
 
 public:
                                 GpHttpRequestRouteTable     (void) noexcept;

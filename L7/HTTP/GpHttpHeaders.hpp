@@ -41,6 +41,8 @@ public:
     GpHttpHeaders&                      SetContentLength    (const size_t aLength);
     GpHttpHeaders&                      SetConnection       (const GpHttpConnectionFlag::EnumT  aConnection);
     GpHttpHeaders&                      SetCacheControl     (const GpHttpCacheControl::EnumT    aCacheControl);
+    GpHttpHeaders&                      SetAuthBasic        (std::string_view aLogin,
+                                                             std::string_view aPassword);
 
 public:
     static const GpArray<std::string, GpHttpHeaderType::SCount().As<size_t>()>      sHeadersNames;

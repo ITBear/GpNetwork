@@ -8,6 +8,7 @@ const GpArray<std::string, GpHttpHeaderType::SCount().As<size_t>()>     GpHttpHe
     std::string("Content-Length"_sv),       //CONTENT_LENGTH,
     std::string("Connection"_sv),           //CONNECTION
     std::string("Cache-Control"_sv),        //CACHE_CONTROL
+    std::string("Authorization"_sv),        //AUTHORIZATION
 };
 
 const GpArray<std::string, GpHttpConnectionFlag::SCount().As<size_t>()> GpHttpHeaders::sHttpConnectionFlag =
@@ -140,6 +141,17 @@ GpHttpHeaders&  GpHttpHeaders::SetConnection (const GpHttpConnectionFlag::EnumT 
 GpHttpHeaders&  GpHttpHeaders::SetCacheControl (const GpHttpCacheControl::EnumT aCacheControl)
 {
     return Replace(GpHttpHeaderType::CACHE_CONTROL, sHttpCacheControl.at(size_t(aCacheControl)));
+}
+
+GpHttpHeaders&  GpHttpHeaders::SetAuthBasic
+(
+    std::string_view aLogin,
+    std::string_view aPassword
+)
+{
+    const std::string credentials = aLogin + ":"_sv + aPassword;
+
+    return Replace(GpHttpHeaderType::AUTHORIZATION, "Basic "_sv + GpBase64::SEncodeToStr(credentials, 0_cnt));
 }
 
 void    GpHttpHeaders::_SCollectStructProps (GpTypePropInfo::C::Vec::Val& /*aPropsOut*/)

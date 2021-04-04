@@ -8,9 +8,12 @@ namespace GPlatform {
 //https://llhttp.org/
 //https://pypi.org/project/llhttp/
 
-GpHttpServerNodeSocketTask::GpHttpServerNodeSocketTask (GpIOEventPoller::WP             aIOPooler,
-                                                        GpSocket::SP                    aSocket,
-                                                        GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept:
+GpHttpServerNodeSocketTask::GpHttpServerNodeSocketTask
+(
+    GpIOEventPoller::WP             aIOPooler,
+    GpSocket::SP                    aSocket,
+    GpHttpRequestHandlerFactory::SP aRequestHandlerFactory
+) noexcept:
 GpSocketTask(std::move(aIOPooler), std::move(aSocket)),
 iRequestHandlerFactory(std::move(aRequestHandlerFactory))
 {
@@ -155,7 +158,8 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
         if (rsDataReaderStorage.SizeLeft() > 0_byte)
         {
             GpByteReader        reader(rsDataReaderStorage);
-            const size_byte_t   bytesWrite  = aSocket.Write(reader);
+            const size_byte_t   bytesWrite = aSocket.Write(reader);
+
             if (bytesWrite == 0_byte)//No space left in socket buffer
             {
                 return GpTask::ResT::WAITING;
@@ -291,15 +295,20 @@ void    GpHttpServerNodeSocketTask::ParseHttp (GpSocket& aSocket)
         tmpRqBufferPtr.CountTotal().As<int>()
     );
 
-    THROW_HTTP_COND_CHECK_M
+    THROW_HTTP_COND
     (
         httpParseRes == HPE_OK,
         GpHttpResponseCode::BAD_REQUEST_400,
-        llhttp_errno_name(httpParseRes)
+        [&](){return std::string(llhttp_errno_name(httpParseRes));}
     );
 }
 
-int GpHttpServerNodeSocketTask::SHTTP_OnURL (llhttp_t* aHttp, const char* aData, const size_t aLength)
+int GpHttpServerNodeSocketTask::SHTTP_OnURL
+(
+    llhttp_t*       aHttp,
+    const char*     aData,
+    const size_t    aLength
+)
 {
     return SHTTPSettings(aHttp).iTask->HTTP_OnURL(std::string_view(aData, aLength));
 }
@@ -310,7 +319,12 @@ int GpHttpServerNodeSocketTask::HTTP_OnURL (std::string_view aValue)
     return HPE_OK;
 }
 
-int GpHttpServerNodeSocketTask::SHTTP_OnHeaderField (llhttp_t* aHttp, const char* aData, const size_t aLength)
+int GpHttpServerNodeSocketTask::SHTTP_OnHeaderField
+(
+    llhttp_t*       aHttp,
+    const char*     aData,
+    const size_t    aLength
+)
 {
     return SHTTPSettings(aHttp).iTask->HTTP_OnHeaderField(std::string_view(aData, aLength));
 }
@@ -322,7 +336,12 @@ int GpHttpServerNodeSocketTask::HTTP_OnHeaderField (std::string_view aValue)
     return HPE_OK;
 }
 
-int GpHttpServerNodeSocketTask::SHTTP_OnHeaderValue (llhttp_t* aHttp, const char* aData, const size_t aLength)
+int GpHttpServerNodeSocketTask::SHTTP_OnHeaderValue
+(
+    llhttp_t*       aHttp,
+    const char*     aData,
+    const size_t    aLength
+)
 {
     return SHTTPSettings(aHttp).iTask->HTTP_OnHeaderValue(std::string_view(aData, aLength));
 }
@@ -354,7 +373,12 @@ int GpHttpServerNodeSocketTask::HTTP_OnHeadersComplete (llhttp_t* /*aHttp*/)
     }
 }
 
-int GpHttpServerNodeSocketTask::SHTTP_OnBody (llhttp_t* aHttp, const char* aData, const size_t aLength)
+int GpHttpServerNodeSocketTask::SHTTP_OnBody
+(
+    llhttp_t*       aHttp,
+    const char*     aData,
+    const size_t    aLength
+)
 {
     return SHTTPSettings(aHttp).iTask->HTTP_OnBody(std::string_view(aData, aLength));
 }

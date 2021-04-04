@@ -5,36 +5,55 @@
 #include <curl/curl.h>
 
 //TODO: see https://moz.com/devblog/high-performance-libcurl-tips
+//TODO: https://curl.se/libcurl/c/ephiperfifo.html
 
 namespace GPlatform {
 
-size_t GpHttpClientCurl_S_RQ_Data_reader (char* aOutBuffer, size_t aSize, size_t aNMemb, GpByteReader* aReader)
+size_t GpHttpClientCurl_S_RQ_Data_reader
+(
+    char*           aOutBuffer,
+    size_t          aSize,
+    size_t          aNMemb,
+    GpByteReader*   aReader
+)
 {
-    const size_t    bytesLeft       = aReader->SizeLeft().As<size_t>();
-    const size_t    outBufferSiz    = NumOps::SMul(aSize, aNMemb);
-    const size_t    batchSize       = std::min(bytesLeft, outBufferSiz);
+    const size_t bytesLeft      = aReader->SizeLeft().As<size_t>();
+    const size_t outBufferSiz   = NumOps::SMul(aSize, aNMemb);
+    const size_t batchSize      = std::min(bytesLeft, outBufferSiz);
 
     if (bytesLeft == 0)
     {
         return 0;
     }
 
-    GpRawPtrByteR       dataPartPtr = aReader->Bytes(size_byte_t::SMake(batchSize));
-    GpRawPtrByteRW      outPtr(aOutBuffer, batchSize);
+    GpRawPtrByteR   dataPartPtr = aReader->Bytes(size_byte_t::SMake(batchSize));
+    GpRawPtrByteRW  outPtr(aOutBuffer, batchSize);
 
     outPtr.CopyFrom(dataPartPtr);
 
     return batchSize;
 }
 
-size_t GpHttpClientCurl_S_RS_Data_writer (void* aPtr, size_t aSize, size_t aNMemb, GpByteWriter* aWriter)
+size_t GpHttpClientCurl_S_RS_Data_writer
+(
+    void*           aPtr,
+    size_t          aSize,
+    size_t          aNMemb,
+    GpByteWriter*   aWriter
+)
 {
     const size_t size = NumOps::SMul(aSize, aNMemb);
     aWriter->Bytes({reinterpret_cast<std::byte*>(aPtr), size});
     return size;
 }
 
-size_t GpHttpClientCurl_S_RS_Headers_writer (void* aPtr, size_t aSize, size_t aNMemb, GpHttpHeaders* aHeaders)
+size_t GpHttpClientCurl_S_RS_Headers_writer
+(
+    void*           aPtr,
+    size_t          aSize,
+    size_t          aNMemb,
+    GpHttpHeaders*  aHeaders
+)
 {
     const size_t size = NumOps::SMul(aSize, aNMemb);
 
@@ -159,15 +178,13 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
     curl_easy_setopt(iCurl, CURLOPT_HEADERDATA, &responseHeaders);
 
     //Do request
-    //std::cout << "--------------------------------- BEGIN -------------------------------" << std::endl;
     CURLcode res_code = curl_easy_perform(iCurl);
-    //std::cout << "---------------------------------- END --------------------------------" << std::endl;
 
     //Check curl res
     THROW_GPE_COND
     (
         res_code == CURLE_OK,
-        "curl_easy_perform failed: "_sv + curl_easy_strerror(res_code)
+        [&](){return "curl_easy_perform failed: "_sv + curl_easy_strerror(res_code);}
     );
 
 
@@ -178,14 +195,20 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
 
     if (aErorrMode == ErorrMode::THROW_ON_NOT_200)
     {
-        THROW_HTTP_COND_CHECK_M(httpResponseCode == 200,
-                                GpHttpResponseCodeUtils::SFromId(httpResponseCode),
-                                "HTTP request failed (code "_sv + httpResponseCode + "): "_sv + responseBodyPtr.AsStringView());
+        THROW_HTTP_COND
+        (
+            httpResponseCode == 200,
+            GpHttpResponseCodeUtils::SFromId(httpResponseCode),
+            [&](){return "HTTP request failed (code "_sv + httpResponseCode + "): "_sv + responseBodyPtr.AsStringView();}
+        );
     }
 
-    return MakeSP<GpHttpResponse>(GpHttpResponseCodeUtils::SFromId(httpResponseCode),
-                                  std::move(responseHeaders),
-                                  std::move(responseBody));
+    return MakeSP<GpHttpResponse>
+    (
+        GpHttpResponseCodeUtils::SFromId(httpResponseCode),
+        std::move(responseHeaders),
+        std::move(responseBody)
+    );
 }
 
 bool    GpHttpClientCurl::IsValid (void) const noexcept
@@ -206,11 +229,15 @@ void    GpHttpClientCurl::CurlInit (void)
     }
 
     iCurl = curl_easy_init();
+
     THROW_GPE_COND
     (
         iCurl != nullptr,
         "Failed to create curl instance"_sv
     );
+
+    curl_easy_setopt(iCurl, CURLOPT_PROTOCOLS,       CURLPROTO_HTTP | CURLPROTO_HTTPS);
+    curl_easy_setopt(iCurl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
 }
 
 void    GpHttpClientCurl::CurlClear (void) noexcept

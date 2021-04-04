@@ -37,13 +37,12 @@ void    GpHttpServerNode::OnStop (void) noexcept
 
 void    GpHttpServerNode::StartIOPoller (void)
 {
-    GpTaskFiberBarrier::SP ioPollerStartBarrier = MakeSP<GpTaskFiberBarrier>();
+    GpTaskFiberBarrier::SP ioPollerStartBarrier = MakeSP<GpTaskFiberBarrier>(1_cnt);
 
-    iIOPoller = iEventPollerFactory->NewInstance(GpTaskFiberBarrierLock(ioPollerStartBarrier));
+    iIOPoller = iEventPollerFactory->NewInstance(ioPollerStartBarrier);
     GpTaskScheduler::SCurrentScheduler().value()->AddTaskToReady(iIOPoller);
 
-    GpTaskFiberBarrierWaiter ioPollerStartWaiter(std::move(ioPollerStartBarrier));
-    ioPollerStartWaiter.Wait(GetWeakPtr());
+    ioPollerStartBarrier->Wait(GetWeakPtr());
 }
 
 void    GpHttpServerNode::StartTcpServer (void)
