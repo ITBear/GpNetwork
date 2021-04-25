@@ -85,7 +85,7 @@ void    GpSocketAddr::LocalFromSocketId (SocketIdT aSocketId)
     }
 }
 
-void    GpSocketAddr::RemoteFromSocketId (SocketIdT aSocketId)
+void    GpSocketAddr::RemoteFromSocketId (SocketIdT /*aSocketId*/)
 {
     Clear();
 

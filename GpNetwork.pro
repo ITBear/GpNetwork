@@ -60,6 +60,7 @@ SOURCES += \
 	L7/HTTP/GpHttpResponse.cpp \
 	L7/HTTP/GpHttpResponseCode.cpp \
 	L7/HTTP/GpHttpResponseSerializer.cpp \
+	L7/HTTP/GpHttpRqRs.cpp \
 	L7/HTTP/GpHttpServer.cpp \
 	L7/HTTP/GpHttpServerFactory.cpp \
 	L7/HTTP/GpHttpServerSocketTaskFactory.cpp \
@@ -137,6 +138,7 @@ HEADERS += \
 	L7/HTTP/GpHttpResponse.hpp \
 	L7/HTTP/GpHttpResponseCode.hpp \
 	L7/HTTP/GpHttpResponseSerializer.hpp \
+	L7/HTTP/GpHttpRqRs.hpp \
 	L7/HTTP/GpHttpServer.hpp \
 	L7/HTTP/GpHttpServerFactory.hpp \
 	L7/HTTP/GpHttpServerSocketTaskFactory.hpp \

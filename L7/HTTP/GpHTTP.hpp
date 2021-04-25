@@ -9,7 +9,7 @@
 #include "GpHttpRequestTask.hpp"
 #include "GpHttpRequestRouter.hpp"
 #include "GpHttpRequestRouterStatic.hpp"
-
 #include "GpHttpResponse.hpp"
+#include "GpHttpRqRs.hpp"
 
 #include "Node/GpHttpServerNodeFactory.hpp"
