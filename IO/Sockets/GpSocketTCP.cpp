@@ -227,12 +227,12 @@ void    GpSocketTCP::ConnectAsync (const GpSocketAddr& aAddr)
         {
             THROW_GPE_COND
             (
-                GpTaskFiberCtx::SIsIntoFiber(),
+                GpTaskFiber::SIsIntoFiber(),
                 "NO_BLOCK mode available only from inside fiber task"_sv
             );
 
             //Wait
-            GpTaskFiberCtx::SYeld(GpTask::ResT::WAITING);
+            GpTaskFiber::SYield(GpTask::ResT::WAITING);
 
             //TODO: implement event processing
             THROW_GPE_NOT_IMPLEMENTED();
