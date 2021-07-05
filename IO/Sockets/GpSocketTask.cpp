@@ -1,21 +1,30 @@
 #include "GpSocketTask.hpp"
 #include "../Events/GpIOEvents.hpp"
+
 #include <iostream>
 
 namespace GPlatform {
 
+static int _GpSocketTask_count = 0;
+
 GpSocketTask::GpSocketTask
 (
-    GpIOEventPoller::WP aIOPooler,
+    std::string_view    aName,
+    GpIOEventPoller::WP aIOPoller,
     GpSocket::SP        aSocket
-) noexcept:
-iIOPooler(std::move(aIOPooler)),
+):
+GpTaskFiberBase(aName),
+iIOPoller(std::move(aIOPoller)),
 iSocket(std::move(aSocket))
 {
+    _GpSocketTask_count++;
+    std::cout << "[GpSocketTask::GpSocketTask]: count = " << _GpSocketTask_count << std::endl;
 }
 
 GpSocketTask::~GpSocketTask (void) noexcept
 {
+    _GpSocketTask_count--;
+    std::cout << "[GpSocketTask::~GpSocketTask]: count = " << _GpSocketTask_count << std::endl;
 }
 
 void    GpSocketTask::OnStart (void)
@@ -43,28 +52,44 @@ GpTask::ResT    GpSocketTask::OnStep (EventOptRefT aEvent)
 
 void    GpSocketTask::OnStop (void) noexcept
 {
-    if (   iSocket.IsNotNULL()
-        && iIOPooler.IsNotNULL())
+    if (iSocket.IsNotNULL())
     {
-        GpSocket& sock = iSocket.Vn();
-        GpSocketAddr::SocketIdT socketId = sock.Id();
+        GpSocket&               sock        = iSocket.Vn();
+        GpSocketAddr::SocketIdT socketId    = sock.Id();
 
-        if (socketId != GpSocketAddr::sDefaultSocketId)
+        if (iIOPoller.IsNotNULL())
         {
-            try
+            if (socketId != GpSocketAddr::sDefaultSocketId)
             {
-                iIOPooler.V().RemoveSubscriber(socketId);
-                sock.Close();
-            } catch (const std::exception& e)
-            {
-                GpExceptionsSink::SSink(e);
-            } catch (...)
-            {
-                GpExceptionsSink::SSinkUnknown();
+                try
+                {
+                    iIOPoller.V().RemoveSubscriber(socketId);
+                } catch (const std::exception& e)
+                {
+                    GpExceptionsSink::SSink(e);
+                } catch (...)
+                {
+                    GpExceptionsSink::SSinkUnknown();
+                }
+
+                try
+                {
+                    if (sock.CloseMode() == GpSocket::CloseModeT::CLOSE_ON_DESTRUCT)
+                    {
+                        sock.Close();
+                    }
+                } catch (const std::exception& e)
+                {
+                    GpExceptionsSink::SSink(e);
+                } catch (...)
+                {
+                    GpExceptionsSink::SSinkUnknown();
+                }
             }
+
+            iIOPoller.Clear();
         }
 
-        iIOPooler.Clear();
         iSocket.Clear();
     }
 }

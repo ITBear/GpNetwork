@@ -2,7 +2,12 @@
 
 namespace GPlatform {
 
-GpHttpServer::GpHttpServer (GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept:
+GpHttpServer::GpHttpServer
+(
+    std::string_view                aName,
+    GpHttpRequestHandlerFactory::SP aRequestHandlerFactory
+):
+GpTaskFiberBase(aName),
 iRequestHandlerFactory(std::move(aRequestHandlerFactory))
 {
 }

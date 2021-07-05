@@ -13,16 +13,18 @@ public:
     CLASS_DECLARE_DEFAULTS(GpTcpServerTask)
 
 public:
-                                GpTcpServerTask     (GpIOEventPoller::WP        aIOPooler,
+                                GpTcpServerTask     (std::string_view           aName,
+                                                     GpIOEventPoller::WP        aIOPoller,
                                                      GpSocketTaskFactory::SP    aTaskFactory,
                                                      GpTaskScheduler::WP        aTaskScheduler,
-                                                     GpSocketTCP::SP            aSocket) noexcept;
+                                                     GpSocketTCP::SP            aSocket);
     virtual                     ~GpTcpServerTask    (void) noexcept override final;
 
-    static  GpTcpServerTask::SP SConstruct          (const GpSocketAddr&        aAddr,
+    static  GpTcpServerTask::SP SConstruct          (std::string_view           aServerTaskName,
+                                                     const GpSocketAddr&        aAddr,
                                                      const GpSocketFlags&       aFlags,
                                                      const count_t              aMaxListenQueueSize,
-                                                     GpIOEventPoller::SP        aIOPooler,
+                                                     GpIOEventPoller::WP        aIOPoller,
                                                      GpSocketTaskFactory::SP    aTaskFactory,
                                                      GpTaskScheduler::WP        aTaskScheduler);
 

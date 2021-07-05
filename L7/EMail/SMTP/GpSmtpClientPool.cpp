@@ -16,7 +16,7 @@ void    GpSmtpClientPool::PreInit (const count_t /*aCount*/)
     //NOP
 }
 
-GpSmtpClient::SP    GpSmtpClientPool::NewElement (void)
+GpSmtpClient::SP    GpSmtpClientPool::NewElement (GpSpinlock& /*aLocked*/)
 {
     return iFactory->NewInstance();
 }

@@ -3,12 +3,15 @@
 
 namespace GPlatform {
 
-GpHttpServerNodeFactory::GpHttpServerNodeFactory (const GpSocketAddr&               aListenSocketAddr,
-                                                  GpIOEventPollerFactory::SP        aEventPollerFactory,
-                                                  GpHttpRequestHandlerFactory::SP   aRequestHandlerFactory) noexcept:
+GpHttpServerNodeFactory::GpHttpServerNodeFactory
+(
+    const GpSocketAddr&             aListenSocketAddr,
+    GpIOEventPoller::WP             aEventPoller,
+    GpHttpRequestHandlerFactory::SP aRequestHandlerFactory
+) noexcept:
 GpHttpServerFactory(aListenSocketAddr,
                     std::move(aRequestHandlerFactory)),
-iEventPollerFactory(std::move(aEventPollerFactory))
+iEventPoller(std::move(aEventPoller))
 {
 }
 
@@ -16,11 +19,15 @@ GpHttpServerNodeFactory::~GpHttpServerNodeFactory (void) noexcept
 {
 }
 
-GpHttpServer::SP    GpHttpServerNodeFactory::NewInstance (void) const
+GpHttpServer::SP    GpHttpServerNodeFactory::NewInstance (std::string_view aName) const
 {
-    return MakeSP<GpHttpServerNode>(ListenSocketAddr(),
-                                    iEventPollerFactory,
-                                    RequestHandlerFactory());
+    return MakeSP<GpHttpServerNode>
+    (
+        aName,
+        ListenSocketAddr(),
+        iEventPoller,
+        RequestHandlerFactory()
+    );
 }
 
 }//namespace GPlatform

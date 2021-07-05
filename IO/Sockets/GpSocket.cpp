@@ -2,16 +2,40 @@
 
 namespace GPlatform {
 
-GpSocket::GpSocket (const ProtocolTE        aProtocol,
-                    const GpSocketFlags&    aFlags) noexcept:
+GpSocket::GpSocket
+(
+    const ProtocolTE        aProtocol,
+    const GpSocketFlags&    aFlags,
+    const CloseModeT        aCloseMode
+) noexcept:
 iProtocol(aProtocol),
-iFlags(aFlags)
+iFlags(aFlags),
+iCloseMode(aCloseMode)
+{
+}
+
+GpSocket::GpSocket
+(
+    const GpSocketAddr::SocketIdT   aId,
+    const IPvTE                     aIpV,
+    const ProtocolTE                aProtocol,
+    const GpSocketFlags&            aFlags,
+    const CloseModeT                aCloseMode
+) noexcept:
+iId(aId),
+iIPv(aIpV),
+iProtocol(aProtocol),
+iFlags(aFlags),
+iCloseMode(aCloseMode)
 {
 }
 
 GpSocket::~GpSocket (void) noexcept
 {
-    Close();
+    if (iCloseMode == CloseModeT::CLOSE_ON_DESTRUCT)
+    {
+        Close();
+    }
 }
 
 void    GpSocket::WriteAll (GpRawPtrByteR aData)

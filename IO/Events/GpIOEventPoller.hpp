@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPNETWORK_API GpIOEventPoller: public GpTaskFiberBase
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpIOEventPoller)
+    CLASS_REMOVE_CTRS(GpIOEventPoller)
     CLASS_DECLARE_DEFAULTS(GpIOEventPoller)
 
     CLASS_TAG(THREAD_SAFE)
@@ -16,7 +16,8 @@ public:
     using SubscribersT = GpMap<GpIOObjectId::RawT, GpEventSubscriber::SP>;
 
 protected:  
-                                    GpIOEventPoller     (GpTaskFiberBarrier::SP aStartBarrier) noexcept;
+                                    GpIOEventPoller     (std::string_view       aName,
+                                                         GpTaskFiberBarrier::SP aStartBarrier);
 
 public:
     virtual                         ~GpIOEventPoller    (void) noexcept override;
@@ -34,7 +35,7 @@ protected:
                                                          const GpIOObjectId     aIOObjectId) = 0;
     virtual void                    OnRemoveSubscriber  (const GpIOObjectId     aIOObjectId) = 0;
 
-    void                            ReleaseStartBarrier (void);
+    void                            ReleaseStartBarrier (void) noexcept;
 
 private:
     mutable GpSpinlock              iSubscribersLock;

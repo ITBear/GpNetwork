@@ -20,8 +20,13 @@ public:
     };
 
 public:
-                            GpSocketTCP             (const GpSocketFlags& aFlags) noexcept;
+                            GpSocketTCP             (const GpSocketFlags&   aFlags,
+                                                     const CloseModeT       aCloseMode) noexcept;
     virtual                 ~GpSocketTCP            (void) noexcept override final;
+
+    static GpSocketTCP::SP  SFromID                 (GpSocketAddr::SocketIdT    aId,
+                                                     const CloseModeT           aCloseMode,
+                                                     const StateT               aState);
 
     StateT                  State                   (void) const noexcept {return iState;}
 
@@ -35,7 +40,8 @@ public:
     virtual size_byte_t     Write                   (GpByteReader& aReader) override final;
 
 private:
-    void                    SetFromIncomingRawId    (const GpSocketAddr::SocketIdT aId);
+    void                    SetFromRawTCP           (const GpSocketAddr::SocketIdT  aId,
+                                                     const StateT                   aState);
 
     void                    ConnectSync             (const GpSocketAddr&    aAddr);
     void                    ConnectAsync            (const GpSocketAddr&    aAddr);

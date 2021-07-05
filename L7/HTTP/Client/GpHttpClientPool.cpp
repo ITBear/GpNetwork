@@ -16,7 +16,7 @@ void    GpHttpClientPool::PreInit (const count_t /*aCount*/)
     //NOP
 }
 
-GpHttpClient::SP    GpHttpClientPool::NewElement (void)
+GpHttpClient::SP    GpHttpClientPool::NewElement (GpSpinlock& /*aLocked*/)
 {
     return iFactory->NewInstance();
 }

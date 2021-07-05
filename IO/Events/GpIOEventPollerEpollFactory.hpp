@@ -17,7 +17,8 @@ public:
                                                                      const count_t          aMaxEventsCnt) noexcept;
     virtual                         ~GpIOEventPollerEpollFactory    (void) noexcept override final;
 
-    virtual GpSP<GpIOEventPoller>   NewInstance                     (GpTaskFiberBarrier::SP aStartBarrier) const override final;
+    virtual GpSP<GpIOEventPoller>   NewInstance                     (std::string_view       aName,
+                                                                     GpTaskFiberBarrier::SP aStartBarrier) const override final;
 
 private:
     const milliseconds_t            iMaxStepTime;

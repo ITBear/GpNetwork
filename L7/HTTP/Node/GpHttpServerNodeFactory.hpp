@@ -2,7 +2,7 @@
 
 #include "../GpHttpServerFactory.hpp"
 #include "../GpHttpRequestHandlerFactory.hpp"
-#include "../../../IO/Events/GpIOEventPollerFactory.hpp"
+#include "../../../IO/Events/GpIOEventPoller.hpp"
 
 namespace GPlatform {
 
@@ -14,14 +14,14 @@ public:
 
 public:
                                 GpHttpServerNodeFactory     (const GpSocketAddr&                aListenSocketAddr,
-                                                             GpIOEventPollerFactory::SP         aEventPollerFactory,
+                                                             GpIOEventPoller::WP                aEventPoller,
                                                              GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory) noexcept;
     virtual                     ~GpHttpServerNodeFactory    (void) noexcept override final;
 
-    virtual GpSP<GpHttpServer>  NewInstance                 (void) const override final;
+    virtual GpSP<GpHttpServer>  NewInstance                 (std::string_view aName) const override final;
 
 private:
-    GpIOEventPollerFactory::SP  iEventPollerFactory;
+    GpIOEventPoller::WP         iEventPoller;
 };
 
 }//namespace GPlatform

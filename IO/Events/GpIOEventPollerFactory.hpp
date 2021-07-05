@@ -18,7 +18,8 @@ protected:
 public:
     virtual                         ~GpIOEventPollerFactory (void) noexcept {}
 
-    virtual GpSP<GpIOEventPoller>   NewInstance             (GpTaskFiberBarrier::SP aStartBarrier) const = 0;
+    virtual GpSP<GpIOEventPoller>   NewInstance             (std::string_view       aName,
+                                                             GpTaskFiberBarrier::SP aStartBarrier) const = 0;
 };
 
 }//namespace GPlatform

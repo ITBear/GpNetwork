@@ -18,7 +18,7 @@ public:
 
 protected:
     virtual void                    PreInit             (const count_t aCount) override final;
-    virtual GpSmtpClient::SP        NewElement          (void) override final;
+    virtual GpSmtpClient::SP        NewElement          (GpSpinlock& aLocked) override final;
     virtual void                    OnClear             (void) noexcept override final;
     virtual bool                    Validate            (GpSmtpClient::SP aSmtpClient) noexcept override final;
 

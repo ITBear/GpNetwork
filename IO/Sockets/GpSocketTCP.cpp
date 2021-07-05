@@ -1,11 +1,13 @@
 #include "GpSocketTCP.hpp"
 
-//#include <iostream>
-
 namespace GPlatform {
 
-GpSocketTCP::GpSocketTCP (const GpSocketFlags& aFlags) noexcept:
-GpSocket(ProtocolT::TCP, aFlags)
+GpSocketTCP::GpSocketTCP
+(
+    const GpSocketFlags&    aFlags,
+    const CloseModeT        aCloseMode
+) noexcept:
+GpSocket(ProtocolT::TCP, aFlags, aCloseMode)
 {
 }
 
@@ -13,8 +15,26 @@ GpSocketTCP::~GpSocketTCP (void) noexcept
 {
 }
 
-void    GpSocketTCP::Listen (const GpSocketAddr&    aAddr,
-                             const count_t          aMaxQueueSize)
+GpSocketTCP::SP GpSocketTCP::SFromID
+(
+    GpSocketAddr::SocketIdT aId,
+    const CloseModeT        aIsCloseMode,
+    const StateT            aState
+)
+{
+    GpSocketTCP::SP socketSP    = MakeSP<GpSocketTCP>(GpSocketFlags{}, aIsCloseMode);
+    GpSocketTCP&    socket      = socketSP.V();
+
+    socket.SetFromRawTCP(aId, aState);
+
+    return socketSP;
+}
+
+void    GpSocketTCP::Listen
+(
+    const GpSocketAddr& aAddr,
+    const count_t       aMaxQueueSize
+)
 {
     try
     {
@@ -40,8 +60,11 @@ void    GpSocketTCP::Listen (const GpSocketAddr&    aAddr,
     }
 }
 
-void    GpSocketTCP::Connect (const GpSocketAddr&   aAddr,
-                              const milliseconds_t  aTimeout)
+void    GpSocketTCP::Connect
+(
+    const GpSocketAddr&     aAddr,
+    const milliseconds_t    aTimeout
+)
 {
     try
     {
@@ -90,8 +113,6 @@ GpSocketTCP::SP GpSocketTCP::Accept (const GpSocketFlags& aFlags)
 
         const GpSocketAddr::SocketIdT incomingSocketId = accept(Id(), nullptr, nullptr);
 
-        //std::cout << "[GpSocketTCP::Accept]: incomingSocketId = " << incomingSocketId << std::endl;
-
         if (incomingSocketId == GpSocketAddr::sDefaultSocketId)
         {
             if (errno == EAGAIN)
@@ -102,11 +123,11 @@ GpSocketTCP::SP GpSocketTCP::Accept (const GpSocketFlags& aFlags)
             THROW_GPE(GpErrno::SGetAndClear());
         }
 
-        GpSocketTCP::SP connectedSocket = GpSocketTCP::SP::SNew(aFlags);
+        GpSocketTCP::SP connectedSocket = GpSocketTCP::SP::SNew(aFlags, CloseModeT::CLOSE_ON_DESTRUCT);
 
         try
         {
-            connectedSocket.Vn().SetFromIncomingRawId(incomingSocketId);
+            connectedSocket.Vn().SetFromRawTCP(incomingSocketId, StateT::INCOMING);
         } catch (...)
         {
             close(incomingSocketId);
@@ -188,21 +209,19 @@ GP_WARNING_POP()
     return sizeWrite;
 }
 
-void    GpSocketTCP::SetFromIncomingRawId (const GpSocketAddr::SocketIdT aId)
+void    GpSocketTCP::SetFromRawTCP
+(
+    const GpSocketAddr::SocketIdT   aId,
+    const StateT                    aState
+)
 {
     try
     {
-        THROW_GPE_COND
-        (
-            iState == StateT::NOT_CONNECTED,
-            "TCP socket state must be NOT_CONNECTED"_sv
-        );
-
         SetFromRaw(aId);
-        iState = StateT::INCOMING;
+        iState = aState;
     } catch (...)
     {
-        SetFlag_LingerZero(true);
+//      SetFlag_LingerZero(true);
         Close();
         iState = StateT::NOT_CONNECTED;
         throw;

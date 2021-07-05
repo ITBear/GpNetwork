@@ -17,7 +17,7 @@ public:
 
 protected:
     virtual void                    PreInit             (const count_t aCount) override final;
-    virtual GpHttpClient::SP        NewElement          (void) override final;
+    virtual GpHttpClient::SP        NewElement          (GpSpinlock& aLocked) override final;
     virtual void                    OnClear             (void) noexcept override final;
     virtual bool                    Validate            (GpHttpClient::SP aHttpClient) noexcept override final;
 

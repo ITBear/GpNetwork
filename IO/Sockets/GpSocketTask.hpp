@@ -12,15 +12,16 @@ public:
     CLASS_DECLARE_DEFAULTS(GpSocketTask)
 
 public:
-                            GpSocketTask        (GpIOEventPoller::WP    aIOPooler,
-                                                 GpSocket::SP           aSocket) noexcept;
+                            GpSocketTask        (std::string_view       aName,
+                                                 GpIOEventPoller::WP    aIOPoller,
+                                                 GpSocket::SP           aSocket);
     virtual                 ~GpSocketTask       (void) noexcept override;
 
     const GpSocket&         Socket              (void) const noexcept {return iSocket.VCn();}
     GpSocket&               Socket              (void) noexcept {return iSocket.Vn();}
 
 protected:
-    GpIOEventPoller::WP     IOPooler            (void) {return iIOPooler;}
+    GpIOEventPoller::WP     IOPoller            (void) {return iIOPoller;}
 
     virtual void            OnStart             (void) override;
     virtual GpTask::ResT    OnStep              (EventOptRefT aEvent) override;
@@ -35,7 +36,7 @@ private:
     GpTask::ResT            ProcessIOEvent      (const GpIOEvent& aIOEvent);
 
 private:
-    GpIOEventPoller::WP     iIOPooler;
+    GpIOEventPoller::WP     iIOPoller;
     GpSocket::SP            iSocket;
 };
 

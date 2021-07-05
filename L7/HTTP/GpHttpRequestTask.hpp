@@ -11,9 +11,10 @@ public:
     CLASS_DECLARE_DEFAULTS(GpHttpRequestTask)
 
 public:
-                                    GpHttpRequestTask   (GpHttpRequest::CSP         aHttpRequest,
+                                    GpHttpRequestTask   (std::string_view           aName,
+                                                         GpHttpRequest::CSP         aHttpRequest,
                                                          GpHttpRequestHandler::SP   aHttpRequestHandler,
-                                                         GpEventSubscriber::SP      aHttpRequestDoneSbr) noexcept;
+                                                         GpEventSubscriber::SP      aHttpRequestDoneSbr);
     virtual                         ~GpHttpRequestTask  (void) noexcept override final;
 
     virtual void                    OnStart             (void) override final;

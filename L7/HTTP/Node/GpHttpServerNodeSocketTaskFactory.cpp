@@ -12,12 +12,20 @@ GpHttpServerNodeSocketTaskFactory::~GpHttpServerNodeSocketTaskFactory (void) noe
 {
 }
 
-GpSocketTask::SP    GpHttpServerNodeSocketTaskFactory::NewInstance (GpIOEventPoller::WP aIOPooler,
-                                                                    GpSocket::SP        aSocket) const
+GpSocketTask::SP    GpHttpServerNodeSocketTaskFactory::NewInstance
+(
+    std::string_view    aName,
+    GpIOEventPoller::WP aIOPoller,
+    GpSocket::SP        aSocket
+) const
 {
-    return MakeSP<GpHttpServerNodeSocketTask>(std::move(aIOPooler),
-                                              std::move(aSocket),
-                                              RequestHandlerFactory());
+    return MakeSP<GpHttpServerNodeSocketTask>
+    (
+        aName,
+        std::move(aIOPoller),
+        std::move(aSocket),
+        RequestHandlerFactory()
+    );
 }
 
 }//namespace GPlatform

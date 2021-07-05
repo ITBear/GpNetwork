@@ -14,7 +14,8 @@ public:
                                 GpSocketTaskFactory     (void) noexcept {}
     virtual                     ~GpSocketTaskFactory    (void) noexcept {}
 
-    virtual GpSocketTask::SP    NewInstance             (GpIOEventPoller::WP    aIOPooler,
+    virtual GpSocketTask::SP    NewInstance             (std::string_view       aName,
+                                                         GpIOEventPoller::WP    aIOPoller,
                                                          GpSocket::SP           aSocket) const = 0;
 };
 

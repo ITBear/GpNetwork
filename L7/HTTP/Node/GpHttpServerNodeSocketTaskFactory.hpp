@@ -14,7 +14,8 @@ public:
                                 GpHttpServerNodeSocketTaskFactory   (GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept;
     virtual                     ~GpHttpServerNodeSocketTaskFactory  (void) noexcept override final;
 
-    virtual GpSocketTask::SP    NewInstance                         (GpIOEventPoller::WP    aIOPooler,
+    virtual GpSocketTask::SP    NewInstance                         (std::string_view       aName,
+                                                                     GpIOEventPoller::WP    aIOPoller,
                                                                      GpSocket::SP           aSocket) const override final;
 };
 

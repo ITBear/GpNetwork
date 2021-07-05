@@ -10,11 +10,12 @@ namespace GPlatform {
 
 GpHttpServerNodeSocketTask::GpHttpServerNodeSocketTask
 (
-    GpIOEventPoller::WP             aIOPooler,
+    std::string_view                aName,
+    GpIOEventPoller::WP             aIOPoller,
     GpSocket::SP                    aSocket,
     GpHttpRequestHandlerFactory::SP aRequestHandlerFactory
-) noexcept:
-GpSocketTask(std::move(aIOPooler), std::move(aSocket)),
+):
+GpSocketTask(aName, std::move(aIOPoller), std::move(aSocket)),
 iRequestHandlerFactory(std::move(aRequestHandlerFactory))
 {
 }
@@ -60,6 +61,7 @@ GpTask::ResT    GpHttpServerNodeSocketTask::OnSockReadyToRead (GpSocket& aSocket
             //Start request process task
             GpHttpRequestTask::SP requestTask = MakeSP<GpHttpRequestTask>
             (
+                Name() + ": http socket task"_sv,
                 iRq,
                 iRequestHandlerFactory->NewInstance(),
                 GetWeakPtr()

@@ -5,10 +5,12 @@ namespace GPlatform {
 
 GpHttpRequestTask::GpHttpRequestTask
 (
+    std::string_view            aName,
     GpHttpRequest::CSP          aHttpRequest,
     GpHttpRequestHandler::SP    aHttpRequestHandler,
     GpEventSubscriber::SP       aHttpRequestDoneSbr
-) noexcept:
+):
+GpTaskFiberBase(aName),
 iHttpRequest(std::move(aHttpRequest)),
 iHttpRequestHandler(std::move(aHttpRequestHandler)),
 iHttpRequestDoneSbr(std::move(aHttpRequestDoneSbr))

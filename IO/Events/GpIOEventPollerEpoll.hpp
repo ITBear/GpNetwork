@@ -11,14 +11,15 @@ namespace GPlatform {
 class GPNETWORK_API GpIOEventPollerEpoll final: public GpIOEventPoller
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpIOEventPollerEpoll)
+    CLASS_REMOVE_CTRS(GpIOEventPollerEpoll)
     CLASS_DECLARE_DEFAULTS(GpIOEventPollerEpoll)
 
     using EventT    = struct epoll_event;
     using EventsT   = GpVector<EventT>;
 
 public:
-                                GpIOEventPollerEpoll    (GpTaskFiberBarrier::SP aStartBarrier) noexcept;
+                                GpIOEventPollerEpoll    (std::string_view       aName,
+                                                         GpTaskFiberBarrier::SP aStartBarrier);
     virtual                     ~GpIOEventPollerEpoll   (void) noexcept override final;
 
     void                        Configure               (const milliseconds_t   aMaxStepTime,

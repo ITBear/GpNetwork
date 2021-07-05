@@ -11,7 +11,7 @@ GP_ENUM(GPNETWORK_API, GpSocketFlag,
     LINGER_ZERO,
     NO_DELAY
 
-    /*SO_KEEPALIVE
+    /*SO_KEEPALIVE          https://stackoverflow.com/questions/14388706/how-do-so-reuseaddr-and-so-reuseport-differ
     SO_LINGER
 
     TCP_KEEPIDLE

@@ -10,15 +10,29 @@
 #   define EPOLLRDHUP 0x2000
 #endif
 
+#include <iostream>
+
 namespace GPlatform {
 
-GpIOEventPollerEpoll::GpIOEventPollerEpoll (GpTaskFiberBarrier::SP aStartBarrier) noexcept:
-GpIOEventPoller(std::move(aStartBarrier))
+static int _GpIOEventPollerEpoll_counter = 0;
+
+GpIOEventPollerEpoll::GpIOEventPollerEpoll
+(
+    std::string_view        aName,
+    GpTaskFiberBarrier::SP  aStartBarrier
+):
+GpIOEventPoller(aName, std::move(aStartBarrier))
 {
+    _GpIOEventPollerEpoll_counter++;
+    std::cout << "[GpIOEventPollerEpoll::GpIOEventPollerEpoll]: counter = " << _GpIOEventPollerEpoll_counter << ", name = " << Name() << std::endl;;
 }
 
 GpIOEventPollerEpoll::~GpIOEventPollerEpoll (void) noexcept
 {   
+    ReleaseStartBarrier();
+
+    _GpIOEventPollerEpoll_counter--;
+    std::cout << "[GpIOEventPollerEpoll::~GpIOEventPollerEpoll]: counter = " << _GpIOEventPollerEpoll_counter << ", name = " << Name() << std::endl;;
 }
 
 void    GpIOEventPollerEpoll::Configure
@@ -93,8 +107,8 @@ GpTask::ResT    GpIOEventPollerEpoll::OnStep (EventOptRefT /*aEvent*/)
             ioEvents.Set(GpIOEventType::READY_TO_READ);
         }
 
-        if ((eventsMask & EPOLLRDHUP) ||//detect peer shutdown (normal mode)
-            (eventsMask & EPOLLHUP))    //unexpected close
+        if ((eventsMask & EPOLLRDHUP) ||
+            (eventsMask & EPOLLHUP))
         {
             ioEvents.Set(GpIOEventType::CLOSED);
         }

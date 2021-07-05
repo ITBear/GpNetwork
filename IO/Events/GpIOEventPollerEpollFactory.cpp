@@ -20,9 +20,13 @@ GpIOEventPollerEpollFactory::~GpIOEventPollerEpollFactory (void) noexcept
 {
 }
 
-GpIOEventPoller::SP GpIOEventPollerEpollFactory::NewInstance (GpTaskFiberBarrier::SP aStartBarrier) const
+GpIOEventPoller::SP GpIOEventPollerEpollFactory::NewInstance
+(
+    std::string_view        aName,
+    GpTaskFiberBarrier::SP  aStartBarrier
+) const
 {
-    GpIOEventPollerEpoll::SP epollSP = MakeSP<GpIOEventPollerEpoll>(std::move(aStartBarrier));
+    GpIOEventPollerEpoll::SP epollSP = MakeSP<GpIOEventPollerEpoll>(aName, std::move(aStartBarrier));
     epollSP->Configure(iMaxStepTime, iMaxEventsCnt);
     return epollSP;
 }

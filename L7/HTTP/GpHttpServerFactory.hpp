@@ -20,7 +20,7 @@ protected:
 public:
     virtual                             ~GpHttpServerFactory    (void) noexcept;
 
-    virtual GpSP<GpHttpServer>          NewInstance             (void) const = 0;
+    virtual GpSP<GpHttpServer>          NewInstance             (std::string_view aName) const = 0;
 
 protected:
     const GpSocketAddr&                 ListenSocketAddr        (void) const noexcept {return iListenSocketAddr;}

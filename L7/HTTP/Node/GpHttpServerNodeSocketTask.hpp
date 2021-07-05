@@ -36,9 +36,10 @@ public:
     };
 
 public:
-                                    GpHttpServerNodeSocketTask  (GpIOEventPoller::WP                aIOPooler,
+                                    GpHttpServerNodeSocketTask  (std::string_view                   aName,
+                                                                 GpIOEventPoller::WP                aIOPoller,
                                                                  GpSocket::SP                       aSocket,
-                                                                 GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory) noexcept;
+                                                                 GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory);
     virtual                         ~GpHttpServerNodeSocketTask (void) noexcept override final;
 
 protected:

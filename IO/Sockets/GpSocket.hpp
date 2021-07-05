@@ -17,9 +17,22 @@ public:
     using IPvT          = GpSocketIPv;
     using IPvTE         = IPvT::EnumT;
 
+    enum class CloseModeT
+    {
+        CLOSE_ON_DESTRUCT,
+        NO_CLOSE_ON_DESTRUCT
+    };
+
 protected:
                             GpSocket            (const ProtocolTE       aProtocol,
-                                                 const GpSocketFlags&   aFlags) noexcept;
+                                                 const GpSocketFlags&   aFlags,
+                                                 const CloseModeT       aCloseMode) noexcept;
+
+                            GpSocket            (const GpSocketAddr::SocketIdT  aId,
+                                                 const IPvTE                    aIpV,
+                                                 const ProtocolTE               aProtocol,
+                                                 const GpSocketFlags&           aFlags,
+                                                 const CloseModeT               aCloseMode) noexcept;
 
 public:
     virtual                 ~GpSocket           (void) noexcept;
@@ -27,9 +40,10 @@ public:
     ProtocolTE              Protocol            (void) const noexcept {return iProtocol;}
     GpSocketAddr::SocketIdT Id                  (void) const noexcept {return iId;}
     IPvTE                   IPv                 (void) const noexcept {return iIPv;}
-    const GpSocketFlags&    Flags               (void) const noexcept {return iFlags;}
     const GpSocketAddr&     AddrLocal           (void) const noexcept {return iAddrLocal;}
     const GpSocketAddr&     AddrRemote          (void) const noexcept {return iAddrRemote;}
+    const GpSocketFlags&    Flags               (void) const noexcept {return iFlags;}
+    CloseModeT              CloseMode           (void) const noexcept {return iCloseMode;}
 
     virtual size_byte_t     Read                (GpByteWriter& aWriter) = 0;
     virtual size_byte_t     Write               (GpByteReader& aReader) = 0;
@@ -62,6 +76,7 @@ private:
     GpSocketAddr            iAddrLocal;
     GpSocketAddr            iAddrRemote;
     GpSocketFlags           iFlags;
+    CloseModeT              iCloseMode  = CloseModeT::CLOSE_ON_DESTRUCT;
 };
 
 }//namespace GPlatform

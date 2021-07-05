@@ -27,6 +27,9 @@ LIBS += -lllhttp
 
 SOURCES += \
 	GpNetwork.cpp \
+	IO/Events/GpIOEventPollerCatalog.cpp \
+	IO/Events/GpIOEventPollerCfgDesc.cpp \
+	IO/Events/GpIOEventPollerEpollCfgDesc.cpp \
 	L7/Common/Enums/GpCharset.cpp \
 	L7/Common/Enums/GpContentType.cpp \
 	L7/Common/Headers/GpProtoHeaderValue.cpp \
@@ -62,6 +65,7 @@ SOURCES += \
 	L7/HTTP/GpHttpResponseSerializer.cpp \
 	L7/HTTP/GpHttpRqRs.cpp \
 	L7/HTTP/GpHttpServer.cpp \
+	L7/HTTP/GpHttpServerCfgDesc.cpp \
 	L7/HTTP/GpHttpServerFactory.cpp \
 	L7/HTTP/GpHttpServerSocketTaskFactory.cpp \
 	L7/HTTP/GpHttpVersion.cpp \
@@ -93,6 +97,9 @@ HEADERS += \
 	GpNetwork.hpp \
 	GpNetworkConfig.hpp \
 	GpNetwork_global.hpp \
+	IO/Events/GpIOEventPollerCatalog.hpp \
+	IO/Events/GpIOEventPollerCfgDesc.hpp \
+	IO/Events/GpIOEventPollerEpollCfgDesc.hpp \
 	L7/Common/Enums/GpCharset.hpp \
 	L7/Common/Enums/GpContentType.hpp \
 	L7/Common/Enums/GpEnums.hpp \
@@ -140,6 +147,7 @@ HEADERS += \
 	L7/HTTP/GpHttpResponseSerializer.hpp \
 	L7/HTTP/GpHttpRqRs.hpp \
 	L7/HTTP/GpHttpServer.hpp \
+	L7/HTTP/GpHttpServerCfgDesc.hpp \
 	L7/HTTP/GpHttpServerFactory.hpp \
 	L7/HTTP/GpHttpServerSocketTaskFactory.hpp \
 	L7/HTTP/GpHttpVersion.hpp \

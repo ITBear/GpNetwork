@@ -11,5 +11,6 @@
 #include "GpHttpRequestRouterStatic.hpp"
 #include "GpHttpResponse.hpp"
 #include "GpHttpRqRs.hpp"
+#include "GpHttpServerCfgDesc.hpp"
 
 #include "Node/GpHttpServerNodeFactory.hpp"

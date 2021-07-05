@@ -12,7 +12,8 @@ public:
     CLASS_DECLARE_DEFAULTS(GpHttpServer)
 
 public:
-                                        GpHttpServer            (GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept;
+                                        GpHttpServer            (std::string_view                   aName,
+                                                                 GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory);
     virtual                             ~GpHttpServer           (void) noexcept override;
 
 protected:
