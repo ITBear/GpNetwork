@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPNETWORK_API GpHttpRequestRouterStatic final: public GpHttpRequestRouter
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpRequestRouterStatic)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestRouterStatic)
     CLASS_DECLARE_DEFAULTS(GpHttpRequestRouterStatic)
 
 public:

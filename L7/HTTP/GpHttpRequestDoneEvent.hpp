@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPNETWORK_API GpHttpRequestDoneEvent final: public GpEvent
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpRequestDoneEvent)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestDoneEvent)
     CLASS_DECLARE_DEFAULTS(GpHttpRequestDoneEvent)
     TYPE_STRUCT_DECLARE("384c1d20-e12b-460a-b2ec-990b54158090"_sv)
 

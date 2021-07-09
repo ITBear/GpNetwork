@@ -11,7 +11,7 @@ namespace GPlatform {
 class GPNETWORK_API GpIOEventPollerEpoll final: public GpIOEventPoller
 {
 public:
-    CLASS_REMOVE_CTRS(GpIOEventPollerEpoll)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpIOEventPollerEpoll)
     CLASS_DECLARE_DEFAULTS(GpIOEventPollerEpoll)
 
     using EventT    = struct epoll_event;

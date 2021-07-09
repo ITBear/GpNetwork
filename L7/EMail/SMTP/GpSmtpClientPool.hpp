@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPNETWORK_API GpSmtpClientPool final: public GpElementsPool<GpSmtpClient::SP>
 {
 public:
-    CLASS_REMOVE_CTRS(GpSmtpClientPool)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpSmtpClientPool)
     CLASS_DECLARE_DEFAULTS(GpSmtpClientPool)
     CLASS_TAG(THREAD_SAFE)
 

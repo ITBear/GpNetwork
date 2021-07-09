@@ -12,7 +12,7 @@ namespace GPlatform {
 class GpHttpServerNodeSocketTask final: public GpSocketTask
 {
 public:
-    CLASS_REMOVE_CTRS(GpHttpServerNodeSocketTask)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpServerNodeSocketTask)
     CLASS_DECLARE_DEFAULTS(GpHttpServerNodeSocketTask)
 
     struct http_settings_t: public llhttp_settings_t

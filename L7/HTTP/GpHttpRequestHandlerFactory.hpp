@@ -9,7 +9,7 @@ class GpHttpRequestHandler;
 class GPNETWORK_API GpHttpRequestHandlerFactory
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpRequestHandlerFactory)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestHandlerFactory)
     CLASS_DECLARE_DEFAULTS(GpHttpRequestHandlerFactory)
 
 protected:

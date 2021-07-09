@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPNETWORK_API GpIOEventPollerCatalog
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpIOEventPollerCatalog)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpIOEventPollerCatalog)
     CLASS_TAG(THREAD_SAFE)
 
     using CatalogT = GpElementsCatalog<std::string, GpIOEventPoller::SP>;

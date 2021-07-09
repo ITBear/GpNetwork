@@ -6,7 +6,7 @@ namespace GPlatform {
 
 class GPNETWORK_API GpEmailEncoder
 {
-    CLASS_REMOVE_CTRS(GpEmailEncoder)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpEmailEncoder)
 
 public:
                         GpEmailEncoder  (const GpEmail& aEmail,

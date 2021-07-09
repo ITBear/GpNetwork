@@ -7,7 +7,7 @@ namespace GPlatform {
 class GPNETWORK_API GpHttpRequestRouter: public GpHttpRequestHandler
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpRequestRouter)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestRouter)
     CLASS_DECLARE_DEFAULTS(GpHttpRequestRouter)
 
 protected:

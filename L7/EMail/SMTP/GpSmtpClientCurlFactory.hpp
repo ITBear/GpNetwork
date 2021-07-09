@@ -7,7 +7,7 @@ namespace GPlatform {
 class GPNETWORK_API GpSmtpClientCurlFactory final: public GpSmtpClientFactory
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpSmtpClientCurlFactory)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpSmtpClientCurlFactory)
     CLASS_DECLARE_DEFAULTS(GpSmtpClientCurlFactory)
 
 public:

@@ -9,7 +9,7 @@ namespace GPlatform {
 class GPNETWORK_API GpIOEventPollerEpollFactory final: public GpIOEventPollerFactory
 {
 public:
-    CLASS_REMOVE_CTRS(GpIOEventPollerEpollFactory)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpIOEventPollerEpollFactory)
     CLASS_DECLARE_DEFAULTS(GpIOEventPollerEpollFactory)
 
 public:

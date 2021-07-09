@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPNETWORK_API GpHttpRequestHandler
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpRequestHandler)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestHandler)
     CLASS_DECLARE_DEFAULTS(GpHttpRequestHandler)
 
     CLASS_TAG(THREAD_SAFE)

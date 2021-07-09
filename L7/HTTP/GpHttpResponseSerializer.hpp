@@ -7,7 +7,7 @@ namespace GPlatform {
 class GpHttpResponseSerializer
 {
 public:
-    CLASS_REMOVE_CTRS(GpHttpResponseSerializer)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpResponseSerializer)
 
 public:
     static void                 SSerializeHeaders       (const GpHttpResponse&  aResponse,

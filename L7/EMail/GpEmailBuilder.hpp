@@ -6,7 +6,7 @@ namespace GPlatform {
 
 class GPNETWORK_API GpEmailBuilder
 {
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpEmailBuilder)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpEmailBuilder)
 
 public:
                         GpEmailBuilder  (void) noexcept;

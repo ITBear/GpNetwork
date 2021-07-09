@@ -7,7 +7,7 @@ namespace GPlatform {
 class GPNETWORK_API GpSocketTCP final: public GpSocket
 {
 public:
-    CLASS_REMOVE_CTRS(GpSocketTCP)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpSocketTCP)
     CLASS_DECLARE_DEFAULTS(GpSocketTCP)
 
     enum class StateT

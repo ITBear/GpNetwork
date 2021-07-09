@@ -10,7 +10,7 @@ namespace GPlatform {
 /*class GPNETWORK_API GpHttpClientCurlAsync final: public GpHttpClient
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpClientCurlAsync)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpClientCurlAsync)
     CLASS_DECLARE_DEFAULTS(GpHttpClientCurlAsync)
 
 public:

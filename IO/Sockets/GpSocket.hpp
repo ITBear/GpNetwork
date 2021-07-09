@@ -9,7 +9,7 @@ namespace GPlatform {
 class GPNETWORK_API GpSocket
 {
 public:
-    CLASS_REMOVE_CTRS(GpSocket)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpSocket)
     CLASS_DECLARE_DEFAULTS(GpSocket)
 
     using ProtocolT     = GpSocketProtocol;

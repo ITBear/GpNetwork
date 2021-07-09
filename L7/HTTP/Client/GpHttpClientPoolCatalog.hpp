@@ -7,7 +7,7 @@ namespace GPlatform {
 class GPNETWORK_API GpHttpClientPoolCatalog
 {
 public:
-    CLASS_REMOVE_CTRS(GpHttpClientPoolCatalog)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpClientPoolCatalog)
     CLASS_DECLARE_DEFAULTS(GpHttpClientPoolCatalog)
     CLASS_TAG(THREAD_SAFE)
 

@@ -9,7 +9,7 @@ namespace GPlatform {
 class GPNETWORK_API GpHttpServerNodeFactory final: public GpHttpServerFactory
 {
 public:
-    CLASS_REMOVE_CTRS(GpHttpServerNodeFactory)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpServerNodeFactory)
     CLASS_DECLARE_DEFAULTS(GpHttpServerNodeFactory)
 
 public:

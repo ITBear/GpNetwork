@@ -7,7 +7,7 @@ namespace GPlatform {
 class GPNETWORK_API GpSmtpClient
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpSmtpClient)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpSmtpClient)
     CLASS_DECLARE_DEFAULTS(GpSmtpClient)
 
 public:

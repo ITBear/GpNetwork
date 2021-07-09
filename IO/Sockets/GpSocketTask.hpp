@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPNETWORK_API GpSocketTask: public GpTaskFiberBase
 {
 public:
-    CLASS_REMOVE_CTRS(GpSocketTask)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpSocketTask)
     CLASS_DECLARE_DEFAULTS(GpSocketTask)
 
 public:

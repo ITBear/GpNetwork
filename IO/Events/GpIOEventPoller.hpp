@@ -8,12 +8,12 @@ namespace GPlatform {
 class GPNETWORK_API GpIOEventPoller: public GpTaskFiberBase
 {
 public:
-    CLASS_REMOVE_CTRS(GpIOEventPoller)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpIOEventPoller)
     CLASS_DECLARE_DEFAULTS(GpIOEventPoller)
 
     CLASS_TAG(THREAD_SAFE)
 
-    using SubscribersT = GpMap<GpIOObjectId::RawT, GpEventSubscriber::SP>;
+    using SubscribersT = GpMap<GpIOObjectId::RawT, GpEventSubscriber::SP, std::less<>>;
 
 protected:  
                                     GpIOEventPoller     (std::string_view       aName,

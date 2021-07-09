@@ -9,7 +9,7 @@ class GpIOEventPoller;
 class GPNETWORK_API GpIOEventPollerFactory
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpIOEventPollerFactory)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpIOEventPollerFactory)
     CLASS_DECLARE_DEFAULTS(GpIOEventPollerFactory)
 
 protected:

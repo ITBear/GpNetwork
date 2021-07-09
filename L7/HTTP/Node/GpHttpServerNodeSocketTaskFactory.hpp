@@ -7,7 +7,7 @@ namespace GPlatform {
 class GpHttpServerNodeSocketTaskFactory final: public GpHttpServerSocketTaskFactory
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpHttpServerNodeSocketTaskFactory)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpServerNodeSocketTaskFactory)
     CLASS_DECLARE_DEFAULTS(GpHttpServerNodeSocketTaskFactory)
 
 public:

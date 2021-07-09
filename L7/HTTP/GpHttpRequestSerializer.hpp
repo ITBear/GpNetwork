@@ -7,7 +7,7 @@ namespace GPlatform {
 class GpHttpRequestSerializer
 {
 public:
-    CLASS_REMOVE_CTRS(GpHttpRequestSerializer)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpRequestSerializer)
     CLASS_DECLARE_DEFAULTS(GpHttpRequestSerializer)
 
 public:

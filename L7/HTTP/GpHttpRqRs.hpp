@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPNETWORK_API GpHttpRqRs
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT_MOVE(GpHttpRqRs)
+    CLASS_REMOVE_CTRS_COPY(GpHttpRqRs)
     CLASS_DECLARE_DEFAULTS(GpHttpRqRs)
 
 public:

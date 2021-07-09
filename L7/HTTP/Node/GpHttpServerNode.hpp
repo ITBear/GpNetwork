@@ -9,7 +9,7 @@ namespace GPlatform {
 class GpHttpServerNode final: public GpHttpServer
 {
 public:
-    CLASS_REMOVE_CTRS(GpHttpServerNode)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpServerNode)
     CLASS_DECLARE_DEFAULTS(GpHttpServerNode)
 
 public:

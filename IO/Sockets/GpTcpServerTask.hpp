@@ -9,7 +9,7 @@ namespace GPlatform {
 class GPNETWORK_API GpTcpServerTask final: public GpSocketTask
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpTcpServerTask)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpTcpServerTask)
     CLASS_DECLARE_DEFAULTS(GpTcpServerTask)
 
 public:

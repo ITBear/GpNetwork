@@ -7,7 +7,7 @@ namespace GPlatform {
 class GPNETWORK_API GpHttpClientGuard
 {
 public:
-    CLASS_REMOVE_CTRS(GpHttpClientGuard)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpClientGuard)
     CLASS_DECLARE_DEFAULTS(GpHttpClientGuard)
 
 public:

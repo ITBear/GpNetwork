@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPNETWORK_API GpHttpServer: public GpTaskFiberBase
 {
 public:
-    CLASS_REMOVE_CTRS(GpHttpServer)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpServer)
     CLASS_DECLARE_DEFAULTS(GpHttpServer)
 
 public:
