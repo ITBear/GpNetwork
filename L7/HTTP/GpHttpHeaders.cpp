@@ -84,6 +84,16 @@ GpHttpHeaders&  GpHttpHeaders::Add
 
 GpHttpHeaders&  GpHttpHeaders::Add
 (
+    std::string_view    aName,
+    std::string_view    aValue
+)
+{
+    GpProtoHeaders::Add(std::string(aName), aValue);
+    return *this;
+}
+
+GpHttpHeaders&  GpHttpHeaders::Add
+(
     const GpHttpHeaderType::EnumT   aType,
     std::string&&                   aValue
 )
@@ -94,11 +104,31 @@ GpHttpHeaders&  GpHttpHeaders::Add
 
 GpHttpHeaders&  GpHttpHeaders::Add
 (
+    std::string_view    aName,
+    std::string&&       aValue
+)
+{
+    GpProtoHeaders::Add(std::string(aName), std::move(aValue));
+    return *this;
+}
+
+GpHttpHeaders&  GpHttpHeaders::Add
+(
     const GpHttpHeaderType::EnumT   aType,
     const u_int_64                  aValue
 )
 {
     GpProtoHeaders::Add<GpHttpHeaderType, GpHttpHeaders>(aType, aValue);
+    return *this;
+}
+
+GpHttpHeaders&  GpHttpHeaders::Add
+(
+    std::string_view    aName,
+    const u_int_64      aValue
+)
+{
+    GpProtoHeaders::Add(std::string(aName), aValue);
     return *this;
 }
 

@@ -28,9 +28,15 @@ public:
                                                              const u_int_64                 aValue);
     GpHttpHeaders&                      Add                 (const GpHttpHeaderType::EnumT  aType,
                                                              std::string_view               aValue);
+    GpHttpHeaders&                      Add                 (std::string_view               aName,
+                                                             std::string_view               aValue);
     GpHttpHeaders&                      Add                 (const GpHttpHeaderType::EnumT  aType,
                                                              std::string&&                  aValue);
+    GpHttpHeaders&                      Add                 (std::string_view               aName,
+                                                             std::string&&                  aValue);
     GpHttpHeaders&                      Add                 (const GpHttpHeaderType::EnumT  aType,
+                                                             const u_int_64                 aValue);
+    GpHttpHeaders&                      Add                 (std::string_view               aName,
                                                              const u_int_64                 aValue);
 
     GpHttpHeaders&                      SetContentType      (const GpContentType::EnumT aContentType);
