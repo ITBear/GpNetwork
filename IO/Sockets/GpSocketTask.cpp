@@ -5,8 +5,6 @@
 
 namespace GPlatform {
 
-static int _GpSocketTask_count = 0;
-
 GpSocketTask::GpSocketTask
 (
     std::string_view    aName,
@@ -17,14 +15,10 @@ GpTaskFiberBase(aName),
 iIOPoller(std::move(aIOPoller)),
 iSocket(std::move(aSocket))
 {
-    _GpSocketTask_count++;
-    std::cout << "[GpSocketTask::GpSocketTask]: count = " << _GpSocketTask_count << std::endl;
 }
 
 GpSocketTask::~GpSocketTask (void) noexcept
 {
-    _GpSocketTask_count--;
-    std::cout << "[GpSocketTask::~GpSocketTask]: count = " << _GpSocketTask_count << std::endl;
 }
 
 void    GpSocketTask::OnStart (void)

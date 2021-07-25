@@ -9,7 +9,9 @@ GP_ENUM(GPNETWORK_API, GpSocketFlag,
     REUSE_PORT,
     NO_BLOCK,
     LINGER_ZERO,
-    NO_DELAY
+    NO_DELAY,
+
+
 
     /*SO_KEEPALIVE          https://stackoverflow.com/questions/14388706/how-do-so-reuseaddr-and-so-reuseport-differ
     SO_LINGER
@@ -20,7 +22,9 @@ GP_ENUM(GPNETWORK_API, GpSocketFlag,
 
     TCP_NODELAY
     TCP_CORK
-    TCP_QUICKACK*/
+    TCP_QUICKACK
+
+    TCP_MAXSEG*/
 );
 
 using GpSocketFlags = GpEnumFlagsST<GpSocketFlag>;

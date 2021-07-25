@@ -4,8 +4,6 @@
 
 namespace GPlatform {
 
-static int _GpIOEventPoller_counter = 0;
-
 GpIOEventPoller::GpIOEventPoller
 (
     std::string_view        aName,
@@ -14,16 +12,11 @@ GpIOEventPoller::GpIOEventPoller
 GpTaskFiberBase(aName),
 iStartBarrier(std::move(aStartBarrier))
 {
-    _GpIOEventPoller_counter++;
-    std::cout << "[GpIOEventPoller::GpIOEventPoller]: counter = " << _GpIOEventPoller_counter << ", name = " << Name() << std::endl;;
 }
 
 GpIOEventPoller::~GpIOEventPoller (void) noexcept
 {   
     ReleaseStartBarrier();
-
-    _GpIOEventPoller_counter--;
-    std::cout << "[GpIOEventPoller::~GpIOEventPoller]: counter = " << _GpIOEventPoller_counter << ", name = " << Name() << std::endl;;
 }
 
 void    GpIOEventPoller::AddSubscriber
@@ -68,8 +61,6 @@ void    GpIOEventPoller::OnStop  (void) noexcept
     std::scoped_lock lock(iSubscribersLock);
     iSubscribers.clear();
     ReleaseStartBarrier();
-
-    std::cout << "[GpIOEventPoller::OnStop]: counter = " << _GpIOEventPoller_counter << ", name = " << Name() << std::endl;;
 }
 
 void    GpIOEventPoller::ReleaseStartBarrier (void) noexcept

@@ -7,7 +7,7 @@ typedef void CURLM;
 
 namespace GPlatform {
 
-/*class GPNETWORK_API GpHttpClientCurlAsync final: public GpHttpClient
+class GPNETWORK_API GpHttpClientCurlAsync final: public GpHttpClient
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpClientCurlAsync)
@@ -28,6 +28,6 @@ private:
 
 private:
     CURL*                       iCurl = nullptr;
-};*/
+};
 
 }//namespace GPlatform

@@ -5,20 +5,14 @@
 
 namespace GPlatform {
 
-static int _GpIOEventPollerCatalog_counter = 0;
-
 GpIOEventPollerCatalog  GpIOEventPollerCatalog::sCatalog;
 
 GpIOEventPollerCatalog::GpIOEventPollerCatalog (void) noexcept
 {
-    _GpIOEventPollerCatalog_counter++;
-    std::cout << "[GpIOEventPollerCatalog::GpIOEventPollerCatalog]: counter = " << _GpIOEventPollerCatalog_counter << std::endl;
 }
 
 GpIOEventPollerCatalog::~GpIOEventPollerCatalog (void) noexcept
 {
-    _GpIOEventPollerCatalog_counter--;
-    std::cout << "[GpIOEventPollerCatalog::~GpIOEventPollerCatalog]: counter = " << _GpIOEventPollerCatalog_counter << std::endl;
 }
 
 void    GpIOEventPollerCatalog::StartFromConfig (const GpIOEventPollerCfgDesc::C::MapStr::SP& aCfgs)

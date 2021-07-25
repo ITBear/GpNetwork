@@ -6,8 +6,6 @@
 
 namespace GPlatform {
 
-static int _GpHttpServerNode_counter = 0;
-
 GpHttpServerNode::GpHttpServerNode
 (
     std::string_view                aName,
@@ -19,14 +17,10 @@ GpHttpServer(aName, std::move(aRequestHandlerFactory)),
 iListenSocketAddr(aListenSocketAddr),
 iEventPoller(std::move(aEventPoller))
 {
-    _GpHttpServerNode_counter++;
-    std::cout << "[GpHttpServerNode::GpHttpServerNode]: counter = " << _GpHttpServerNode_counter << std::endl;
 }
 
 GpHttpServerNode::~GpHttpServerNode (void) noexcept
 {
-    _GpHttpServerNode_counter--;
-    std::cout << "[GpHttpServerNode::~GpHttpServerNode]: counter = " << _GpHttpServerNode_counter << std::endl;
 }
 
 void    GpHttpServerNode::OnStart (void)

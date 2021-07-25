@@ -14,8 +14,6 @@
 
 namespace GPlatform {
 
-static int _GpIOEventPollerEpoll_counter = 0;
-
 GpIOEventPollerEpoll::GpIOEventPollerEpoll
 (
     std::string_view        aName,
@@ -23,16 +21,11 @@ GpIOEventPollerEpoll::GpIOEventPollerEpoll
 ):
 GpIOEventPoller(aName, std::move(aStartBarrier))
 {
-    _GpIOEventPollerEpoll_counter++;
-    std::cout << "[GpIOEventPollerEpoll::GpIOEventPollerEpoll]: counter = " << _GpIOEventPollerEpoll_counter << ", name = " << Name() << std::endl;;
 }
 
 GpIOEventPollerEpoll::~GpIOEventPollerEpoll (void) noexcept
 {   
     ReleaseStartBarrier();
-
-    _GpIOEventPollerEpoll_counter--;
-    std::cout << "[GpIOEventPollerEpoll::~GpIOEventPollerEpoll]: counter = " << _GpIOEventPollerEpoll_counter << ", name = " << Name() << std::endl;;
 }
 
 void    GpIOEventPollerEpoll::Configure

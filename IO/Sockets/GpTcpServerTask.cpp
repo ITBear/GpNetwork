@@ -3,8 +3,6 @@
 
 namespace GPlatform {
 
-static int _GpTcpServerTask_count = 0;
-
 GpTcpServerTask::GpTcpServerTask
 (
     std::string_view        aName,
@@ -17,14 +15,10 @@ GpSocketTask(aName, std::move(aIOPoller), std::move(aSocket)),
 iTaskFactory(std::move(aTaskFactory)),
 iTaskScheduler(std::move(aTaskScheduler))
 {
-    _GpTcpServerTask_count++;
-    std::cout << "[GpTcpServerTask::GpTcpServerTask]: count = " << _GpTcpServerTask_count << std::endl;
 }
 
 GpTcpServerTask::~GpTcpServerTask (void) noexcept
 {
-    _GpTcpServerTask_count--;
-    std::cout << "[GpTcpServerTask::~GpTcpServerTask]: count = " << _GpTcpServerTask_count << std::endl;
 }
 
 GpTcpServerTask::SP GpTcpServerTask::SConstruct
