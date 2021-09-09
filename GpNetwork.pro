@@ -21,7 +21,7 @@ os_linux{
 
 LIBS += -lGpCore2$$TARGET_POSTFIX$$GP_CORE_LIB_V
 LIBS += -lcurl
-LIBS += -lllhttp
+LIBS += -lllhttp$$TARGET_POSTFIX
 
 #------------------------------ LIBS END ---------------------------------
 

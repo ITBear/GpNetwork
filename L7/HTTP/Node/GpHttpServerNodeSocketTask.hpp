@@ -5,7 +5,11 @@
 #include "../GpHttpRequestDoneEvent.hpp"
 #include "../GpHttpException.hpp"
 
-#include <llhttp/llhttp.h>
+#if  __has_include(<llhttp/llhttp.h>)
+#   include <llhttp/llhttp.h>
+#else
+#   include "../../../../llhttp/llhttp.h"
+#endif
 
 namespace GPlatform {
 

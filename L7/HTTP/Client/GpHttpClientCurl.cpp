@@ -116,6 +116,7 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
         curl_easy_setopt(iCurl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
     }
 
+    curl_easy_setopt(iCurl, CURLOPT_TIMEOUT, 60L);
     curl_easy_setopt(iCurl, CURLOPT_MAXREDIRS, 5L);
     curl_easy_setopt(iCurl, CURLOPT_TCP_KEEPALIVE, 1L);
     curl_easy_setopt(iCurl, CURLOPT_TCP_KEEPIDLE, 120L);
@@ -124,7 +125,7 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
     curl_easy_setopt(iCurl, CURLOPT_URL, request.url.data());
     curl_easy_setopt(iCurl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(iCurl, CURLOPT_FAILONERROR, 0L);
-    //curl_easy_setopt(iCurl, CURLOPT_VERBOSE, 1);
+    curl_easy_setopt(iCurl, CURLOPT_VERBOSE, 1);
 
     //RQ headers
     struct curl_slist* curlHeadersList = nullptr;
@@ -157,7 +158,7 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
 
     //RQ data reader
     if (requestBodySize > 0)
-    {       
+    {
         curl_easy_setopt(iCurl, CURLOPT_READFUNCTION, GpHttpClientCurl_S_RQ_Data_reader);
         curl_easy_setopt(iCurl, CURLOPT_READDATA, &requestBodyReader);
         curl_easy_setopt(iCurl, CURLOPT_POSTFIELDSIZE, NumOps::SConvert<curl_off_t>(requestBodySize));
@@ -186,7 +187,6 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
         res_code == CURLE_OK,
         [&](){return "curl_easy_perform failed: "_sv + curl_easy_strerror(res_code);}
     );
-
 
     long httpResponseCode = 0;
     curl_easy_getinfo(iCurl, CURLINFO_RESPONSE_CODE, &httpResponseCode);
