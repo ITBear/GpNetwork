@@ -44,6 +44,9 @@ size_t GpHttpClientCurl_S_RS_Data_writer
 {
     const size_t size = NumOps::SMul(aSize, aNMemb);
     aWriter->Bytes({reinterpret_cast<std::byte*>(aPtr), size});
+
+    std::cout << std::string_view(reinterpret_cast<const char*>(aPtr), size) << std::endl;
+
     return size;
 }
 

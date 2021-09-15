@@ -24,7 +24,7 @@ GpIOEventPoller(aName, std::move(aStartBarrier))
 }
 
 GpIOEventPollerEpoll::~GpIOEventPollerEpoll (void) noexcept
-{   
+{
     ReleaseStartBarrier();
 }
 
