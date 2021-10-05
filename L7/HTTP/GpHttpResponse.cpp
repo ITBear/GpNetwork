@@ -26,6 +26,14 @@ body(std::move(aResponse.body))
 
 GpHttpResponse::GpHttpResponse
 (
+    const CodeTE aCode
+) noexcept:
+code(aCode)
+{
+}
+
+GpHttpResponse::GpHttpResponse
+(
     const CodeTE            aCode,
     const GpHttpHeaders&    aHeaders
 ):

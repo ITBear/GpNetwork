@@ -23,6 +23,7 @@ public:
                             GpHttpResponse      (void) noexcept;
                             GpHttpResponse      (const GpHttpResponse& aResponse);
                             GpHttpResponse      (GpHttpResponse&& aResponse) noexcept;
+                            GpHttpResponse      (const CodeTE           aCode) noexcept;
                             GpHttpResponse      (const CodeTE           aCode,
                                                  const GpHttpHeaders&   aHeaders);
                             GpHttpResponse      (const CodeTE           aCode,
