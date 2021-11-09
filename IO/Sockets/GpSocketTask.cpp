@@ -1,8 +1,6 @@
 #include "GpSocketTask.hpp"
 #include "../Events/GpIOEvents.hpp"
 
-#include <iostream>
-
 namespace GPlatform {
 
 GpSocketTask::GpSocketTask
@@ -22,7 +20,7 @@ GpSocketTask::~GpSocketTask (void) noexcept
 }
 
 void    GpSocketTask::OnStart (void)
-{   
+{
     THROW_GPE_COND(iSocket.IsNotNULL(), "Socket is null"_sv);
 }
 

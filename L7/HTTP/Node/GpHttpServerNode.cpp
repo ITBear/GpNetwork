@@ -2,8 +2,6 @@
 #include "GpHttpServerNodeSocketTaskFactory.hpp"
 #include "../../../IO/Sockets/GpTcpServerTask.hpp"
 
-#include <iostream>
-
 namespace GPlatform {
 
 GpHttpServerNode::GpHttpServerNode

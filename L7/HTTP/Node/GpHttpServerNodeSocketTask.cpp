@@ -76,7 +76,6 @@ GpTask::ResT    GpHttpServerNodeSocketTask::OnSockReadyToRead (GpSocket& aSocket
 
         if (   (iState == StateT::PROCESS_RQ_DONE_WRITE_RS)
             || (iState == StateT::PROCESS_RQ_IN_PROGRESS))
-
         {
             //Data income while write RS
             GpBytesArray data;
@@ -143,8 +142,9 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
     {
         const GpBytesArray& body = iRs->body;
         iRs->headers.SetContentLength(body.size());
+        iRs->headers.SetConnection(GpHttpConnectionFlag::CLOSE);
 
-        iRsHeadersData.reserve(512);//TODO: move to config
+        iRsHeadersData.reserve(1024);//TODO: move to config
         GpByteWriterStorageByteArray    rsHeadersDataStorage(iRsHeadersData);
         GpByteWriter                    rsHeadersWriter(rsHeadersDataStorage);
         GpHttpResponseSerializer::SSerializeHeaders(iRs.VC(), rsHeadersWriter);
@@ -176,6 +176,30 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
                     const GpBytesArray& body = iRs->body;
                     if (body.size() > 0)
                     {
+                        //Logout RQ
+                        {
+                            std::string_view bodySW = GpRawPtrCharR(iRq->body).AsStringView();
+
+                            if (bodySW.length() > 1024)
+                            {
+                                    bodySW = bodySW.substr(0, 1024);
+                            }
+                            std::cout << "[GpHttpServerNodeSocketTask::WriteToSocket]: =========================== HTTP SERVER RQ =======================\n"
+                                              << bodySW << std::endl;
+                        }
+
+                        //Logout RS
+                        {
+                            std::string_view bodySW = GpRawPtrCharR(body).AsStringView();
+
+                            if (bodySW.length() > 1024)
+                            {
+                                    bodySW = bodySW.substr(0, 1024);
+                            }
+                            std::cout << "[GpHttpServerNodeSocketTask::WriteToSocket]: =========================== HTTP SERVER RS =======================\n"
+                                              << bodySW << std::endl;
+                        }
+
                         iRsWriteState       = RsWriteStateT::WRITE_BODY;
                         iRsReaderStorage    = GpByteReaderStorage(body);
 
@@ -193,7 +217,7 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
     //if (iRs.VCn().connection_flag == GpHttpConnectionFlag::KEEP_ALIVE)
     //{
     ClearRqRsCycle();
-    return  GpTask::ResT::WAITING;//TODO: add timeout
+    return  GpTask::ResT::DONE;//TODO: add timeout
     //} else
     //{
     //  ClearRqRsCycle();
@@ -408,7 +432,7 @@ int GpHttpServerNodeSocketTask::SHTTP_OnMessageBegin (llhttp_t* aHttp)
 
 int GpHttpServerNodeSocketTask::HTTP_OnMessageBegin (llhttp_t* /*aHttp*/)
 {
-    std::cout << "[GpHttpServerNodeSocketTask::HTTP_OnMessageBegin]: Message begin...----------------------------------------------"_sv << std::endl;
+    //std::cout << "[GpHttpServerNodeSocketTask::HTTP_OnMessageBegin]: Message begin...----------------------------------------------"_sv << std::endl;
     iRq = MakeSP<GpHttpRequest>();
     return HPE_OK;
 }
@@ -420,7 +444,7 @@ int GpHttpServerNodeSocketTask::SHTTP_OnMessageComplete (llhttp_t* aHttp)
 
 int GpHttpServerNodeSocketTask::HTTP_OnMessageComplete (llhttp_t* aHttp)
 {
-    std::cout << "[GpHttpServerNodeSocketTask::HTTP_OnMessageComplete]: Message complete...----------------------------------------------"_sv << std::endl;
+    //std::cout << "[GpHttpServerNodeSocketTask::HTTP_OnMessageComplete]: Message complete...----------------------------------------------"_sv << std::endl;
 
     //Version
     {

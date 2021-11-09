@@ -1,5 +1,4 @@
 #include "GpHttpClientCurlAsync.hpp"
-#include <iostream>
 
 #define CURL_STATICLIB
 #include <curl/curl.h>

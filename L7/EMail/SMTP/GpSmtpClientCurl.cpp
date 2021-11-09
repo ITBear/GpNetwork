@@ -1,5 +1,4 @@
 #include "GpSmtpClientCurl.hpp"
-#include <iostream>
 
 #define CURL_STATICLIB
 #include <curl/curl.h>
@@ -53,9 +52,6 @@ std::string GpSmtpClientCurl::Send (const GpEmail& aEmail)
     GpByteWriter                    bodyWriter(bodyWriterStorage);
 
     const std::string messageId = MakeBody(aEmail, bodyWriter);
-
-    //std::cout << "[GpSmtpClientCurl::Send]: Email body: '" << GpRawPtrByteR(body).AsStringView() << std::endl;
-    //std::cout << "[GpSmtpClientCurl::Send]: Email ID: '" << messageId << "'" << std::endl;
 
     GpByteReaderStorage bodyStorage(body);
     GpByteReader        bodyReader(bodyStorage);

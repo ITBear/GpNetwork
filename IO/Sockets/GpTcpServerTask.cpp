@@ -1,5 +1,4 @@
 #include "GpTcpServerTask.hpp"
-#include <iostream>
 
 namespace GPlatform {
 

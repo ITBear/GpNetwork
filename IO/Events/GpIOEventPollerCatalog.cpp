@@ -1,8 +1,6 @@
 #include "GpIOEventPollerCatalog.hpp"
 #include "GpIOEventPollerEpoll.hpp"
 
-#include <iostream>
-
 namespace GPlatform {
 
 GpIOEventPollerCatalog  GpIOEventPollerCatalog::sCatalog;

@@ -10,8 +10,6 @@
 #   define EPOLLRDHUP 0x2000
 #endif
 
-#include <iostream>
-
 namespace GPlatform {
 
 GpIOEventPollerEpoll::GpIOEventPollerEpoll

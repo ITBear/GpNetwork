@@ -31,6 +31,17 @@ size_t GpHttpClientCurl_S_RQ_Data_reader
 
     outPtr.CopyFrom(dataPartPtr);
 
+    {
+        std::string_view bodySW = dataPartPtr.AsStringView();
+
+        if (bodySW.length() > 1024)
+        {
+             bodySW = bodySW.substr(0, 1024);
+        }
+        std::cout << "[GpHttpClientCurl_S_RQ_Data_reader]: =========================== CURL RQ =======================\n"
+                       << bodySW << std::endl;
+    }
+
     return batchSize;
 }
 
@@ -45,7 +56,16 @@ size_t GpHttpClientCurl_S_RS_Data_writer
     const size_t size = NumOps::SMul(aSize, aNMemb);
     aWriter->Bytes({reinterpret_cast<std::byte*>(aPtr), size});
 
-    std::cout << std::string_view(reinterpret_cast<const char*>(aPtr), size) << std::endl;
+    {
+        std::string_view bodySW = std::string_view(reinterpret_cast<const char*>(aPtr), size);
+
+        if (bodySW.length() > 1024)
+        {
+             bodySW = bodySW.substr(0, 1024);
+        }
+        std::cout << "[GpHttpClientCurl_S_RQ_Data_reader]: =========================== CURL RS =======================\n"
+                       << bodySW << std::endl;
+    }
 
     return size;
 }
@@ -128,7 +148,7 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
     curl_easy_setopt(iCurl, CURLOPT_URL, request.url.data());
     curl_easy_setopt(iCurl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(iCurl, CURLOPT_FAILONERROR, 0L);
-    curl_easy_setopt(iCurl, CURLOPT_VERBOSE, 1);
+    //curl_easy_setopt(iCurl, CURLOPT_VERBOSE, 1);
 
     //RQ headers
     struct curl_slist* curlHeadersList = nullptr;

@@ -1,7 +1,5 @@
 #include "GpIOEventPoller.hpp"
 
-#include <iostream>
-
 namespace GPlatform {
 
 GpIOEventPoller::GpIOEventPoller
@@ -15,7 +13,7 @@ iStartBarrier(std::move(aStartBarrier))
 }
 
 GpIOEventPoller::~GpIOEventPoller (void) noexcept
-{   
+{
     ReleaseStartBarrier();
 }
 
