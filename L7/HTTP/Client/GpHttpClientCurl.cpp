@@ -1,5 +1,4 @@
 #include "GpHttpClientCurl.hpp"
-#include <iostream>
 
 #define CURL_STATICLIB
 #include <curl/curl.h>
@@ -31,17 +30,6 @@ size_t GpHttpClientCurl_S_RQ_Data_reader
 
     outPtr.CopyFrom(dataPartPtr);
 
-    {
-        std::string_view bodySW = dataPartPtr.AsStringView();
-
-        if (bodySW.length() > 1024)
-        {
-             bodySW = bodySW.substr(0, 1024);
-        }
-        std::cout << "[GpHttpClientCurl_S_RQ_Data_reader]: =========================== CURL RQ =======================\n"
-                       << bodySW << std::endl;
-    }
-
     return batchSize;
 }
 
@@ -55,17 +43,6 @@ size_t GpHttpClientCurl_S_RS_Data_writer
 {
     const size_t size = NumOps::SMul(aSize, aNMemb);
     aWriter->Bytes({reinterpret_cast<std::byte*>(aPtr), size});
-
-    {
-        std::string_view bodySW = std::string_view(reinterpret_cast<const char*>(aPtr), size);
-
-        if (bodySW.length() > 1024)
-        {
-             bodySW = bodySW.substr(0, 1024);
-        }
-        std::cout << "[GpHttpClientCurl_S_RQ_Data_reader]: =========================== CURL RS =======================\n"
-                       << bodySW << std::endl;
-    }
 
     return size;
 }
@@ -129,6 +106,9 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
     GpByteWriterStorageByteArray    responseBodyStorage(responseBody);
     GpByteWriter                    responseBodyWriter(responseBodyStorage);
 
+    const GpUUID taskGuid = GPlatform::GpTaskFiber::SGuid();
+    GP_LOG_INFO("CURL HTTP request to '"_sv + request.url + "'", taskGuid);
+
     //curl_easy_setopt(iCurl, CURLOPT_NOPROGRESS, 1L);
 
     if (request.http_version == GpHttpVersion::HTTP_1_0)
@@ -182,6 +162,8 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
     //RQ data reader
     if (requestBodySize > 0)
     {
+        GP_LOG_INFO(GpRawPtrCharR(requestBody).AsStringView(), taskGuid);
+
         curl_easy_setopt(iCurl, CURLOPT_READFUNCTION, GpHttpClientCurl_S_RQ_Data_reader);
         curl_easy_setopt(iCurl, CURLOPT_READDATA, &requestBodyReader);
         curl_easy_setopt(iCurl, CURLOPT_POSTFIELDSIZE, NumOps::SConvert<curl_off_t>(requestBodySize));
@@ -215,6 +197,8 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
     curl_easy_getinfo(iCurl, CURLINFO_RESPONSE_CODE, &httpResponseCode);
 
     GpRawPtrByteR responseBodyPtr(responseBody);
+
+    GP_LOG_INFO(responseBodyPtr.AsStringView(), taskGuid);
 
     if (aErorrMode == ErorrMode::THROW_ON_NOT_200)
     {

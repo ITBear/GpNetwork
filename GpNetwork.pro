@@ -13,13 +13,15 @@ include(../../QtGlobalPro.pri)
 
 #------------------------------ LIBS BEGIN ---------------------------------
 os_windows{
-	GP_CORE_LIB_V		= 2
+	GP_CORE_LIB_V	= 2
+	GP_LOG_LIB_V	= 0
 }
 
 os_linux{
 }
 
 LIBS += -lGpCore2$$TARGET_POSTFIX$$GP_CORE_LIB_V
+LIBS += -lGpLog$$TARGET_POSTFIX$$GP_LOG_LIB_V
 LIBS += -lcurl
 LIBS += -lllhttp$$TARGET_POSTFIX
 

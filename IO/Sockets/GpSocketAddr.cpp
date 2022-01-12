@@ -155,18 +155,6 @@ std::string GpSocketAddr::ToStringIP (void) const
         THROW_GPE(GpErrno::SGetAndClear());
     }
 
-    /*{
-        char myIP[16];
-        unsigned int myPort = 1;
-
-        struct sockaddr_in my_addr;
-        bzero(&my_addr, sizeof(my_addr));
-        inet_ntop(AF_INET, &(Raw_sockaddr_v4()->sin_addr), myIP, sizeof(myIP));
-        myPort = ntohs(my_addr.sin_port);
-
-        std::cout << myIP << ", " << myPort << std::endl;
-    }*/
-
     return std::string(buff.data());
 }
 

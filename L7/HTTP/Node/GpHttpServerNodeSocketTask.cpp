@@ -1,7 +1,6 @@
 #include "GpHttpServerNodeSocketTask.hpp"
 #include "../GpHttpRequestTask.hpp"
 #include "../GpHttpResponseSerializer.hpp"
-#include <iostream>
 
 namespace GPlatform {
 
@@ -126,7 +125,7 @@ GpTask::ResT    GpHttpServerNodeSocketTask::ProcessDoneEvent (const GpHttpReques
 
     iRs     = aRequestDoneEvent.Response();
     iState  = StateT::PROCESS_RQ_DONE_WRITE_RS;
-    iRs.Vn().http_version = iRq.Vn().http_version;
+    iRs.V().http_version = iRq.V().http_version;
     return WriteToSocket(Socket());
 }
 
@@ -174,32 +173,9 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
                 {
                     //Check if there are body
                     const GpBytesArray& body = iRs->body;
+
                     if (body.size() > 0)
                     {
-                        //Logout RQ
-                        {
-                            std::string_view bodySW = GpRawPtrCharR(iRq->body).AsStringView();
-
-                            if (bodySW.length() > 1024)
-                            {
-                                    bodySW = bodySW.substr(0, 1024);
-                            }
-                            std::cout << "[GpHttpServerNodeSocketTask::WriteToSocket]: =========================== HTTP SERVER RQ =======================\n"
-                                              << bodySW << std::endl;
-                        }
-
-                        //Logout RS
-                        {
-                            std::string_view bodySW = GpRawPtrCharR(body).AsStringView();
-
-                            if (bodySW.length() > 1024)
-                            {
-                                    bodySW = bodySW.substr(0, 1024);
-                            }
-                            std::cout << "[GpHttpServerNodeSocketTask::WriteToSocket]: =========================== HTTP SERVER RS =======================\n"
-                                              << bodySW << std::endl;
-                        }
-
                         iRsWriteState       = RsWriteStateT::WRITE_BODY;
                         iRsReaderStorage    = GpByteReaderStorage(body);
 
@@ -207,6 +183,7 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
                     }
                 } else if (iRsWriteState == RsWriteStateT::WRITE_BODY)
                 {
+                    const GpUUID taskGuid = GPlatform::GpTaskFiber::SGuid();
                     //NOP, go to finish
                 }
             }
@@ -214,15 +191,8 @@ GpTask::ResT    GpHttpServerNodeSocketTask::WriteToSocket (GpSocket& aSocket)
     }
 
     //Finish
-    //if (iRs.VCn().connection_flag == GpHttpConnectionFlag::KEEP_ALIVE)
-    //{
     ClearRqRsCycle();
     return  GpTask::ResT::DONE;//TODO: add timeout
-    //} else
-    //{
-    //  ClearRqRsCycle();
-    //  return GpTask::ResT::DONE;
-    //}
 }
 
 void    GpHttpServerNodeSocketTask::InitRqRsCycle (void)
