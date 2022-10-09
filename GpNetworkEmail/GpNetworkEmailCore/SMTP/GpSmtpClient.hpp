@@ -8,7 +8,7 @@ class GP_NETWORK_EMAIL_CORE_API GpSmtpClient
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpSmtpClient)
-    CLASS_DECLARE_DEFAULTS(GpSmtpClient)
+    CLASS_DD(GpSmtpClient)
 
 public:
                                     GpSmtpClient    (void) noexcept;

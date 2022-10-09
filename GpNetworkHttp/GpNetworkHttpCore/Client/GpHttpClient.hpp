@@ -8,7 +8,7 @@ class GpHttpClient
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpClient)
-    CLASS_DECLARE_DEFAULTS(GpHttpClient)
+    CLASS_DD(GpHttpClient)
 
     enum class ErorrMode
     {

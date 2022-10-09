@@ -7,7 +7,7 @@ namespace GPlatform {
 class GP_NETWORK_EMAIL_CORE_API GpEmailHeaders final: public GpHttpProtoHeaders
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpEmailHeaders)
+    CLASS_DD(GpEmailHeaders)
     REFLECT_DECLARE("debc2d8e-4184-4de4-950f-6641c9275466"_uuid)
 
 public:
@@ -38,7 +38,7 @@ public:
     GpEmailHeaders&                     SetContentType      (std::string                    aContentType);
 
 public:
-    static const GpArray<std::string, GpEmailHeaderType::SCount()>      sHeadersNames;
+    static const std::array<std::string, GpEmailHeaderType::SCount()>       sHeadersNames;
 };
 
 }//namespace GPlatform

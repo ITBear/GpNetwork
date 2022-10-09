@@ -8,7 +8,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpClientGuard
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpClientGuard)
-    CLASS_DECLARE_DEFAULTS(GpHttpClientGuard)
+    CLASS_DD(GpHttpClientGuard)
 
 public:
                             GpHttpClientGuard   (GpHttpClientPool& aPool) noexcept;

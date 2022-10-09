@@ -9,19 +9,20 @@ class GP_NETWORK_CORE_API GpSocketTask: public GpLogTaskFiberBase
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpSocketTask)
-    CLASS_DECLARE_DEFAULTS(GpSocketTask)
+    CLASS_DD(GpSocketTask)
 
 public:
-    inline                  GpSocketTask        (std::string        aName,
-                                                 GpIOEventPoller&   aIOPoller,
-                                                 GpSocket::SP       aSocket) noexcept;
+    inline                  GpSocketTask        (std::string            aName,
+                                                 GpIOEventPoller::SP    aIOPoller,
+                                                 GpSocket::SP           aSocket) noexcept;
     virtual                 ~GpSocketTask       (void) noexcept override;
 
     const GpSocket&         Socket              (void) const noexcept {return iSocket.Vn();}
     GpSocket&               Socket              (void) noexcept {return iSocket.Vn();}
 
 protected:
-    GpIOEventPoller&        IOPoller            (void) {return iIOPoller;}
+    GpIOEventPoller&        IOPoller            (void) {return iIOPoller.V();}
+    GpIOEventPoller::SP     IOPollerSP          (void) {return iIOPoller;}
 
     virtual void            OnStart             (void) override;
     virtual GpTaskDoRes     OnStep              (EventOptRefT aEvent) override;
@@ -36,18 +37,18 @@ private:
     GpTaskDoRes             ProcessIOEvent      (const GpIOEvent& aIOEvent);
 
 private:
-    GpIOEventPoller&        iIOPoller;
+    GpIOEventPoller::SP     iIOPoller;
     GpSocket::SP            iSocket;
 };
 
 GpSocketTask::GpSocketTask
 (
     std::string         aName,
-    GpIOEventPoller&    aIOPoller,
+    GpIOEventPoller::SP aIOPoller,
     GpSocket::SP        aSocket
 ) noexcept:
 GpLogTaskFiberBase(std::move(aName)),
-iIOPoller(aIOPoller),
+iIOPoller(std::move(aIOPoller)),
 iSocket  (std::move(aSocket))
 {
 }

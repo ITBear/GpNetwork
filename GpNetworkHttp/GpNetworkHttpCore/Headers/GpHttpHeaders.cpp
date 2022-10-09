@@ -2,7 +2,7 @@
 
 namespace GPlatform {
 
-const GpArray<std::string, GpHttpHeaderType::SCount()>      GpHttpHeaders::sHeadersNames =
+const std::array<std::string, GpHttpHeaderType::SCount()>       GpHttpHeaders::sHeadersNames =
 {
     std::string("Content-Type"_sv),         //CONTENT_TYPE,
     std::string("Content-Length"_sv),       //CONTENT_LENGTH,
@@ -11,13 +11,13 @@ const GpArray<std::string, GpHttpHeaderType::SCount()>      GpHttpHeaders::sHead
     std::string("Authorization"_sv),        //AUTHORIZATION
 };
 
-const GpArray<std::string, GpHttpConnectionFlag::SCount()>  GpHttpHeaders::sHttpConnectionFlag =
+const std::array<std::string, GpHttpConnectionFlag::SCount()>   GpHttpHeaders::sHttpConnectionFlag =
 {
     std::string("close"_sv),            //CLOSE
     std::string("keep-alive"_sv),       //KEEP_ALIVE
 };
 
-const GpArray<std::string, GpHttpCacheControl::SCount()>    GpHttpHeaders::sHttpCacheControl =
+const std::array<std::string, GpHttpCacheControl::SCount()> GpHttpHeaders::sHttpCacheControl =
 {
     std::string("no-store"_sv),         //NO_STORE
 };

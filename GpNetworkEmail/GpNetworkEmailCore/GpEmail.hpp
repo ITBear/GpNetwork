@@ -9,7 +9,7 @@ namespace GPlatform {
 class GP_NETWORK_EMAIL_CORE_API GpEmail final: public GpReflectObject
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpEmail)
+    CLASS_DD(GpEmail)
     REFLECT_DECLARE("1e137d1b-8a9b-486f-a3d6-5708a02b7360"_uuid)
 
 public:

@@ -9,11 +9,11 @@ class GP_NETWORK_CORE_API GpIOEventPoller: public GpLogTaskFiberBase
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpIOEventPoller)
-    CLASS_DECLARE_DEFAULTS(GpIOEventPoller)
+    CLASS_DD(GpIOEventPoller)
 
     CLASS_TAG(THREAD_SAFE)
 
-    using SubscribersT = GpMap<GpIOObjectId::IdT, GpEventSubscriber::SP, std::less<>>;
+    using SubscribersT = std::map<GpIOObjectId::IdT, GpEventSubscriber::SP, std::less<>>;
 
 protected:
     inline                      GpIOEventPoller         (std::string    aName,

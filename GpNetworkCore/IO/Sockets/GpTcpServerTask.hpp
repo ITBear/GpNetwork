@@ -10,11 +10,11 @@ class GP_NETWORK_CORE_API GpTcpServerTask final: public GpSocketTask
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpTcpServerTask)
-    CLASS_DECLARE_DEFAULTS(GpTcpServerTask)
+    CLASS_DD(GpTcpServerTask)
 
 public:
     inline                      GpTcpServerTask     (std::string                aName,
-                                                     GpIOEventPoller&           aIOPoller,
+                                                     GpIOEventPoller::SP        aIOPoller,
                                                      GpSocketTaskFactory::SP    aTaskFactory,
                                                      GpSocketTCP::SP            aSocket) noexcept;
     virtual                     ~GpTcpServerTask    (void) noexcept override final;
@@ -23,7 +23,7 @@ public:
                                                      const GpSocketAddr&        aAddr,
                                                      const GpSocketFlags&       aFlags,
                                                      const size_t               aMaxListenQueueSize,
-                                                     GpIOEventPoller&           aIOPoller,
+                                                     GpIOEventPoller::SP        aIOPoller,
                                                      GpSocketTaskFactory::SP    aTaskFactory);
 
 protected:
@@ -39,14 +39,14 @@ private:
 GpTcpServerTask::GpTcpServerTask
 (
     std::string             aName,
-    GpIOEventPoller&        aIOPoller,
+    GpIOEventPoller::SP     aIOPoller,
     GpSocketTaskFactory::SP aTaskFactory,
     GpSocketTCP::SP         aSocket
 ) noexcept:
 GpSocketTask
 (
     std::move(aName),
-    aIOPoller,
+    std::move(aIOPoller),
     std::move(aSocket)
 ),
 iTaskFactory(std::move(aTaskFactory))

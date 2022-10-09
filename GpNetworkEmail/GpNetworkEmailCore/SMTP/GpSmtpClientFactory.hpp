@@ -8,7 +8,7 @@ class GpSmtpClientFactory
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpSmtpClientFactory)
-    CLASS_DECLARE_DEFAULTS(GpSmtpClientFactory)
+    CLASS_DD(GpSmtpClientFactory)
 
 protected:
                                 GpSmtpClientFactory     (void) noexcept {}

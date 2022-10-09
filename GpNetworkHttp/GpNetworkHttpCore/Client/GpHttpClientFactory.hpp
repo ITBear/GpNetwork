@@ -8,7 +8,7 @@ class GpHttpClientFactory
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpClientFactory)
-    CLASS_DECLARE_DEFAULTS(GpHttpClientFactory)
+    CLASS_DD(GpHttpClientFactory)
 
 protected:
                                 GpHttpClientFactory     (void) noexcept = default;

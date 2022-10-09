@@ -8,7 +8,7 @@ namespace GPlatform {
 class GP_NETWORK_HTTP_CORE_API GpHttpResponse final: public GpReflectObject
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpHttpResponse)
+    CLASS_DD(GpHttpResponse)
     REFLECT_DECLARE("1c48e524-5261-4250-aa72-76d3401cc607"_uuid)
 
     using HttpVersionT      = GpHttpVersion;

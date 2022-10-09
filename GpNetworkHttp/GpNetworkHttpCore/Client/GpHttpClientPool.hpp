@@ -8,7 +8,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpClientPool final: public GpElementsPool<GpH
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpClientPool)
-    CLASS_DECLARE_DEFAULTS(GpHttpClientPool)
+    CLASS_DD(GpHttpClientPool)
     CLASS_TAG(THREAD_SAFE)
 
 public:

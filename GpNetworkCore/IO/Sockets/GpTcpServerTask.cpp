@@ -12,7 +12,7 @@ GpTcpServerTask::SP GpTcpServerTask::SConstruct
     const GpSocketAddr&     aAddr,
     const GpSocketFlags&    aFlags,
     const size_t            aMaxListenQueueSize,
-    GpIOEventPoller&        aIOPoller,
+    GpIOEventPoller::SP     aIOPoller,
     GpSocketTaskFactory::SP aTaskFactory
 )
 {
@@ -29,7 +29,7 @@ GpTcpServerTask::SP GpTcpServerTask::SConstruct
         serverSocket
     );
 
-    aIOPoller.AddSubscriber(serverSocketTask, serverSocket.V().Id());
+    aIOPoller.V().AddSubscriber(serverSocketTask, serverSocket.V().Id());
 
     return serverSocketTask;
 }
@@ -48,7 +48,7 @@ GpTaskDoRes GpTcpServerTask::OnSockReadyToRead (GpSocket& aSocket)
         GpSocketTask::SP inSocketTask = iTaskFactory.Vn().NewInstance
         (
             Name() + ": socket "_sv + inSocketId,
-            IOPoller(),
+            IOPollerSP(),
             std::move(inSocket)
         );
 

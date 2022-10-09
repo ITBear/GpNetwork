@@ -9,7 +9,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpRequestRouteTable
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestRouteTable)
-    CLASS_DECLARE_DEFAULTS(GpHttpRequestRouteTable)
+    CLASS_DD(GpHttpRequestRouteTable)
 
     using HandlersCatalogT = GpElementsCatalog<std::string, GpHttpRequestHandlerFactory::SP>;
 

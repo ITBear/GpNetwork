@@ -7,7 +7,7 @@ namespace GPlatform {
 class GP_NETWORK_HTTP_CORE_API GpHttpServerCfgDesc final: public GpReflectObject
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpHttpServerCfgDesc)
+    CLASS_DD(GpHttpServerCfgDesc)
     REFLECT_DECLARE("082d98c8-f18f-4c33-b9c0-07f33a5acad9"_uuid)
 
 public:

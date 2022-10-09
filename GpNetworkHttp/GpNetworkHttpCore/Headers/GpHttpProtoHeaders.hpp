@@ -9,7 +9,7 @@ namespace GPlatform {
 class GP_NETWORK_HTTP_CORE_API GpHttpProtoHeaders: public GpReflectObject
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpHttpProtoHeaders)
+    CLASS_DD(GpHttpProtoHeaders)
     REFLECT_DECLARE("88a01e4e-9105-4cd5-9990-4578ebb14b51"_uuid)
 
 public:
@@ -63,8 +63,8 @@ private:
     GpProtoHeaderValue::C::MapStr::SP       headers;
 
 public:
-    static const GpArray<std::string, GpHttpContentType::SCount()>  sContentType;
-    static const GpArray<std::string, GpHttpCharset::SCount()>      sCharset;
+    static const std::array<std::string, GpHttpContentType::SCount()>   sContentType;
+    static const std::array<std::string, GpHttpCharset::SCount()>       sCharset;
 };
 
 template<typename T, typename V>

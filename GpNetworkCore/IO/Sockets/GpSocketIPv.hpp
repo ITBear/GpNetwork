@@ -11,7 +11,7 @@ GP_ENUM(GP_NETWORK_CORE_API, GpSocketIPv,
 
 constexpr sa_family_t GpSocketIPv_SSFamily (const GpSocketIPv::EnumT aValue)
 {
-    constexpr const GpArray<sa_family_t, GpSocketIPv::SCount()> s =
+    constexpr const std::array<sa_family_t, GpSocketIPv::SCount()> s =
     {
         AF_INET,
         AF_INET6

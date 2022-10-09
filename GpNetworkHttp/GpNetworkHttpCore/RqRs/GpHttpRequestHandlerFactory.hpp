@@ -10,7 +10,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpRequestHandlerFactory
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestHandlerFactory)
-    CLASS_DECLARE_DEFAULTS(GpHttpRequestHandlerFactory)
+    CLASS_DD(GpHttpRequestHandlerFactory)
 
 protected:
                                         GpHttpRequestHandlerFactory     (void) noexcept {}

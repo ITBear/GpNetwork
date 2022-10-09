@@ -12,10 +12,10 @@ class GP_NETWORK_CORE_API GpIOEventPollerEpoll final: public GpIOEventPoller
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpIOEventPollerEpoll)
-    CLASS_DECLARE_DEFAULTS(GpIOEventPollerEpoll)
+    CLASS_DD(GpIOEventPollerEpoll)
 
     using EventT    = struct epoll_event;
-    using EventsT   = GpVector<EventT>;
+    using EventsT   = std::vector<EventT>;
 
 public:
     inline                      GpIOEventPollerEpoll    (std::string    aName,

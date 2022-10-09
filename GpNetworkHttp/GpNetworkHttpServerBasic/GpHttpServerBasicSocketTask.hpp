@@ -14,7 +14,7 @@ class GpHttpServerBasicSocketTask final: public GpSocketTask
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpServerBasicSocketTask)
-    CLASS_DECLARE_DEFAULTS(GpHttpServerBasicSocketTask)
+    CLASS_DD(GpHttpServerBasicSocketTask)
 
     struct http_settings_t: public llhttp_settings_t
     {
@@ -38,7 +38,7 @@ public:
 
 public:
     inline                          GpHttpServerBasicSocketTask (std::string                        aName,
-                                                                 GpIOEventPoller&                   aIOPoller,
+                                                                 GpIOEventPoller::SP                aIOPoller,
                                                                  GpSocket::SP                       aSocket,
                                                                  GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory) noexcept;
     virtual                         ~GpHttpServerBasicSocketTask(void) noexcept override final;
@@ -111,14 +111,14 @@ private:
 GpHttpServerBasicSocketTask::GpHttpServerBasicSocketTask
 (
     std::string                     aName,
-    GpIOEventPoller&                aIOPoller,
+    GpIOEventPoller::SP             aIOPoller,
     GpSocket::SP                    aSocket,
     GpHttpRequestHandlerFactory::SP aRequestHandlerFactory
 ) noexcept:
 GpSocketTask
 (
     std::move(aName),
-    aIOPoller,
+    std::move(aIOPoller),
     std::move(aSocket)
 ),
 iRequestHandlerFactory(std::move(aRequestHandlerFactory))

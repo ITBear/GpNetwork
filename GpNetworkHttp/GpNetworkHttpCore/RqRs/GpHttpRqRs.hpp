@@ -13,7 +13,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpRqRs
 {
 public:
     CLASS_REMOVE_CTRS_COPY(GpHttpRqRs)
-    CLASS_DECLARE_DEFAULTS(GpHttpRqRs)
+    CLASS_DD(GpHttpRqRs)
 
 public:
                             GpHttpRqRs      (void) noexcept;

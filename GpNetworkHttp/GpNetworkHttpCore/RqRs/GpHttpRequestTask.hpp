@@ -8,7 +8,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpRequestTask final: public GpLogTaskFiberBas
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpRequestTask)
-    CLASS_DECLARE_DEFAULTS(GpHttpRequestTask)
+    CLASS_DD(GpHttpRequestTask)
 
 public:
     inline                      GpHttpRequestTask   (std::string                aName,

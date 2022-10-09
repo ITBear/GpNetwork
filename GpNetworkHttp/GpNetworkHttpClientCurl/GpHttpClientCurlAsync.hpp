@@ -11,7 +11,7 @@ namespace GPlatform {
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpClientCurlAsync)
-    CLASS_DECLARE_DEFAULTS(GpHttpClientCurlAsync)
+    CLASS_DD(GpHttpClientCurlAsync)
 
 public:
                                 GpHttpClientCurlAsync   (void) noexcept;

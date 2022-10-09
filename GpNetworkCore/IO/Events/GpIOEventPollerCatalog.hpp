@@ -23,7 +23,7 @@ public:
 
     void                                Start                       (const GpIOEventPollerCfgDesc::C::MapStr::SP& aCfgs);
     void                                Clear                       (void);
-    GpIOEventPoller&                    Find                        (std::string_view aName);
+    GpIOEventPoller::SP                 Find                        (std::string_view aName);
 
 private:
     void                                Register                    (std::string            aName,

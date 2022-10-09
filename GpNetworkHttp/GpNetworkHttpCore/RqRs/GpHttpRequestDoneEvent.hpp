@@ -8,7 +8,7 @@ namespace GPlatform {
 class GP_NETWORK_HTTP_CORE_API GpHttpRequestDoneEvent final: public GpEvent
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpHttpRequestDoneEvent)
+    CLASS_DD(GpHttpRequestDoneEvent)
 
 public:
                                 GpHttpRequestDoneEvent  (void) noexcept = default;

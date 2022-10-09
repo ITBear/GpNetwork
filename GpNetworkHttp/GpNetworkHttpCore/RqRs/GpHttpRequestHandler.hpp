@@ -9,7 +9,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpRequestHandler
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestHandler)
-    CLASS_DECLARE_DEFAULTS(GpHttpRequestHandler)
+    CLASS_DD(GpHttpRequestHandler)
 
     CLASS_TAG(THREAD_SAFE)
 

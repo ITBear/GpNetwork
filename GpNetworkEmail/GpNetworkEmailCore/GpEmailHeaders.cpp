@@ -2,7 +2,7 @@
 
 namespace GPlatform {
 
-const GpArray<std::string, GpEmailHeaderType::SCount()> GpEmailHeaders::sHeadersNames =
+const std::array<std::string, GpEmailHeaderType::SCount()>  GpEmailHeaders::sHeadersNames =
 {
     std::string("Cc"_sv),                           //CC
     std::string("Content-Transfer-Encoding"_sv),    //CONTENT_TRANSFER_ENCODING

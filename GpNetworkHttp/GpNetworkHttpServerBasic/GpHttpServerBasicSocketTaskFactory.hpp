@@ -8,15 +8,15 @@ class GpHttpServerBasicSocketTaskFactory final: public GpHttpServerSocketTaskFac
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpServerBasicSocketTaskFactory)
-    CLASS_DECLARE_DEFAULTS(GpHttpServerBasicSocketTaskFactory)
+    CLASS_DD(GpHttpServerBasicSocketTaskFactory)
 
 public:
                                 GpHttpServerBasicSocketTaskFactory  (GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept;
     virtual                     ~GpHttpServerBasicSocketTaskFactory (void) noexcept override final;
 
-    virtual GpSocketTask::SP    NewInstance                         (std::string        aName,
-                                                                     GpIOEventPoller&   aIOPoller,
-                                                                     GpSocket::SP       aSocket) const override final;
+    virtual GpSocketTask::SP    NewInstance                         (std::string            aName,
+                                                                     GpIOEventPoller::SP    aIOPoller,
+                                                                     GpSocket::SP           aSocket) const override final;
 };
 
 }//namespace GPlatform

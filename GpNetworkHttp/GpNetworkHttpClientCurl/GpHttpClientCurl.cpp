@@ -63,7 +63,7 @@ size_t GpHttpClientCurl_S_RS_Headers_writer
     const size_t strSize = size - 2; //\r\n
 
     std::string_view headersStr(static_cast<const char*>(aPtr), strSize);
-    GpVector<std::string_view> parts = StrOps::SSplit(headersStr, ':', 2, 0, Algo::SplitMode::COUNT_ZERO_LENGTH_PARTS);
+    std::vector<std::string_view> parts = StrOps::SSplit(headersStr, ':', 2, 0, Algo::SplitMode::COUNT_ZERO_LENGTH_PARTS);
 
     if (parts.size() >= 2)
     {

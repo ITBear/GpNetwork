@@ -8,7 +8,7 @@ class GP_NETWORK_EMAIL_CORE_API GpSmtpClientPoolCatalog
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpSmtpClientPoolCatalog)
-    CLASS_DECLARE_DEFAULTS(GpSmtpClientPoolCatalog)
+    CLASS_DD(GpSmtpClientPoolCatalog)
     CLASS_TAG(THREAD_SAFE)
 
     using PoolsT = GpElementsCatalog<std::string, GpSmtpClientPool::SP>;

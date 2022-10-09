@@ -43,7 +43,7 @@ void    GpSocketTask::OnStop (void) noexcept
         {
             try
             {
-                iIOPoller.RemoveSubscriber(socketId);
+                IOPoller().RemoveSubscriber(socketId);
             } catch (const GpException& e)
             {
                 LOG_EXCEPTION(e, Guid());

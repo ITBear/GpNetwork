@@ -7,7 +7,7 @@ namespace GPlatform {
 class GP_NETWORK_CORE_API GpIOEvent final: public GpEvent
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpIOEvent)
+    CLASS_DD(GpIOEvent)
 
 public:
                             GpIOEvent       (void) noexcept = default;

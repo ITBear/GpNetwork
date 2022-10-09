@@ -9,7 +9,7 @@ namespace GPlatform {
 class GP_NETWORK_HTTP_CORE_API GpUrl
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpUrl)
+    CLASS_DD(GpUrl)
 
 public:
                                 GpUrl       (void) noexcept;

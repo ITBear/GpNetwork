@@ -7,7 +7,7 @@ namespace GPlatform {
 class GP_NETWORK_CORE_API GpIOEventPollerCfgDesc final: public GpReflectObject
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpIOEventPollerCfgDesc)
+    CLASS_DD(GpIOEventPollerCfgDesc)
     REFLECT_DECLARE("236316b0-244f-4f2e-8ed5-1b2f8298d728"_uuid)
 
 public:

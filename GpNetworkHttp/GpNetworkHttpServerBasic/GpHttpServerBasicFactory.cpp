@@ -7,13 +7,17 @@ GpHttpServerBasicFactory::~GpHttpServerBasicFactory (void) noexcept
 {
 }
 
-GpHttpServer::SP    GpHttpServerBasicFactory::NewInstance (std::string aName) const
+GpHttpServer::SP    GpHttpServerBasicFactory::NewInstance
+(
+    std::string         aName,
+    GpIOEventPoller::SP aEventPoller
+) const
 {
     return MakeSP<GpHttpServerBasic>
     (
         std::move(aName),
         ListenSocketAddr(),
-        iEventPoller,
+        std::move(aEventPoller),
         RequestHandlerFactory()
     );
 }

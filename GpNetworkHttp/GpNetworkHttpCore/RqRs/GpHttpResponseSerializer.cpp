@@ -2,13 +2,13 @@
 
 namespace GPlatform {
 
-GpArray<std::string, GpHttpVersion::SCount()>           GpHttpResponseSerializer::sHttpVersion =
+std::array<std::string, GpHttpVersion::SCount()>        GpHttpResponseSerializer::sHttpVersion =
 {
     std::string("HTTP/1.0"_sv), //HTTP_1_0
     std::string("HTTP/1.1"_sv)  //HTTP_1_1
 };
 
-GpArray<std::string, GpHttpResponseCode::SCount()>      GpHttpResponseSerializer::sHttpResponseCode =
+std::array<std::string, GpHttpResponseCode::SCount()>   GpHttpResponseSerializer::sHttpResponseCode =
 {
     std::string("100 Continue"_sv),
     std::string("101 Switching Protocols"_sv),

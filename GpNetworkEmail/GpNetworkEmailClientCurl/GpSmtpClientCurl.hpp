@@ -10,7 +10,7 @@ class GP_NETWORK_EMAIL_CLIENT_CURL_API GpSmtpClientCurl final: public GpSmtpClie
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpSmtpClientCurl)
-    CLASS_DECLARE_DEFAULTS(GpSmtpClientCurl)
+    CLASS_DD(GpSmtpClientCurl)
 
 public:
                                     GpSmtpClientCurl    (void) noexcept;

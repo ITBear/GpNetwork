@@ -8,12 +8,12 @@ class GpHttpServerBasic final: public GpHttpServer
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpServerBasic)
-    CLASS_DECLARE_DEFAULTS(GpHttpServerBasic)
+    CLASS_DD(GpHttpServerBasic)
 
 public:
     inline                  GpHttpServerBasic   (std::string                        aName,
                                                  const GpSocketAddr&                aListenSocketAddr,
-                                                 GpIOEventPoller&                   aEventPoller,
+                                                 GpIOEventPoller::SP                aEventPoller,
                                                  GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory) noexcept;
     virtual                 ~GpHttpServerBasic  (void) noexcept override final;
 
@@ -27,14 +27,14 @@ private:
 
 private:
     const GpSocketAddr      iListenSocketAddr;
-    GpIOEventPoller&        iEventPoller;
+    GpIOEventPoller::SP     iEventPoller;
 };
 
 GpHttpServerBasic::GpHttpServerBasic
 (
     std::string                     aName,
     const GpSocketAddr&             aListenSocketAddr,
-    GpIOEventPoller&                aEventPoller,
+    GpIOEventPoller::SP             aEventPoller,
     GpHttpRequestHandlerFactory::SP aRequestHandlerFactory
 ) noexcept:
 GpHttpServer
@@ -43,7 +43,7 @@ GpHttpServer
     std::move(aRequestHandlerFactory)
 ),
 iListenSocketAddr(aListenSocketAddr),
-iEventPoller(aEventPoller)
+iEventPoller(std::move(aEventPoller))
 {
 }
 

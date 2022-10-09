@@ -8,7 +8,7 @@ class GP_NETWORK_EMAIL_CLIENT_CURL_API GpSmtpClientCurlFactory final: public GpS
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpSmtpClientCurlFactory)
-    CLASS_DECLARE_DEFAULTS(GpSmtpClientCurlFactory)
+    CLASS_DD(GpSmtpClientCurlFactory)
 
 public:
                                 GpSmtpClientCurlFactory     (void) noexcept {}

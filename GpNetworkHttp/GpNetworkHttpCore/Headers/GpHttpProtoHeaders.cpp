@@ -2,7 +2,7 @@
 
 namespace GPlatform {
 
-const GpArray<std::string, GpHttpContentType::SCount()> GpHttpProtoHeaders::sContentType =
+const std::array<std::string, GpHttpContentType::SCount()>  GpHttpProtoHeaders::sContentType =
 {
     std::string("text/plain"_sv),       //TEXT_PLAIN
     std::string("text/html"_sv),        //TEXT_HTML
@@ -10,7 +10,7 @@ const GpArray<std::string, GpHttpContentType::SCount()> GpHttpProtoHeaders::sCon
     std::string("application/xml"_sv)   //APPLICATION_XML
 };
 
-const GpArray<std::string, GpHttpCharset::SCount()>     GpHttpProtoHeaders::sCharset =
+const std::array<std::string, GpHttpCharset::SCount()>      GpHttpProtoHeaders::sCharset =
 {
     std::string(""_sv),                 //NOT_SET
     std::string("charset=utf-8"_sv),    //UTF_8

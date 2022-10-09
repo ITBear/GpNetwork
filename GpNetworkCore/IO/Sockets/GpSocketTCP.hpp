@@ -8,7 +8,7 @@ class GP_NETWORK_CORE_API GpSocketTCP final: public GpSocket
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpSocketTCP)
-    CLASS_DECLARE_DEFAULTS(GpSocketTCP)
+    CLASS_DD(GpSocketTCP)
 
     enum class StateT
     {

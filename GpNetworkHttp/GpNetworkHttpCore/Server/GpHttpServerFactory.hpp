@@ -11,7 +11,7 @@ class GpHttpServerFactory
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpServerFactory)
-    CLASS_DECLARE_DEFAULTS(GpHttpServerFactory)
+    CLASS_DD(GpHttpServerFactory)
 
 protected:
     inline                              GpHttpServerFactory     (const GpSocketAddr&                aListenSocketAddr,
@@ -20,7 +20,8 @@ protected:
 public:
     virtual                             ~GpHttpServerFactory    (void) noexcept {}
 
-    virtual GpSP<GpHttpServer>          NewInstance             (std::string aName) const = 0;
+    virtual GpSP<GpHttpServer>          NewInstance             (std::string            aName,
+                                                                 GpIOEventPoller::SP    aEventPoller) const = 0;
 
 protected:
     const GpSocketAddr&                 ListenSocketAddr        (void) const noexcept {return iListenSocketAddr;}

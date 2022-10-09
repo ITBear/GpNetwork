@@ -10,7 +10,7 @@ class GP_NETWORK_CORE_API GpSocket
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpSocket)
-    CLASS_DECLARE_DEFAULTS(GpSocket)
+    CLASS_DD(GpSocket)
 
     using ProtocolT     = GpSocketProtocol;
     using ProtocolTE    = ProtocolT::EnumT;

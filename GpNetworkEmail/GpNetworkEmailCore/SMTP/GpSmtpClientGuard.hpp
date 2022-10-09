@@ -9,7 +9,7 @@ class GP_NETWORK_EMAIL_CORE_API GpSmtpClientGuard
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpSmtpClientGuard)
-    CLASS_DECLARE_DEFAULTS(GpSmtpClientGuard)
+    CLASS_DD(GpSmtpClientGuard)
 
 public:
                             GpSmtpClientGuard   (GpSmtpClientPool& aPool) noexcept;

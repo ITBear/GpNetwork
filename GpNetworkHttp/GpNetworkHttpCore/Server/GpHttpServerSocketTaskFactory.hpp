@@ -8,7 +8,7 @@ class GpHttpServerSocketTaskFactory: public GpSocketTaskFactory
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpServerSocketTaskFactory)
-    CLASS_DECLARE_DEFAULTS(GpHttpServerSocketTaskFactory)
+    CLASS_DD(GpHttpServerSocketTaskFactory)
 
 protected:
     inline                          GpHttpServerSocketTaskFactory   (GpHttpRequestHandlerFactory::SP aRequestHandlerFactory) noexcept;

@@ -8,7 +8,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpRequestRouter: public GpHttpRequestHandler
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestRouter)
-    CLASS_DECLARE_DEFAULTS(GpHttpRequestRouter)
+    CLASS_DD(GpHttpRequestRouter)
 
 protected:
                                     GpHttpRequestRouter     (void) noexcept {}

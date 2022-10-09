@@ -12,7 +12,7 @@ GP_ENUM(GP_NETWORK_CORE_API, GpSocketProtocol,
 
 constexpr size_t GpSocketProtocol_Proto (const GpSocketProtocol::EnumT aValue)
 {
-    constexpr const GpArray<size_t, GpSocketProtocol::SCount()> s =
+    constexpr const std::array<size_t, GpSocketProtocol::SCount()> s =
     {
         IPPROTO_UDP,
         IPPROTO_TCP,
@@ -24,7 +24,7 @@ constexpr size_t GpSocketProtocol_Proto (const GpSocketProtocol::EnumT aValue)
 
 constexpr size_t GpSocketProtocol_Type (const GpSocketProtocol::EnumT aValue)
 {
-    constexpr const GpArray<size_t, GpSocketProtocol::SCount()> s =
+    constexpr const std::array<size_t, GpSocketProtocol::SCount()> s =
     {
         SOCK_DGRAM,
         SOCK_STREAM,

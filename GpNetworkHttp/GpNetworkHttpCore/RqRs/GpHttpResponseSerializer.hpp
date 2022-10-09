@@ -20,8 +20,8 @@ private:
                                                          GpByteWriter&          aWriter);
 
 private:
-    static GpArray<std::string, GpHttpVersion::SCount()>        sHttpVersion;
-    static GpArray<std::string, GpHttpResponseCode::SCount()>   sHttpResponseCode;
+    static std::array<std::string, GpHttpVersion::SCount()>         sHttpVersion;
+    static std::array<std::string, GpHttpResponseCode::SCount()>    sHttpResponseCode;
 };
 
 }//namespace GPlatform

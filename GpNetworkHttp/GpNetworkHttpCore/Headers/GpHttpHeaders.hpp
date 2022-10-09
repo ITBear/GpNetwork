@@ -13,7 +13,7 @@ namespace GPlatform {
 class GP_NETWORK_HTTP_CORE_API GpHttpHeaders final: public GpHttpProtoHeaders
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpHttpHeaders)
+    CLASS_DD(GpHttpHeaders)
     REFLECT_DECLARE("d5ba25c0-c37b-4568-8410-4478ef6de495"_uuid)
 
 public:
@@ -53,9 +53,9 @@ public:
                                                              std::string_view aPassword);
 
 public:
-    static const GpArray<std::string, GpHttpHeaderType::SCount()>       sHeadersNames;
-    static const GpArray<std::string, GpHttpConnectionFlag::SCount()>   sHttpConnectionFlag;
-    static const GpArray<std::string, GpHttpCacheControl::SCount()>     sHttpCacheControl;
+    static const std::array<std::string, GpHttpHeaderType::SCount()>        sHeadersNames;
+    static const std::array<std::string, GpHttpConnectionFlag::SCount()>    sHttpConnectionFlag;
+    static const std::array<std::string, GpHttpCacheControl::SCount()>      sHttpCacheControl;
 };
 
 }//namespace GPlatform

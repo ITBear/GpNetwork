@@ -15,14 +15,14 @@ GpHttpServerBasicSocketTaskFactory::~GpHttpServerBasicSocketTaskFactory (void) n
 GpSocketTask::SP    GpHttpServerBasicSocketTaskFactory::NewInstance
 (
     std::string         aName,
-    GpIOEventPoller&    aIOPoller,
+    GpIOEventPoller::SP aIOPoller,
     GpSocket::SP        aSocket
 ) const
 {
     return MakeSP<GpHttpServerBasicSocketTask>
     (
         std::move(aName),
-        aIOPoller,
+        std::move(aIOPoller),
         std::move(aSocket),
         RequestHandlerFactory()
     );

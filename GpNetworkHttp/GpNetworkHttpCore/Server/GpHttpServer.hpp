@@ -8,7 +8,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpServer: public GpLogTaskFiberBase
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpServer)
-    CLASS_DECLARE_DEFAULTS(GpHttpServer)
+    CLASS_DD(GpHttpServer)
 
 protected:
     inline                              GpHttpServer            (std::string                        aName,

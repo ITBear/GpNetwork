@@ -10,7 +10,7 @@ class GP_NETWORK_CORE_API GpIOEventPollerEpollFactory final: public GpIOEventPol
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpIOEventPollerEpollFactory)
-    CLASS_DECLARE_DEFAULTS(GpIOEventPollerEpollFactory)
+    CLASS_DD(GpIOEventPollerEpollFactory)
 
 public:
     inline                          GpIOEventPollerEpollFactory     (const milliseconds_t   aMaxStepTime,

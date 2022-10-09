@@ -10,7 +10,7 @@ class GpHttpClientCurl final: public GpHttpClient
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpClientCurl)
-    CLASS_DECLARE_DEFAULTS(GpHttpClientCurl)
+    CLASS_DD(GpHttpClientCurl)
 
 public:
                                 GpHttpClientCurl    (void) noexcept;

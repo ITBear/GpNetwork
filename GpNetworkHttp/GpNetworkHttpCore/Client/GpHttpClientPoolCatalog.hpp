@@ -8,7 +8,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpClientPoolCatalog
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpClientPoolCatalog)
-    CLASS_DECLARE_DEFAULTS(GpHttpClientPoolCatalog)
+    CLASS_DD(GpHttpClientPoolCatalog)
     CLASS_TAG(THREAD_SAFE)
 
     using PoolsT = GpElementsCatalog<std::string, GpHttpClientPool::SP>;

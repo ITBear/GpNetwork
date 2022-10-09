@@ -53,9 +53,9 @@ void    GpIOEventPollerCatalog::Clear (void)
     iCatalog.Clear();
 }
 
-GpIOEventPoller&    GpIOEventPollerCatalog::Find (std::string_view aName)
+GpIOEventPoller::SP GpIOEventPollerCatalog::Find (std::string_view aName)
 {
-    return iCatalog.Find(aName).V();
+    return iCatalog.FindRetCopy(aName);
 }
 
 void    GpIOEventPollerCatalog::Register

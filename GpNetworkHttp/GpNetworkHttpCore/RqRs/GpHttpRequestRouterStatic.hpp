@@ -9,7 +9,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpRequestRouterStatic final: public GpHttpReq
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestRouterStatic)
-    CLASS_DECLARE_DEFAULTS(GpHttpRequestRouterStatic)
+    CLASS_DD(GpHttpRequestRouterStatic)
 
 public:
                                     GpHttpRequestRouterStatic   (GpHttpRequestRouteTable::CSP aRouteTable) noexcept;
