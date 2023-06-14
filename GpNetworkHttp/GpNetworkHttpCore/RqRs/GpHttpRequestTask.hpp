@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GpHttpRequestHandler.hpp"
+#include "../../../../GpLog/GpLogCore/Tasks/GpLogTaskFiberBase.hpp"
 
 namespace GPlatform {
 
@@ -11,7 +12,7 @@ public:
     CLASS_DD(GpHttpRequestTask)
 
 public:
-    inline                      GpHttpRequestTask   (std::string                aName,
+    inline                      GpHttpRequestTask   (std::u8string              aName,
                                                      GpHttpRequest::SP          aHttpRequest,
                                                      GpHttpRequestHandler::SP   aHttpRequestHandler,
                                                      GpEventSubscriber&         aHttpRequestDoneSbr) noexcept;
@@ -29,7 +30,7 @@ private:
 
 GpHttpRequestTask::GpHttpRequestTask
 (
-    std::string                 aName,
+    std::u8string               aName,
     GpHttpRequest::SP           aHttpRequest,
     GpHttpRequestHandler::SP    aHttpRequestHandler,
     GpEventSubscriber&          aHttpRequestDoneSbr

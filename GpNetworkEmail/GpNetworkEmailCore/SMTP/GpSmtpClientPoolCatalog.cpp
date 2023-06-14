@@ -2,6 +2,8 @@
 
 namespace GPlatform {
 
+GpSmtpClientPoolCatalog GpSmtpClientPoolCatalog::sInstance;
+
 GpSmtpClientPoolCatalog::GpSmtpClientPoolCatalog (void) noexcept
 {
 }
@@ -9,12 +11,6 @@ GpSmtpClientPoolCatalog::GpSmtpClientPoolCatalog (void) noexcept
 GpSmtpClientPoolCatalog::~GpSmtpClientPoolCatalog (void) noexcept
 {
     iPools.Clear();
-}
-
-GpSmtpClientPoolCatalog&    GpSmtpClientPoolCatalog::S (void) noexcept
-{
-    static GpSmtpClientPoolCatalog sDbGlobal;
-    return sDbGlobal;
 }
 
 void    GpSmtpClientPoolCatalog::Clear (void)
@@ -37,15 +33,15 @@ void    GpSmtpClientPoolCatalog::SetPoolDefaultFactory
 void    GpSmtpClientPoolCatalog::AddPool
 (
     GpSmtpClientPool::SP    aPool,
-    std::string_view        aName
+    std::u8string_view      aName
 )
 {
-    iPools.Register(std::string(aName), std::move(aPool));
+    iPools.Set(std::u8string(aName), std::move(aPool));
 }
 
-GpSmtpClientPool&   GpSmtpClientPoolCatalog::Pool (std::string_view aName)
+GpSmtpClientPool&   GpSmtpClientPoolCatalog::Pool (std::u8string_view aName)
 {
-    auto res = iPools.FindOpt(aName);
+    auto res = iPools.GetOpt(aName);
 
     if (res.has_value())
     {
@@ -58,7 +54,7 @@ GpSmtpClientPool&   GpSmtpClientPoolCatalog::Pool (std::string_view aName)
         return newPool.Vn();
     } else
     {
-        THROW_GP("Smtp client pool was not found by name '"_sv + aName + "'"_sv);
+        THROW_GP(u8"Smtp client pool was not found by name '"_sv + aName + u8"'"_sv);
     }
 }
 

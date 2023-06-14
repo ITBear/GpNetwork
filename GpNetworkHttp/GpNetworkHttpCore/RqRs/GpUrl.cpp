@@ -10,7 +10,7 @@ GpUrl::~GpUrl (void) noexcept
 {
 }
 
-std::string GpUrl::ToString (void) const
+std::u8string   GpUrl::ToString (void) const
 {
     THROW_GP_NOT_IMPLEMENTED();
 }

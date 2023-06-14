@@ -8,7 +8,7 @@ GpTcpServerTask::~GpTcpServerTask (void) noexcept
 
 GpTcpServerTask::SP GpTcpServerTask::SConstruct
 (
-    std::string             aServerTaskName,
+    std::u8string           aServerTaskName,
     const GpSocketAddr&     aAddr,
     const GpSocketFlags&    aFlags,
     const size_t            aMaxListenQueueSize,
@@ -47,7 +47,7 @@ GpTaskDoRes GpTcpServerTask::OnSockReadyToRead (GpSocket& aSocket)
         //Start task
         GpSocketTask::SP inSocketTask = iTaskFactory.Vn().NewInstance
         (
-            Name() + ": socket "_sv + inSocketId,
+            Name() + u8": socket "_sv + inSocketId,
             IOPollerSP(),
             std::move(inSocket)
         );

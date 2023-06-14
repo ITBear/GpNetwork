@@ -2,6 +2,6 @@
 
 namespace GPlatform {
 
-GP_ENUM_IMPL(GpHttpHeaderType);
+GP_ENUM_IMPL(GpHttpHeaderType)
 
 }//namespace GPlatform

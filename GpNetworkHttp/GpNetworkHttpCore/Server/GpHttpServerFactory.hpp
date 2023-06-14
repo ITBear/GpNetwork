@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../RqRs/GpHttpRqRs.hpp"
+#include "../../../GpNetworkCore/IO/Sockets/GpSocketAddr.hpp"
+#include "../../../GpNetworkCore/IO/Events/GpIOEventPoller.hpp"
 
 namespace GPlatform {
 
@@ -20,7 +22,7 @@ protected:
 public:
     virtual                             ~GpHttpServerFactory    (void) noexcept {}
 
-    virtual GpSP<GpHttpServer>          NewInstance             (std::string            aName,
+    virtual GpSP<GpHttpServer>          NewInstance             (std::u8string          aName,
                                                                  GpIOEventPoller::SP    aEventPoller) const = 0;
 
 protected:

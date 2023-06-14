@@ -1,5 +1,6 @@
 #include "GpHttpRequest.hpp"
 #include "../Exceptions/GpHttpException.hpp"
+#include "../../../../GpCore2/GpReflection/GpReflectManager.hpp"
 
 namespace GPlatform {
 

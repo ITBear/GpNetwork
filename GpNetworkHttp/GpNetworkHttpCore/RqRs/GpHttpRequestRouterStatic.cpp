@@ -11,7 +11,7 @@ GpHttpRequestRouterStatic::~GpHttpRequestRouterStatic (void) noexcept
 {
 }
 
-GpHttpResponse::SP  GpHttpRequestRouterStatic::OnRequest (const GpHttpRequest& aRequest)
+GpHttpResponse::SP  GpHttpRequestRouterStatic::OnRequest (GpHttpRequest& aRequest)
 {
     const GpHttpRequestRouteTable&  routeTable      = iRouteTable.Vn();
     GpHttpRequestHandler::SP        requestHandler  = routeTable.Handler(aRequest.url);

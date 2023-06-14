@@ -3,7 +3,7 @@
 
 namespace GPlatform {
 
-GpIOEventPollerCatalog  GpIOEventPollerCatalog::sCatalog;
+GpIOEventPollerCatalog  GpIOEventPollerCatalog::sInstance;
 
 GpIOEventPollerCatalog::GpIOEventPollerCatalog (void) noexcept
 {
@@ -17,10 +17,10 @@ void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::
 {
     for (const auto& iter: aCfgs)
     {
-        const auto&         cfgDesc = iter.second.V();
-        GpIOEventPoller::SP eventPoller;
-        GpItcPromise        startPromise;
-        GpItcFuture::SP     startFuture     = startPromise.Future();
+        const auto&             cfgDesc     = iter.second.V();
+        GpIOEventPoller::SP     eventPoller;
+        StartItcPromiseT        startPromise;
+        StartItcFutureT::SP     startFuture = startPromise.Future(GpTask::SCurrentUID());
 
         if (cfgDesc.epoll.IsNotNULL())
         {
@@ -28,7 +28,7 @@ void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::
 
             GpIOEventPollerEpoll::SP ep = MakeSP<GpIOEventPollerEpoll>
             (
-                "IO event poller: '"_sv + iter.first + "'"_sv,
+                u8"IO event poller: '"_sv + iter.first + u8"'"_sv,
                 std::move(startPromise)
             );
 
@@ -37,7 +37,7 @@ void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::
             eventPoller = std::move(ep);
         } else
         {
-            THROW_GP("Unknown IO event poller type"_sv);
+            THROW_GP(u8"Unknown IO event poller type"_sv);
         }
 
         std::ignore = GpTaskScheduler::S().NewToReadyDepend(eventPoller);
@@ -53,18 +53,26 @@ void    GpIOEventPollerCatalog::Clear (void)
     iCatalog.Clear();
 }
 
-GpIOEventPoller::SP GpIOEventPollerCatalog::Find (std::string_view aName)
+GpIOEventPoller::SP GpIOEventPollerCatalog::Find (std::u8string_view aName)
 {
-    return iCatalog.FindRetCopy(aName);
+    auto pollerOpt = iCatalog.GetCopyOpt(aName);
+
+    THROW_COND_GP
+    (
+        pollerOpt.has_value(),
+        [aName](){return u8"Event poller not found by name '"_sv + aName + u8"'"_sv;}
+    );
+
+    return pollerOpt.value();
 }
 
 void    GpIOEventPollerCatalog::Register
 (
-    std::string         aName,
+    std::u8string       aName,
     GpIOEventPoller::SP aEventPoller
 )
 {
-    iCatalog.Register
+    iCatalog.Set
     (
         std::move(aName),
         std::move(aEventPoller)

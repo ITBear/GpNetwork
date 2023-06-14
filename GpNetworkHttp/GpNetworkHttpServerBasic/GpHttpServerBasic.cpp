@@ -1,5 +1,6 @@
 #include "GpHttpServerBasic.hpp"
 #include "GpHttpServerBasicSocketTaskFactory.hpp"
+#include "../../GpNetworkCore/IO/Sockets/GpTcpServerTask.hpp"
 
 namespace GPlatform {
 
@@ -9,7 +10,7 @@ GpHttpServerBasic::~GpHttpServerBasic (void) noexcept
 
 void    GpHttpServerBasic::OnStart (void)
 {
-    StartTcpServer(Name() + ": HTTP basic server task"_sv);
+    StartTcpServer(Name() + u8": HTTP basic server task"_sv);
 }
 
 GpTaskDoRes GpHttpServerBasic::OnStep (EventOptRefT /*aEvent*/)
@@ -21,7 +22,7 @@ void    GpHttpServerBasic::OnStop (void) noexcept
 {
 }
 
-void    GpHttpServerBasic::StartTcpServer (std::string aTcpServerTaskName)
+void    GpHttpServerBasic::StartTcpServer (std::u8string aTcpServerTaskName)
 {
     //TODO: move to config
     GpTask::SP tcpServerTask = GpTcpServerTask::SConstruct

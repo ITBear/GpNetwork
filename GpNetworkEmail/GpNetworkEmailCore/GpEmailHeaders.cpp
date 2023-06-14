@@ -2,18 +2,18 @@
 
 namespace GPlatform {
 
-const std::array<std::string, GpEmailHeaderType::SCount()>  GpEmailHeaders::sHeadersNames =
+const std::array<std::u8string, GpEmailHeaderType::SCount()>    GpEmailHeaders::sHeadersNames =
 {
-    std::string("Cc"_sv),                           //CC
-    std::string("Content-Transfer-Encoding"_sv),    //CONTENT_TRANSFER_ENCODING
-    std::string("Content-Type"_sv),                 //CONTENT_TYPE
-    std::string("Date"_sv),                         //DATE
-    std::string("From"_sv),                         //FROM
-    std::string("List-Unsubscribe"_sv),             //LIST_UNSUBSCRIBE
-    std::string("Message-ID"_sv),                   //MESSAGE_ID
-    std::string("MIME-Version"_sv),                 //MIME_VERSION
-    std::string("Subject"_sv),                      //SUBJECT
-    std::string("To"_sv)                            //TO
+    std::u8string(u8"Cc"_sv),                           //CC
+    std::u8string(u8"Content-Transfer-Encoding"_sv),    //CONTENT_TRANSFER_ENCODING
+    std::u8string(u8"Content-Type"_sv),                 //CONTENT_TYPE
+    std::u8string(u8"Date"_sv),                         //DATE
+    std::u8string(u8"From"_sv),                         //FROM
+    std::u8string(u8"List-Unsubscribe"_sv),             //LIST_UNSUBSCRIBE
+    std::u8string(u8"Message-ID"_sv),                   //MESSAGE_ID
+    std::u8string(u8"MIME-Version"_sv),                 //MIME_VERSION
+    std::u8string(u8"Subject"_sv),                      //SUBJECT
+    std::u8string(u8"To"_sv)                            //TO
 };
 
 REFLECT_IMPLEMENT(GpEmailHeaders, GP_MODULE_UUID)
@@ -52,7 +52,7 @@ GpEmailHeaders& GpEmailHeaders::operator= (GpEmailHeaders&& aHeaders) noexcept
 GpEmailHeaders& GpEmailHeaders::Replace
 (
     const GpEmailHeaderType::EnumT  aType,
-    std::string_view                aValue
+    std::u8string_view              aValue
 )
 {
     GpHttpProtoHeaders::Replace<GpEmailHeaderType, GpEmailHeaders>(aType, aValue);
@@ -62,7 +62,7 @@ GpEmailHeaders& GpEmailHeaders::Replace
 GpEmailHeaders& GpEmailHeaders::Replace
 (
     const GpEmailHeaderType::EnumT  aType,
-    std::string&&                   aValue)
+    std::u8string&&                 aValue)
 {
     GpHttpProtoHeaders::Replace<GpEmailHeaderType, GpEmailHeaders>(aType, std::move(aValue));
     return *this;
@@ -81,7 +81,7 @@ GpEmailHeaders& GpEmailHeaders::Replace
 GpEmailHeaders& GpEmailHeaders::Add
 (
     const GpEmailHeaderType::EnumT  aType,
-    std::string_view                aValue
+    std::u8string_view              aValue
 )
 {
     GpHttpProtoHeaders::Add<GpEmailHeaderType, GpEmailHeaders>(aType, aValue);
@@ -91,7 +91,7 @@ GpEmailHeaders& GpEmailHeaders::Add
 GpEmailHeaders& GpEmailHeaders::Add
 (
     const GpEmailHeaderType::EnumT  aType,
-    std::string&&                   aValue
+    std::u8string&&                 aValue
 )
 {
     GpHttpProtoHeaders::Add<GpEmailHeaderType, GpEmailHeaders>(aType, std::move(aValue));
@@ -124,7 +124,7 @@ GpEmailHeaders& GpEmailHeaders::SetContentType
         .Add(GpEmailHeaderType::CONTENT_TYPE, sCharset.at(size_t(aCharset)));
 }
 
-GpEmailHeaders& GpEmailHeaders::SetContentType (std::string aContentType)
+GpEmailHeaders& GpEmailHeaders::SetContentType (std::u8string aContentType)
 {
     return Replace(GpEmailHeaderType::CONTENT_TYPE, std::move(aContentType));
 }

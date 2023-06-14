@@ -11,13 +11,16 @@ public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpIOEventPoller)
     CLASS_DD(GpIOEventPoller)
 
-    CLASS_TAG(THREAD_SAFE)
+    TAG_SET(THREAD_SAFE)
 
-    using SubscribersT = std::map<GpIOObjectId::IdT, GpEventSubscriber::SP, std::less<>>;
+    using SubscribersT      = std::map<GpIOObjectId::IdT, GpEventSubscriber::SP, std::less<>>;
+    using StartItcPromiseT  = GpItcPromise<size_t>;
+    using StartItcFutureT   = GpItcFuture<size_t>;
+    using StartItcResultT   = GpItcResult<size_t>;
 
 protected:
-    inline                      GpIOEventPoller         (std::string    aName,
-                                                         GpItcPromise&& aStartPromise) noexcept;
+    inline                      GpIOEventPoller         (std::u8string      aName,
+                                                         StartItcPromiseT&& aStartPromise) noexcept;
 
 public:
     virtual                     ~GpIOEventPoller        (void) noexcept override;
@@ -35,18 +38,18 @@ protected:
                                                          const GpIOObjectId     aIOObjectId) = 0;
     virtual void                OnRemoveSubscriber      (const GpIOObjectId     aIOObjectId) = 0;
 
-    inline void                 CompleteStartPromise    (GpItcResult::SP aResult) noexcept {iStartPromise.Complete(std::move(aResult));}
+    inline void                 CompleteStartPromise    (StartItcResultT::SP aResult) noexcept {iStartPromise.Complete(std::move(aResult));}
 
 private:
     mutable GpSpinlock          iSubscribersLock;
     SubscribersT                iSubscribers;
-    GpItcPromise                iStartPromise;
+    StartItcPromiseT            iStartPromise;
 };
 
 GpIOEventPoller::GpIOEventPoller
 (
-    std::string     aName,
-    GpItcPromise&&  aStartPromise
+    std::u8string       aName,
+    StartItcPromiseT&&  aStartPromise
 ) noexcept:
 GpLogTaskFiberBase(std::move(aName)),
 iStartPromise(std::move(aStartPromise))

@@ -18,12 +18,12 @@ public:
     using EventsT   = std::vector<EventT>;
 
 public:
-    inline                      GpIOEventPollerEpoll    (std::string    aName,
-                                                         GpItcPromise&& aStartPromise) noexcept;
+    inline                      GpIOEventPollerEpoll    (std::u8string      aName,
+                                                         StartItcPromiseT&& aStartPromise) noexcept;
     virtual                     ~GpIOEventPollerEpoll   (void) noexcept override final;
 
     void                        Configure               (const milliseconds_t   aMaxStepTime,
-                                                         const count_t          aMaxEventsCnt);
+                                                         const size_t           aMaxEventsCnt);
 
 protected:
     virtual void                OnStart                 (void) override final;
@@ -43,8 +43,8 @@ private:
 
 GpIOEventPollerEpoll::GpIOEventPollerEpoll
 (
-    std::string     aName,
-    GpItcPromise&&  aStartPromise
+    std::u8string       aName,
+    StartItcPromiseT&&  aStartPromise
 ) noexcept:
 GpIOEventPoller
 (

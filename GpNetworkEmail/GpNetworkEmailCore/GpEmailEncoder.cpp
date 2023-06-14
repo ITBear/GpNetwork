@@ -16,11 +16,11 @@ GpEmailEncoder::~GpEmailEncoder (void) noexcept
 {
 }
 
-std::string GpEmailEncoder::Encode (void)
+std::u8string   GpEmailEncoder::Encode (void)
 {
     Mime();
     Date();
-    std::string messageId = MessageID();
+    std::u8string messageId = MessageID();
     From();
     To();
     Cc();
@@ -43,11 +43,11 @@ void    GpEmailEncoder::Date (void)
     iWriter.Bytes(GpDateTimeOps::SUnixTsToStr(GpDateTimeOps::SUnixTS_s(), GpDateTimeFormat::RFC_2822));
 }
 
-std::string GpEmailEncoder::MessageID (void)
+std::u8string   GpEmailEncoder::MessageID (void)
 {
-    std::string addr = iEmail.from.addr;
+    std::u8string addr = iEmail.from.addr;
     std::replace(addr.begin(), addr.end(), '@', '.');
-    std::string messageId = GpUUID::SGenRandomV4().ToString() + "@"_sv + addr;
+    std::u8string messageId = GpUUID::SGenRandomV4().ToString() + u8"@"_sv + addr;
 
     WriteHeaderBegin(GpEmailHeaderType::MESSAGE_ID);
     BraceStr(messageId);
@@ -94,7 +94,7 @@ void    GpEmailEncoder::LinkUnsubscribe (void)
 void    GpEmailEncoder::Part
 (
     const GpEmailPart&  aPart,
-    std::string_view    aBoundary
+    std::u8string_view  aBoundary
 )
 {
     //boundary
@@ -107,7 +107,7 @@ void    GpEmailEncoder::Part
 
     WriteHeaderBegin(GpEmailHeaderType::CONTENT_TYPE);
     iWriter
-        .Bytes(GpHttpProtoHeaders::sContentType.at(aPart.content_type.Value()))
+        .Bytes(GpHttpProtoHeaders::sContentType.at(NumOps::SConvert<size_t>(GpEnum::value_type(aPart.content_type.Value()))))
         .Bytes("; "_sv).Bytes(GpHttpProtoHeaders::sCharset.at(GpHttpCharset::UTF_8));
 
     WriteHeaderBegin(GpEmailHeaderType::CONTENT_TRANSFER_ENCODING);
@@ -115,7 +115,7 @@ void    GpEmailEncoder::Part
 
     //Body
     iWriter.Bytes("\r\n\r\n"_sv);
-    GpBase64::SEncode(aPart.data, iWriter, 74);
+    GpBase64::SEncode(GpSpanPtrByteR(aPart.data.data(), aPart.data.size()), iWriter, 74);
 }
 
 void    GpEmailEncoder::Parts (void)
@@ -129,29 +129,29 @@ void    GpEmailEncoder::Parts (void)
 
     if (partsCount == 1)
     {
-        Part(iEmail.parts.at(0).V(), ""_sv);
+        Part(iEmail.parts.at(0).V(), {});
     } else
     {
-        const std::string boundary = "_----"_sv + GpUUID::SGenRandomV4().ToString();
+        const std::u8string boundary = u8"_----"_sv + GpUUID::SGenRandomV4().ToString();
 
         WriteHeaderBegin(GpEmailHeaderType::CONTENT_TYPE);
         iWriter
-            .Bytes("multipart/alternative; boundary=\""_sv)
+            .Bytes(u8"multipart/alternative; boundary=\""_sv)
             .Bytes(boundary)
-            .Bytes("\""_sv);
+            .Bytes(u8"\""_sv);
 
         for (const auto& part: iEmail.parts)
         {
-            iWriter.Bytes("\r\n\r\n"_sv);
+            iWriter.Bytes(u8"\r\n\r\n"_sv);
             Part(part.V(), boundary);
         }
 
         //close boundary
         iWriter
-            .Bytes("\r\n"_sv)
-            .Bytes("--"_sv)
+            .Bytes(u8"\r\n"_sv)
+            .Bytes(u8"--"_sv)
             .Bytes(boundary)
-            .Bytes("--"_sv);
+            .Bytes(u8"--"_sv);
     }
 }
 
@@ -160,7 +160,7 @@ void    GpEmailEncoder::Addr (const GpEmailAddr& aAddr)
     if (aAddr.name.length() > 0)
     {
         EscapeStrBase64(aAddr.name);
-        iWriter.Bytes(" "_sv);
+        iWriter.Bytes(u8" "_sv);
     }
 
     BraceStr(aAddr.addr);
@@ -173,7 +173,7 @@ void    GpEmailEncoder::Addrs (const GpEmailAddr::C::Vec::SP& aAddr)
     {
         if (!isFirst)
         {
-            iWriter.Bytes(", "_sv);
+            iWriter.Bytes(u8", "_sv);
         } else
         {
             isFirst = false;
@@ -190,35 +190,35 @@ void    GpEmailEncoder::WriteHeaderBegin
 {
     if (!iIsFirstHeader)
     {
-        iWriter.Bytes("\r\n"_sv);
+        iWriter.Bytes(u8"\r\n"_sv);
     } else
     {
         iIsFirstHeader = false;
     }
 
     iWriter
-        .Bytes(GpEmailHeaders::sHeadersNames.at(aHeader))
-        .Bytes(": "_sv);
+        .Bytes(GpEmailHeaders::sHeadersNames.at(NumOps::SConvert<size_t>(GpEnum::value_type(aHeader))))
+        .Bytes(u8": "_sv);
 }
 
-void    GpEmailEncoder::BraceStr (std::string_view aStr)
+void    GpEmailEncoder::BraceStr (std::u8string_view aStr)
 {
     iWriter
-        .Bytes("<"_sv)
+        .Bytes(u8"<"_sv)
         .Bytes(aStr)
-        .Bytes(">"_sv);
+        .Bytes(u8">"_sv);
 }
 
-void    GpEmailEncoder::EscapeStrBase64 (std::string_view aStr)
+void    GpEmailEncoder::EscapeStrBase64 (std::u8string_view aStr)
 {
     if (aStr.length() == 0)
     {
         return;
     }
 
-    iWriter.Bytes("=?utf-8?B?"_sv);
+    iWriter.Bytes(u8"=?utf-8?B?"_sv);
     GpBase64::SEncode(aStr, iWriter, 0);
-    iWriter.Bytes("?="_sv);
+    iWriter.Bytes(u8"?="_sv);
 }
 
 }//namespace GPlatform

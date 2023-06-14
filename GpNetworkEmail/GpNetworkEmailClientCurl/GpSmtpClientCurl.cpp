@@ -37,14 +37,14 @@ GpSmtpClientCurl::~GpSmtpClientCurl (void) noexcept
     CurlClear();
 }
 
-std::string GpSmtpClientCurl::Send (const GpEmail& aEmail)
+std::u8string   GpSmtpClientCurl::Send (const GpEmail& aEmail)
 {
     //https://curl.se/libcurl/c/smtp-ssl.html
     //https://curl.se/libcurl/c/smtp-tls.html
 
     CurlInit();
 
-    std::string     messageId;
+    std::u8string   messageId;
     GpBytesArray    body;
     {
         body.resize(4096);
@@ -70,7 +70,7 @@ std::string GpSmtpClientCurl::Send (const GpEmail& aEmail)
     //curl_easy_setopt(iCurl, CURLOPT_VERBOSE, 1L);
 
     //From
-    std::string_view fromAddr = aEmail.from.addr;
+    std::u8string_view fromAddr = aEmail.from.addr;
     THROW_COND_GP
     (
         fromAddr.length() > 0,
@@ -105,7 +105,7 @@ std::string GpSmtpClientCurl::Send (const GpEmail& aEmail)
     THROW_COND_GP
     (
         curlResCode == CURLE_OK,
-        [&](){return "curl_easy_perform failed: "_sv + curl_easy_strerror(curlResCode);}
+        [&](){return u8"curl_easy_perform failed: "_sv + curl_easy_strerror(curlResCode);}
     );
 
     return messageId;
@@ -156,7 +156,7 @@ void    GpSmtpClientCurl::FillAddrs
 
     for (const auto& element: aAddrList)
     {
-        std::string_view addr = element.V().addr;
+        std::u8string_view addr = element.V().addr;
 
         THROW_COND_GP
         (
@@ -164,7 +164,7 @@ void    GpSmtpClientCurl::FillAddrs
             "Addr is empty"_sv
         );
 
-        *curlList = curl_slist_append(*curlList, addr.data());
+        *curlList = curl_slist_append(*curlList, GpUTF::S_UTF8_To_STR(addr).data());
     }
 }
 

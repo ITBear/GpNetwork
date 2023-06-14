@@ -8,7 +8,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpRequest final: public GpReflectObject
 {
 public:
     CLASS_DD(GpHttpRequest)
-    REFLECT_DECLARE("4b00f15a-7ce1-415f-be93-cba741adbe09"_uuid)
+    REFLECT_DECLARE(u8"4b00f15a-7ce1-415f-be93-cba741adbe09"_uuid)
 
     using HttpVersionT      = GpHttpVersion;
     using HttpVersionTE     = HttpVersionT::EnumT;
@@ -22,19 +22,19 @@ public:
     inline                  GpHttpRequest   (GpHttpRequest&& aRequest) noexcept;
     inline                  GpHttpRequest   (const HttpVersionTE        aHttpVersion,
                                              const HttpRequestTypeTE    aRequestType,
-                                             std::string_view           aUrl,
+                                             std::u8string_view         aUrl,
                                              const GpHttpHeaders&       aHeaders,
                                              GpBytesArray&&             aBody);
                             ~GpHttpRequest  (void) noexcept;
 
     void                    SetHttpVersion  (const size_t aMajor, const size_t aMinor);
 
-    inline std::string      ToString        (void) const;
+    inline std::u8string    ToString        (void) const;
 
 public:
     HttpVersionT            http_version    = HttpVersionT::HTTP_1_1;
     HttpRequestTypeT        request_type    = HttpRequestTypeT::GET;
-    std::string             url;
+    std::u8string           url;
     GpHttpHeaders           headers;
     GpBytesArray            body;
 };
@@ -63,7 +63,7 @@ GpHttpRequest::GpHttpRequest
 (
     const HttpVersionTE     aHttpVersion,
     const HttpRequestTypeTE aRequestType,
-    std::string_view        aUrl,
+    std::u8string_view      aUrl,
     const GpHttpHeaders&    aHeaders,
     GpBytesArray&&          aBody
 ):
@@ -75,10 +75,10 @@ body(std::move(aBody))
 {
 }
 
-std::string GpHttpRequest::ToString (void) const
+std::u8string   GpHttpRequest::ToString (void) const
 {
     //TODO: implement
-    return "\n\n\n[GpHttpRequest::ToString]: NOT IMPLEMENTED";
+    return std::u8string(GpSpanPtrByteR(body).AsStringViewU8());
 }
 
 }//namespace GPlatform

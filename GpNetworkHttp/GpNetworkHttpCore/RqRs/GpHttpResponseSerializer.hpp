@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GpHttpResponse.hpp"
+#include "../../../../GpCore2/GpUtils/Streams/GpByteWriter.hpp"
 
 namespace GPlatform {
 
@@ -10,18 +11,18 @@ public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpResponseSerializer)
 
 public:
-    static void                 SSerializeHeaders       (const GpHttpResponse&  aResponse,
-                                                         GpByteWriter&          aWriter);
+    static void                 SSerializeHeaders   (const GpHttpResponse&  aResponse,
+                                                     GpByteWriter&          aWriter);
 
 private:
-    static void                 SHeadersFirstLine       (const GpHttpResponse&  aResponse,
-                                                         GpByteWriter&          aWriter);
-    static void                 SHeaders                (const GpHttpResponse&  aResponse,
-                                                         GpByteWriter&          aWriter);
+    static void                 SHeadersFirstLine   (const GpHttpResponse&  aResponse,
+                                                     GpByteWriter&          aWriter);
+    static void                 SHeaders            (const GpHttpResponse&  aResponse,
+                                                     GpByteWriter&          aWriter);
 
 private:
-    static std::array<std::string, GpHttpVersion::SCount()>         sHttpVersion;
-    static std::array<std::string, GpHttpResponseCode::SCount()>    sHttpResponseCode;
+    static std::array<std::u8string, GpHttpVersion::SCount()>       sHttpVersion;
+    static std::array<std::u8string, GpHttpResponseCode::SCount()>  sHttpResponseCode;
 };
 
 }//namespace GPlatform

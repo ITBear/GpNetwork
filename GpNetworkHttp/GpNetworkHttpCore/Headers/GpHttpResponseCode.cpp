@@ -2,7 +2,7 @@
 
 namespace GPlatform {
 
-GP_ENUM_IMPL(GpHttpResponseCode);
+GP_ENUM_IMPL(GpHttpResponseCode)
 
 GpHttpResponseCode::EnumT   GpHttpResponseCodeUtils::SFromId (const size_t aCodeId)
 {
@@ -55,7 +55,7 @@ GpHttpResponseCode::EnumT   GpHttpResponseCodeUtils::SFromId (const size_t aCode
         case 506: return GpHttpResponseCode::VARIANT_ALSO_NEGOTIATES_506;
         default:
         {
-            THROW_GP("Unknown code "_sv + aCodeId);
+            THROW_GP(u8"Unknown code "_sv + aCodeId);
         }
     }
 }

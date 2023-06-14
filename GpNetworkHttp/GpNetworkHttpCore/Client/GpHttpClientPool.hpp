@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GpHttpClientFactory.hpp"
+#include "../../../../GpCore2/GpUtils/Types/Containers/GpElementsPool.hpp"
 
 namespace GPlatform {
 
@@ -9,7 +10,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpClientPool final: public GpElementsPool<GpH
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpClientPool)
     CLASS_DD(GpHttpClientPool)
-    CLASS_TAG(THREAD_SAFE)
+    TAG_SET(THREAD_SAFE)
 
 public:
                                     GpHttpClientPool    (GpHttpClientFactory::SP aFactory) noexcept;

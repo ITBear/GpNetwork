@@ -9,7 +9,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpResponse final: public GpReflectObject
 {
 public:
     CLASS_DD(GpHttpResponse)
-    REFLECT_DECLARE("1c48e524-5261-4250-aa72-76d3401cc607"_uuid)
+    REFLECT_DECLARE(u8"1c48e524-5261-4250-aa72-76d3401cc607"_uuid)
 
     using HttpVersionT      = GpHttpVersion;
     using HttpVersionTE     = HttpVersionT::EnumT;
@@ -38,7 +38,7 @@ public:
     void                    SetFromException    (const GpException& aEx);
     void                    SetFromException    (const std::exception& aEx);
 
-    inline std::string      ToString            (void) const;
+    inline std::u8string    ToString            (void) const;
 
 public:
     HttpVersionT            http_version    = HttpVersionT::HTTP_1_1;
@@ -117,10 +117,10 @@ body(std::move(aBody))
 {
 }
 
-std::string GpHttpResponse::ToString (void) const
+std::u8string   GpHttpResponse::ToString (void) const
 {
     //TODO: implement
-    return "\n\n\n[GpHttpRequest::ToString]: NOT IMPLEMENTED";
+    return std::u8string(GpSpanPtrByteR(body).AsStringViewU8());
 }
 
 }//namespace GPlatform

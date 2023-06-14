@@ -13,7 +13,7 @@ GpSmtpClient::~GpSmtpClient (void) noexcept
 
 void    GpSmtpClient::SetSmtp
 (
-    std::string_view aSmtp
+    std::u8string_view aSmtp
 )
 {
     iSmtp = aSmtp;
@@ -21,15 +21,15 @@ void    GpSmtpClient::SetSmtp
 
 void    GpSmtpClient::SetAuth
 (
-    std::string_view aLogin,
-    std::string_view aPassword
+    std::u8string_view aLogin,
+    std::u8string_view aPassword
 )
 {
     iLogin      = aLogin;
     iPassword   = aPassword;
 }
 
-std::string GpSmtpClient::MakeBody
+std::u8string   GpSmtpClient::MakeBody
 (
     const GpEmail&  aEmail,
     GpByteWriter&   aWriter

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "GpNetworkHttpServerBasic_global.hpp"
+#include "../../GpNetworkCore/IO/Sockets/GpSocketTask.hpp"
+#include "../GpNetworkHttpCore/RqRs/GpHttpRequestHandlerFactory.hpp"
+#include "../GpNetworkHttpCore/RqRs/GpHttpRequestDoneEvent.hpp"
 
 #if  __has_include(<llhttp/llhttp.h>)
 #   include <llhttp/llhttp.h>
@@ -37,7 +40,7 @@ public:
     };
 
 public:
-    inline                          GpHttpServerBasicSocketTask (std::string                        aName,
+    inline                          GpHttpServerBasicSocketTask (std::u8string                      aName,
                                                                  GpIOEventPoller::SP                aIOPoller,
                                                                  GpSocket::SP                       aSocket,
                                                                  GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory) noexcept;
@@ -61,19 +64,19 @@ private:
     void                            ParseHttp                   (GpSocket& aSocket);
 
     static int                      SHTTP_OnURL                 (llhttp_t* aHttp, const char* aData, const size_t aLength);
-    int                             HTTP_OnURL                  (std::string_view aValue);
+    int                             HTTP_OnURL                  (std::u8string_view aValue);
 
     static int                      SHTTP_OnHeaderField         (llhttp_t* aHttp, const char* aData, const size_t aLength);
-    int                             HTTP_OnHeaderField          (std::string_view aValue);
+    int                             HTTP_OnHeaderField          (std::u8string_view aValue);
 
     static int                      SHTTP_OnHeaderValue         (llhttp_t* aHttp, const char* aData, const size_t aLength);
-    int                             HTTP_OnHeaderValue          (std::string_view aValue);
+    int                             HTTP_OnHeaderValue          (std::u8string_view aValue);
 
     static int                      SHTTP_OnHeadersComplete     (llhttp_t* aHttp);
     int                             HTTP_OnHeadersComplete      (llhttp_t* aHttp);
 
     static int                      SHTTP_OnBody                (llhttp_t* aHttp, const char* aData, const size_t aLength);
-    int                             HTTP_OnBody                 (std::string_view aValue);
+    int                             HTTP_OnBody                 (std::u8string_view aValue);
 
     static int                      SHTTP_OnMessageBegin        (llhttp_t* aHttp);
     int                             HTTP_OnMessageBegin         (llhttp_t* aHttp);
@@ -93,7 +96,7 @@ private:
     //Rq parser
     llhttp_t                            iHttpParser;
     http_settings_t                     iHttpParserSettings;
-    std::string                         iHttpParserCurrentHeaderName;
+    std::u8string                       iHttpParserCurrentHeaderName;
 
     //Rq
     //GpBytesArray                      iRqData;
@@ -110,7 +113,7 @@ private:
 
 GpHttpServerBasicSocketTask::GpHttpServerBasicSocketTask
 (
-    std::string                     aName,
+    std::u8string                   aName,
     GpIOEventPoller::SP             aIOPoller,
     GpSocket::SP                    aSocket,
     GpHttpRequestHandlerFactory::SP aRequestHandlerFactory

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GpNetworkHttpClientCurl_global.hpp"
+#include "../GpNetworkHttpCore/Client/GpHttpClient.hpp"
 
 typedef void CURL;
 

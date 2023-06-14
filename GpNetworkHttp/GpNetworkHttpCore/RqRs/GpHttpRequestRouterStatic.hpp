@@ -16,7 +16,7 @@ public:
     virtual                         ~GpHttpRequestRouterStatic  (void) noexcept override final;
 
 protected:
-    virtual GpHttpResponse::SP      OnRequest                   (const GpHttpRequest& aRequest) override final;
+    virtual GpHttpResponse::SP      OnRequest                   (GpHttpRequest& aRequest) override final;
 
 private:
     GpHttpRequestRouteTable::CSP    iRouteTable;

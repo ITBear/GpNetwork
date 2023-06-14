@@ -2,6 +2,6 @@
 
 namespace GPlatform {
 
-GP_ENUM_IMPL(GpHttpConnectionFlag);
+GP_ENUM_IMPL(GpHttpConnectionFlag)
 
 }//namespace GPlatform

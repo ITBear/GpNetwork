@@ -16,7 +16,7 @@ public:
                                     GpSmtpClientCurl    (void) noexcept;
     virtual                         ~GpSmtpClientCurl   (void) noexcept override final;
 
-    virtual std::string/*msg_id*/   Send                (const GpEmail& aEmail) override final;
+    virtual std::u8string/*msg_id*/ Send                (const GpEmail& aEmail) override final;
 
     virtual bool                    IsValid             (void) const noexcept override final;
 

@@ -10,7 +10,7 @@ class GP_NETWORK_EMAIL_CORE_API GpSmtpClientPool final: public GpElementsPool<Gp
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpSmtpClientPool)
     CLASS_DD(GpSmtpClientPool)
-    CLASS_TAG(THREAD_SAFE)
+    TAG_SET(THREAD_SAFE)
 
 public:
                                     GpSmtpClientPool    (GpSmtpClientFactory::SP aFactory) noexcept;

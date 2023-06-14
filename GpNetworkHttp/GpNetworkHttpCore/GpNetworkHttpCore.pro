@@ -47,6 +47,7 @@ SOURCES += \
     RqRs/GpUrl.cpp \
     RqRs/GpUrlAuthority.cpp \
     RqRs/GpUrlQuery.cpp \
+    RqRs/GpUrlReflection.cpp \
     Server/GpHttpServer.cpp \
     Server/GpHttpServerCfgDesc.cpp
 
@@ -84,6 +85,7 @@ HEADERS += \
     RqRs/GpUrl.hpp \
     RqRs/GpUrlAuthority.hpp \
     RqRs/GpUrlQuery.hpp \
+    RqRs/GpUrlReflection.hpp \
     Server/GpHttpServer.hpp \
     Server/GpHttpServerCfgDesc.hpp \
     Server/GpHttpServerFactory.hpp \

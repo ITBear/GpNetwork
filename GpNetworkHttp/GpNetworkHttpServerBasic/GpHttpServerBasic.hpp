@@ -1,6 +1,11 @@
 #pragma once
 
 #include "GpNetworkHttpServerBasic_global.hpp"
+#include "../../../GpCore2/GpUtils/Macro/GpMacroClass.hpp"
+#include "../../../GpCore2/GpUtils/Types/Containers/GpContainersT.hpp"
+#include "../GpNetworkHttpCore/Server/GpHttpServer.hpp"
+#include "../../../GpNetwork/GpNetworkCore/IO/Events/GpIOEventPoller.hpp"
+#include "../../../GpNetwork/GpNetworkCore/IO/Sockets/GpSocketAddr.hpp"
 
 namespace GPlatform {
 
@@ -11,7 +16,7 @@ public:
     CLASS_DD(GpHttpServerBasic)
 
 public:
-    inline                  GpHttpServerBasic   (std::string                        aName,
+    inline                  GpHttpServerBasic   (std::u8string                      aName,
                                                  const GpSocketAddr&                aListenSocketAddr,
                                                  GpIOEventPoller::SP                aEventPoller,
                                                  GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory) noexcept;
@@ -23,7 +28,7 @@ protected:
     virtual void            OnStop              (void) noexcept override final;
 
 private:
-    void                    StartTcpServer      (std::string aTcpServerTaskName);
+    void                    StartTcpServer      (std::u8string aTcpServerTaskName);
 
 private:
     const GpSocketAddr      iListenSocketAddr;
@@ -32,7 +37,7 @@ private:
 
 GpHttpServerBasic::GpHttpServerBasic
 (
-    std::string                     aName,
+    std::u8string                       aName,
     const GpSocketAddr&             aListenSocketAddr,
     GpIOEventPoller::SP             aEventPoller,
     GpHttpRequestHandlerFactory::SP aRequestHandlerFactory

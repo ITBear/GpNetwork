@@ -6,6 +6,7 @@
 #include "GpHttpRequestDoneEvent.hpp"
 #include "GpHttpRequestTask.hpp"
 #include "GpHttpResponseSerializer.hpp"
+#include "GpUrlReflection.hpp"
 
 namespace GPlatform {
 

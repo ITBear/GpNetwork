@@ -155,16 +155,16 @@ void    GpSocket::SetFlag_NoBlock (bool aValue)
     THROW_COND_GP
     (
         opts >= 0,
-        [&](){return GpErrno::SGetAndClear();}
+        [&](){return std::u8string(GpErrno::SGetAndClear());}
     );
 
-    if (aValue) opts = BitOps::Up(opts, O_NONBLOCK);
-    else        opts = BitOps::Down(opts, O_NONBLOCK);
+    if (aValue) opts = BitOps::Up_by_mask(opts, O_NONBLOCK);
+    else        opts = BitOps::Down_by_mask(opts, O_NONBLOCK);
 
     THROW_COND_GP
     (
         fcntl(Id(), F_SETFL, opts) >= 0,
-        [&](){return GpErrno::SGetAndClear();}
+        [&](){return std::u8string(GpErrno::SGetAndClear());}
     );
 }
 

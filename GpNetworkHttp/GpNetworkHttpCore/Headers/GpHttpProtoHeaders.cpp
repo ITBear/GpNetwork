@@ -1,19 +1,20 @@
 #include "GpHttpProtoHeaders.hpp"
+#include "../../../GpCore2/GpReflection/GpReflectManager.hpp"
 
 namespace GPlatform {
 
-const std::array<std::string, GpHttpContentType::SCount()>  GpHttpProtoHeaders::sContentType =
+const std::array<std::u8string, GpHttpContentType::SCount()>    GpHttpProtoHeaders::sContentType =
 {
-    std::string("text/plain"_sv),       //TEXT_PLAIN
-    std::string("text/html"_sv),        //TEXT_HTML
-    std::string("application/json"_sv), //APPLICATION_JSON
-    std::string("application/xml"_sv)   //APPLICATION_XML
+    std::u8string(u8"text/plain"_sv),       //TEXT_PLAIN
+    std::u8string(u8"text/html"_sv),        //TEXT_HTML
+    std::u8string(u8"application/json"_sv), //APPLICATION_JSON
+    std::u8string(u8"application/xml"_sv)   //APPLICATION_XML
 };
 
-const std::array<std::string, GpHttpCharset::SCount()>      GpHttpProtoHeaders::sCharset =
+const std::array<std::u8string, GpHttpCharset::SCount()>        GpHttpProtoHeaders::sCharset =
 {
-    std::string(""_sv),                 //NOT_SET
-    std::string("charset=utf-8"_sv),    //UTF_8
+    std::u8string(),                        //NOT_SET
+    std::u8string(u8"charset=utf-8"_sv),    //UTF_8
 };
 
 REFLECT_IMPLEMENT(GpHttpProtoHeaders, GP_MODULE_UUID)
@@ -55,17 +56,17 @@ void    GpHttpProtoHeaders::Clear (void)
 
 GpHttpProtoHeaders& GpHttpProtoHeaders::Replace
 (
-    std::string         aName,
-    std::string_view    aValue
+    std::u8string       aName,
+    std::u8string_view  aValue
 )
 {
-    return Replace(std::move(aName), std::string(aValue));
+    return Replace(std::move(aName), std::u8string(aValue));
 }
 
 GpHttpProtoHeaders& GpHttpProtoHeaders::Replace
 (
-    std::string     aName,
-    std::string&&   aValue
+    std::u8string   aName,
+    std::u8string&& aValue
 )
 {
     headers[std::move(aName)] = MakeSP<GpProtoHeaderValue>(std::move(aValue));
@@ -74,7 +75,7 @@ GpHttpProtoHeaders& GpHttpProtoHeaders::Replace
 
 GpHttpProtoHeaders& GpHttpProtoHeaders::Replace
 (
-    std::string     aName,
+    std::u8string   aName,
     const u_int_64  aValue
 )
 {
@@ -83,17 +84,17 @@ GpHttpProtoHeaders& GpHttpProtoHeaders::Replace
 
 GpHttpProtoHeaders& GpHttpProtoHeaders::Add
 (
-    std::string         aName,
-    std::string_view    aValue
+    std::u8string       aName,
+    std::u8string_view  aValue
 )
 {
-    return Add(std::move(aName), std::string(aValue));
+    return Add(std::move(aName), std::u8string(aValue));
 }
 
 GpHttpProtoHeaders& GpHttpProtoHeaders::Add
 (
-    std::string     aName,
-    std::string&&   aValue
+    std::u8string   aName,
+    std::u8string&& aValue
 )
 {
     auto iter = headers.find(aName);
@@ -111,7 +112,7 @@ GpHttpProtoHeaders& GpHttpProtoHeaders::Add
 
 GpHttpProtoHeaders& GpHttpProtoHeaders::Add
 (
-    std::string     aName,
+    std::u8string       aName,
     const u_int_64  aValue
 )
 {

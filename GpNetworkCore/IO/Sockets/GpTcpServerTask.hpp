@@ -13,13 +13,13 @@ public:
     CLASS_DD(GpTcpServerTask)
 
 public:
-    inline                      GpTcpServerTask     (std::string                aName,
+    inline                      GpTcpServerTask     (std::u8string              aName,
                                                      GpIOEventPoller::SP        aIOPoller,
                                                      GpSocketTaskFactory::SP    aTaskFactory,
                                                      GpSocketTCP::SP            aSocket) noexcept;
     virtual                     ~GpTcpServerTask    (void) noexcept override final;
 
-    static  GpTcpServerTask::SP SConstruct          (std::string                aServerTaskName,
+    static  GpTcpServerTask::SP SConstruct          (std::u8string              aServerTaskName,
                                                      const GpSocketAddr&        aAddr,
                                                      const GpSocketFlags&       aFlags,
                                                      const size_t               aMaxListenQueueSize,
@@ -38,7 +38,7 @@ private:
 
 GpTcpServerTask::GpTcpServerTask
 (
-    std::string             aName,
+    std::u8string           aName,
     GpIOEventPoller::SP     aIOPoller,
     GpSocketTaskFactory::SP aTaskFactory,
     GpSocketTCP::SP         aSocket

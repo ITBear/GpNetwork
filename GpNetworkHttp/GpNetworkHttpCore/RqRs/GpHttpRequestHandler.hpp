@@ -11,7 +11,7 @@ public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestHandler)
     CLASS_DD(GpHttpRequestHandler)
 
-    CLASS_TAG(THREAD_SAFE)
+    TAG_SET(THREAD_SAFE)
 
 protected:
                                 GpHttpRequestHandler    (void) noexcept {}
@@ -19,10 +19,10 @@ protected:
 public:
     virtual                     ~GpHttpRequestHandler   (void) noexcept {}
 
-    GpHttpResponse::SP          ProcessRequest          (const GpHttpRequest& aRequest);
+    GpHttpResponse::SP          ProcessRequest          (GpHttpRequest& aRequest);
 
 protected:
-    virtual GpHttpResponse::SP  OnRequest               (const GpHttpRequest& aRequest) = 0;
+    virtual GpHttpResponse::SP  OnRequest               (GpHttpRequest& aRequest) = 0;
 };
 
 }//namespace GPlatform

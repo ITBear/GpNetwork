@@ -9,9 +9,9 @@ class GP_NETWORK_HTTP_CORE_API GpHttpClientPoolCatalog
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpClientPoolCatalog)
     CLASS_DD(GpHttpClientPoolCatalog)
-    CLASS_TAG(THREAD_SAFE)
+    TAG_SET(THREAD_SAFE)
 
-    using PoolsT = GpElementsCatalog<std::string, GpHttpClientPool::SP>;
+    using PoolsT = GpDictionary<std::u8string, GpHttpClientPool::SP>;
 
 public:
                                     GpHttpClientPoolCatalog     (GpHttpClientFactory::SP    aFactory,
@@ -19,7 +19,7 @@ public:
                                     ~GpHttpClientPoolCatalog    (void) noexcept;
 
     void                            Clear                       (void);
-    GpHttpClientPool&               Pool                        (std::string_view aName);
+    GpHttpClientPool&               Pool                        (std::u8string_view aName);
 
 private:
     GpHttpClientFactory::SP         iFactory;

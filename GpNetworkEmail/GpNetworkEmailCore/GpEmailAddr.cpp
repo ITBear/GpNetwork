@@ -24,7 +24,7 @@ addr(std::move(aEmailAddr.addr))
 
 GpEmailAddr::GpEmailAddr
 (
-    std::string_view aAddr
+    std::u8string_view aAddr
 ):
 addr(aAddr)
 {
@@ -32,8 +32,8 @@ addr(aAddr)
 
 GpEmailAddr::GpEmailAddr
 (
-    std::string_view    aName,
-    std::string_view    aAddr
+    std::u8string_view  aName,
+    std::u8string_view  aAddr
 ):
 name(aName),
 addr(aAddr)

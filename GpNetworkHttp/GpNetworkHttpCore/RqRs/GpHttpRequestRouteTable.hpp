@@ -2,6 +2,7 @@
 
 #include "GpHttpRequestHandler.hpp"
 #include "GpHttpRequestHandlerFactory.hpp"
+#include "../../../../GpCore2/GpUtils/Types/Containers/GpDictionary.hpp"
 
 namespace GPlatform {
 
@@ -11,15 +12,15 @@ public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpRequestRouteTable)
     CLASS_DD(GpHttpRequestRouteTable)
 
-    using HandlersCatalogT = GpElementsCatalog<std::string, GpHttpRequestHandlerFactory::SP>;
+    using HandlersCatalogT = GpDictionary<std::u8string, GpHttpRequestHandlerFactory::SP>;
 
 public:
                                 GpHttpRequestRouteTable     (void) noexcept;
                                 ~GpHttpRequestRouteTable    (void) noexcept;
 
-    void                        RegisterPath                (std::string_view                   aPath,
+    void                        RegisterPath                (std::u8string_view                 aPath,
                                                              GpHttpRequestHandlerFactory::SP    aHandlerFactory);
-    GpHttpRequestHandler::SP    Handler                     (std::string_view aPath) const;
+    GpHttpRequestHandler::SP    Handler                     (std::u8string_view aPath) const;
 
 private:
     HandlersCatalogT            iHandlersCatalog;

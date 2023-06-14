@@ -21,9 +21,9 @@ void    GpHttpClientPoolCatalog::Clear (void)
     iPools.Clear();
 }
 
-GpHttpClientPool&   GpHttpClientPoolCatalog::Pool (std::string_view aName)
+GpHttpClientPool&   GpHttpClientPoolCatalog::Pool (std::u8string_view aName)
 {
-    return iPools.FindOrRegister
+    return iPools.GetOrSet
     (
         aName,
         [&]()

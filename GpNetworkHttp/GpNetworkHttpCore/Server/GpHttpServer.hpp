@@ -11,7 +11,7 @@ public:
     CLASS_DD(GpHttpServer)
 
 protected:
-    inline                              GpHttpServer            (std::string                        aName,
+    inline                              GpHttpServer            (std::u8string                      aName,
                                                                  GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory) noexcept;
 
 public:
@@ -30,7 +30,7 @@ private:
 
 GpHttpServer::GpHttpServer
 (
-    std::string                     aName,
+    std::u8string                   aName,
     GpHttpRequestHandlerFactory::SP aRequestHandlerFactory
 ) noexcept:
 GpLogTaskFiberBase(std::move(aName)),

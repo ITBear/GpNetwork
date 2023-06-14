@@ -1,4 +1,5 @@
 #include "GpHttpResponse.hpp"
+#include "../../../../GpCore2/GpReflection/GpReflectManager.hpp"
 
 namespace GPlatform {
 
@@ -11,7 +12,7 @@ GpHttpResponse::~GpHttpResponse (void) noexcept
 void    GpHttpResponse::SetFromException (const GpHttpException& aHttpEx)
 {
     code    = aHttpEx.Code();
-    body    = GpBytesArrayUtils::SMake(std::string_view(aHttpEx.what()));
+    body    = GpBytesArrayUtils::SMake(GpUTF::S_STR_To_UTF8(aHttpEx.what()));
 
     headers
         .SetContentType(GpHttpContentType::TEXT_PLAIN, GpHttpCharset::UTF_8)
@@ -22,7 +23,7 @@ void    GpHttpResponse::SetFromException (const GpHttpException& aHttpEx)
 void    GpHttpResponse::SetFromException (const GpException& aEx)
 {
     code    = GpHttpResponseCode::INTERNAL_SERVER_ERROR_500;
-    body    = GpBytesArrayUtils::SMake(std::string_view(aEx.what()));
+    body    = GpBytesArrayUtils::SMake(GpUTF::S_STR_To_UTF8(aEx.what()));
 
     headers
         .SetContentType(GpHttpContentType::TEXT_PLAIN, GpHttpCharset::UTF_8)
@@ -33,7 +34,7 @@ void    GpHttpResponse::SetFromException (const GpException& aEx)
 void    GpHttpResponse::SetFromException (const std::exception& aEx)
 {
     code    = GpHttpResponseCode::INTERNAL_SERVER_ERROR_500;
-    body    = GpBytesArrayUtils::SMake(std::string_view(aEx.what()));
+    body    = GpBytesArrayUtils::SMake(GpUTF::S_STR_To_UTF8(aEx.what()));
 
     headers
         .SetContentType(GpHttpContentType::TEXT_PLAIN, GpHttpCharset::UTF_8)

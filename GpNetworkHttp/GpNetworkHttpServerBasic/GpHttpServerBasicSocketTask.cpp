@@ -1,4 +1,6 @@
 #include "GpHttpServerBasicSocketTask.hpp"
+#include "../GpNetworkHttpCore/RqRs/GpHttpRequestTask.hpp"
+#include "../GpNetworkHttpCore/RqRs/GpHttpResponseSerializer.hpp"
 
 namespace GPlatform {
 
@@ -47,7 +49,7 @@ GpTaskDoRes GpHttpServerBasicSocketTask::OnSockReadyToRead (GpSocket& aSocket)
             //Start request process task
             GpHttpRequestTask::SP requestTask = MakeSP<GpHttpRequestTask>
             (
-                Name() + ": http socket task"_sv,
+                Name() + u8": http socket task"_sv,
                 iRq,
                 iRequestHandlerFactory.V().NewInstance(),
                 *this
@@ -71,7 +73,7 @@ GpTaskDoRes GpHttpServerBasicSocketTask::OnSockReadyToRead (GpSocket& aSocket)
 
             if (data.size() > 0)
             {
-                THROW_GP("Data income while RS in progress '"_sv + GpSpanPtrCharR(data).AsStringView() + "'"_sv);
+                THROW_GP(u8"Data income while RS in progress '"_sv + GpSpanPtrCharR(data).AsStringViewU8() + u8"'"_sv);
             }
         }
     } catch (const GpHttpException& httpEx)
@@ -163,7 +165,7 @@ GpTaskDoRes GpHttpServerBasicSocketTask::WriteToSocket (GpSocket& aSocket)
                     if (body.size() > 0)
                     {
                         iRsWriteState       = RsWriteStateT::WRITE_BODY;
-                        iRsReaderStorage    = GpByteReaderStorage(body);
+                        iRsReaderStorage    = GpByteReaderStorage(GpSpanPtrByteR(body.data(), body.size()));
 
                         return WriteToSocket(aSocket);
                     }
@@ -273,7 +275,7 @@ void    GpHttpServerBasicSocketTask::ParseHttp (GpSocket& aSocket)
     (
         httpParseRes == HPE_OK,
         GpHttpResponseCode::BAD_REQUEST_400,
-        [&](){return std::string(llhttp_errno_name(httpParseRes));}
+        [&](){return std::u8string(GpUTF::S_STR_To_UTF8(llhttp_errno_name(httpParseRes)));}
     );
 }
 
@@ -284,10 +286,10 @@ int GpHttpServerBasicSocketTask::SHTTP_OnURL
     const size_t    aLength
 )
 {
-    return SHTTPSettings(aHttp).iTask->HTTP_OnURL(std::string_view(aData, aLength));
+    return SHTTPSettings(aHttp).iTask->HTTP_OnURL(GpUTF::S_STR_To_UTF8(aData, aLength));
 }
 
-int GpHttpServerBasicSocketTask::HTTP_OnURL (std::string_view aValue)
+int GpHttpServerBasicSocketTask::HTTP_OnURL (std::u8string_view aValue)
 {
     iRq.Vn().url = aValue;
     return HPE_OK;
@@ -300,10 +302,10 @@ int GpHttpServerBasicSocketTask::SHTTP_OnHeaderField
     const size_t    aLength
 )
 {
-    return SHTTPSettings(aHttp).iTask->HTTP_OnHeaderField(std::string_view(aData, aLength));
+    return SHTTPSettings(aHttp).iTask->HTTP_OnHeaderField(GpUTF::S_STR_To_UTF8(aData, aLength));
 }
 
-int GpHttpServerBasicSocketTask::HTTP_OnHeaderField (std::string_view aValue)
+int GpHttpServerBasicSocketTask::HTTP_OnHeaderField (std::u8string_view aValue)
 {
 
     iHttpParserCurrentHeaderName = aValue;
@@ -317,10 +319,10 @@ int GpHttpServerBasicSocketTask::SHTTP_OnHeaderValue
     const size_t    aLength
 )
 {
-    return SHTTPSettings(aHttp).iTask->HTTP_OnHeaderValue(std::string_view(aData, aLength));
+    return SHTTPSettings(aHttp).iTask->HTTP_OnHeaderValue(GpUTF::S_STR_To_UTF8(aData, aLength));
 }
 
-int GpHttpServerBasicSocketTask::HTTP_OnHeaderValue (std::string_view aValue)
+int GpHttpServerBasicSocketTask::HTTP_OnHeaderValue (std::u8string_view aValue)
 {
     iRq.Vn().headers.GpHttpProtoHeaders::Add(std::move(iHttpParserCurrentHeaderName), aValue);
 
@@ -354,12 +356,14 @@ int GpHttpServerBasicSocketTask::SHTTP_OnBody
     const size_t    aLength
 )
 {
-    return SHTTPSettings(aHttp).iTask->HTTP_OnBody(std::string_view(aData, aLength));
+    return SHTTPSettings(aHttp).iTask->HTTP_OnBody(GpUTF::S_STR_To_UTF8(aData, aLength));
 }
 
-int GpHttpServerBasicSocketTask::HTTP_OnBody (std::string_view aValue)
+int GpHttpServerBasicSocketTask::HTTP_OnBody (std::u8string_view aValue)
 {
     GpBytesArray& rqBody = iRq.Vn().body;
+
+    rqBody.reserve(std::max(rqBody.size(), size_t(512)));
 
     GpByteWriterStorageByteArray    writerStorage(rqBody);
     GpByteWriter                    writer(writerStorage);

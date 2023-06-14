@@ -25,7 +25,7 @@ public:
 
     void                    Clear               (void) noexcept;
     void                    Init                (const IPvTE        aIPv,
-                                                 std::string_view   aIP,
+                                                 std::u8string_view aIP,
                                                  const u_int_16     aPort);
     void                    Set                 (const GpSocketAddr& aAddr) noexcept;
     void                    LocalFromSocketId   (SocketIdT aSocketId);
@@ -39,8 +39,8 @@ public:
     const sockaddr_in6*     Raw_sockaddr_v6     (void) const noexcept {return reinterpret_cast<const sockaddr_in6*>(&iAddr);}
     socklen_t               Raw_sockaddrSize    (void) const noexcept {return socklen_t((iIPv == IPvTE::IPv4) ? sizeof(sockaddr_in) :sizeof(sockaddr_in6));}
 
-    std::string             ToString            (void) const;
-    std::string             ToStringIP          (void) const;
+    std::u8string           ToString            (void) const;
+    std::u8string           ToStringIP          (void) const;
 
 private:
     sockaddr*               Raw_sockaddr        (void) noexcept {return reinterpret_cast<sockaddr*>(&iAddr);}

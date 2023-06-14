@@ -13,22 +13,22 @@ GpHttpRequestRouteTable::~GpHttpRequestRouteTable (void) noexcept
 
 void    GpHttpRequestRouteTable::RegisterPath
 (
-    std::string_view                aPath,
+    std::u8string_view              aPath,
     GpHttpRequestHandlerFactory::SP aHandlerFactory
 )
 {
-    iHandlersCatalog.Register(aPath, std::move(aHandlerFactory));
+    iHandlersCatalog.Set(aPath, std::move(aHandlerFactory));
 }
 
-GpHttpRequestHandler::SP    GpHttpRequestRouteTable::Handler (std::string_view aPath) const
+GpHttpRequestHandler::SP    GpHttpRequestRouteTable::Handler (std::u8string_view aPath) const
 {
-    auto res = iHandlersCatalog.FindOpt(aPath);
+    auto res = iHandlersCatalog.GetOpt(aPath);
 
     THROW_COND_HTTP
     (
         res.has_value(),
         GpHttpResponseCode::NOT_FOUND_404,
-        [&](){return "Handler not found for path '"_sv + aPath + "'"_sv;}
+        [&](){return u8"Handler not found for path '"_sv + aPath + u8"'"_sv;}
     );
 
     return res.value().get().V().NewInstance();

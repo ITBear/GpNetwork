@@ -12,8 +12,8 @@ GpEmailBuilder::~GpEmailBuilder (void) noexcept
 
 GpEmailBuilder& GpEmailBuilder::From
 (
-    std::string_view aName,
-    std::string_view aAddress
+    std::u8string_view aName,
+    std::u8string_view aAddress
 )
 {
     auto& from  = _Email().from;
@@ -24,7 +24,7 @@ GpEmailBuilder& GpEmailBuilder::From
     return *this;
 }
 
-GpEmailBuilder& GpEmailBuilder::From (std::string_view aAddress)
+GpEmailBuilder& GpEmailBuilder::From (std::u8string_view aAddress)
 {
     auto& from  = _Email().from;
 
@@ -36,8 +36,8 @@ GpEmailBuilder& GpEmailBuilder::From (std::string_view aAddress)
 
 GpEmailBuilder& GpEmailBuilder::To
 (
-    std::string_view aName,
-    std::string_view aAddress
+    std::u8string_view aName,
+    std::u8string_view aAddress
 )
 {
     auto& to = _Email().to;
@@ -47,7 +47,7 @@ GpEmailBuilder& GpEmailBuilder::To
     return *this;
 }
 
-GpEmailBuilder& GpEmailBuilder::To (std::string_view aAddress)
+GpEmailBuilder& GpEmailBuilder::To (std::u8string_view aAddress)
 {
     auto& to = _Email().to;
 
@@ -58,8 +58,8 @@ GpEmailBuilder& GpEmailBuilder::To (std::string_view aAddress)
 
 GpEmailBuilder& GpEmailBuilder::Cc
 (
-    std::string_view aName,
-    std::string_view aAddress
+    std::u8string_view aName,
+    std::u8string_view aAddress
 )
 {
     auto& cc = _Email().cc;
@@ -69,7 +69,7 @@ GpEmailBuilder& GpEmailBuilder::Cc
     return *this;
 }
 
-GpEmailBuilder& GpEmailBuilder::Cc (std::string_view aAddress)
+GpEmailBuilder& GpEmailBuilder::Cc (std::u8string_view aAddress)
 {
     auto& cc = _Email().cc;
 
@@ -80,14 +80,14 @@ GpEmailBuilder& GpEmailBuilder::Cc (std::string_view aAddress)
 
 
 
-GpEmailBuilder& GpEmailBuilder::Subject (std::string_view aSubject)
+GpEmailBuilder& GpEmailBuilder::Subject (std::u8string_view aSubject)
 {
     _Email().subject = aSubject;
 
     return *this;
 }
 
-GpEmailBuilder& GpEmailBuilder::LinkUnsubscribe (std::string_view aLink)
+GpEmailBuilder& GpEmailBuilder::LinkUnsubscribe (std::u8string_view aLink)
 {
     _Email().link_unsubscribe = aLink;
 
@@ -104,7 +104,7 @@ GpEmailBuilder& GpEmailBuilder::Part (GpEmailPart::SP aPart)
 GpEmailBuilder& GpEmailBuilder::Part
 (
     const GpHttpContentType::EnumT  aContentType,
-    std::string&&                   aData
+    std::u8string&&                 aData
 )
 {
     _Email().parts.emplace_back(MakeSP<GpEmailPart>(aContentType, std::move(aData)));
@@ -115,7 +115,7 @@ GpEmailBuilder& GpEmailBuilder::Part
 GpEmailBuilder& GpEmailBuilder::Part
 (
     const GpHttpContentType::EnumT  aContentType,
-    std::string_view                aData
+    std::u8string_view              aData
 )
 {
     _Email().parts.emplace_back(MakeSP<GpEmailPart>(aContentType, aData));

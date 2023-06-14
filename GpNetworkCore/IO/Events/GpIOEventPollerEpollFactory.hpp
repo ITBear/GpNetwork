@@ -14,21 +14,21 @@ public:
 
 public:
     inline                          GpIOEventPollerEpollFactory     (const milliseconds_t   aMaxStepTime,
-                                                                     const count_t          aMaxEventsCnt) noexcept;
+                                                                     const size_t           aMaxEventsCnt) noexcept;
     virtual                         ~GpIOEventPollerEpollFactory    (void) noexcept override final;
 
-    virtual GpSP<GpIOEventPoller>   NewInstance                     (std::string    aName,
-                                                                     GpItcPromise&& aStartPromise) const override final;
+    virtual GpSP<GpIOEventPoller>   NewInstance                     (std::u8string      aName,
+                                                                     StartItcPromiseT&& aStartPromise) const override final;
 
 private:
     const milliseconds_t            iMaxStepTime;
-    const count_t                   iMaxEventsCnt;
+    const size_t                    iMaxEventsCnt;
 };
 
 GpIOEventPollerEpollFactory::GpIOEventPollerEpollFactory
 (
     const milliseconds_t    aMaxStepTime,
-    const count_t           aMaxEventsCnt
+    const size_t            aMaxEventsCnt
 ) noexcept:
 iMaxStepTime(aMaxStepTime),
 iMaxEventsCnt(aMaxEventsCnt)

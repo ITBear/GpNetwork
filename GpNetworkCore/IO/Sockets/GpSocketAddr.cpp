@@ -27,13 +27,13 @@ void    GpSocketAddr::Clear (void) noexcept
 void    GpSocketAddr::Init
 (
     const IPvTE         aIPv,
-    std::string_view    aIP,
+    std::u8string_view  aIP,
     const u_int_16      aPort
 )
 {
     //For windows https://docs.microsoft.com/en-us/windows/desktop/api/ws2tcpip/nf-ws2tcpip-inetptonw
 
-    const std::string   ipStr(aIP);
+    const std::u8string ipStr(aIP);
     size_t              maxLength   = 0;
     void*               sinAddrPtr  = nullptr;
 
@@ -51,9 +51,9 @@ void    GpSocketAddr::Init
 
     if ((aIP.length() == 0) ||
         (aIP.length() > maxLength) ||
-        (inet_pton(GpSocketIPv_SSFamily(aIPv), ipStr.data(), sinAddrPtr) != 1))
+        (inet_pton(GpSocketIPv_SSFamily(aIPv), GpUTF::S_UTF8_To_STR(ipStr).data(), sinAddrPtr) != 1))
     {
-        THROW_GP("'"_sv + aIP + "' is not valid IP address"_sv);
+        THROW_GP(u8"'"_sv + aIP + u8"' is not valid IP address"_sv);
     }
 }
 
@@ -123,20 +123,20 @@ u_int_16    GpSocketAddr::Port (void) const noexcept
     return port;
 }
 
-std::string GpSocketAddr::ToString (void) const
+std::u8string   GpSocketAddr::ToString (void) const
 {
-    std::string res;
+    std::u8string res;
     res.reserve(128);
     res.append(IPvT::SToString(IPv()))
-       .append(", "_sv)
+       .append(u8", "_sv)
        .append(ToStringIP())
-       .append(": "_sv)
+       .append(u8": "_sv)
        .append(StrOps::SFromUI64(Port()));
 
     return res;
 }
 
-std::string GpSocketAddr::ToStringIP (void) const
+std::u8string   GpSocketAddr::ToStringIP (void) const
 {
     const void* addrPtr = nullptr;
     std::array<char, INET6_ADDRSTRLEN>  buff;
@@ -155,7 +155,7 @@ std::string GpSocketAddr::ToStringIP (void) const
         THROW_GP(GpErrno::SGetAndClear());
     }
 
-    return std::string(buff.data());
+    return std::u8string(reinterpret_cast<const char8_t*>(buff.data()));
 }
 
 }//namespace GPlatform

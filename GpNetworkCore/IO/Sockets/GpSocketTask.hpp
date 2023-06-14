@@ -12,7 +12,7 @@ public:
     CLASS_DD(GpSocketTask)
 
 public:
-    inline                  GpSocketTask        (std::string            aName,
+    inline                  GpSocketTask        (std::u8string          aName,
                                                  GpIOEventPoller::SP    aIOPoller,
                                                  GpSocket::SP           aSocket) noexcept;
     virtual                 ~GpSocketTask       (void) noexcept override;
@@ -43,7 +43,7 @@ private:
 
 GpSocketTask::GpSocketTask
 (
-    std::string         aName,
+    std::u8string       aName,
     GpIOEventPoller::SP aIOPoller,
     GpSocket::SP        aSocket
 ) noexcept:

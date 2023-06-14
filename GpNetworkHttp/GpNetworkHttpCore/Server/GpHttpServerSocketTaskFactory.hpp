@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../RqRs/GpHttpRqRs.hpp"
+#include "../../../GpNetworkCore/IO/Sockets/GpSocketTaskFactory.hpp"
 
 namespace GPlatform {
 

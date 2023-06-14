@@ -4,7 +4,7 @@ namespace GPlatform {
 
 GpIOEventPoller::~GpIOEventPoller (void) noexcept
 {
-    CompleteStartPromise(MakeSP<GpItcResult>());
+    CompleteStartPromise(MakeSP<StartItcResultT>(size_t(0)));
 }
 
 void    GpIOEventPoller::AddSubscriber
@@ -47,7 +47,7 @@ void    GpIOEventPoller::OnStop  (void) noexcept
     std::scoped_lock lock(iSubscribersLock);
     iSubscribers.clear();
 
-    CompleteStartPromise(MakeSP<GpItcResult>());
+    CompleteStartPromise(MakeSP<StartItcResultT>(size_t(0)));
 }
 
 }//GPlatform

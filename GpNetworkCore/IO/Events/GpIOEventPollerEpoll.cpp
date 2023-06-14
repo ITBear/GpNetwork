@@ -19,13 +19,18 @@ GpIOEventPollerEpoll::~GpIOEventPollerEpoll (void) noexcept
 void    GpIOEventPollerEpoll::Configure
 (
     const milliseconds_t    aMaxStepTime,
-    const count_t           aMaxEventsCnt
+    const size_t            aMaxEventsCnt
 )
 {
-    THROW_COND_GP(iEpollId == -1, "Already started"_sv);
+    THROW_COND_GP
+    (
+        iEpollId == -1,
+        "Already started"_sv
+    );
+
     iMaxStepTime    = aMaxStepTime;
     iNextStepTime   = aMaxStepTime;
-    iEvents.resize(aMaxEventsCnt.As<size_t>());
+    iEvents.resize(aMaxEventsCnt);
 }
 
 void    GpIOEventPollerEpoll::OnStart (void)
@@ -37,21 +42,22 @@ void    GpIOEventPollerEpoll::OnStart (void)
         THROW_COND_GP
         (
             iEpollId >= 0,
-            [&](){return GpErrno::SGetAndClear();}
+            [&](){return std::u8string(GpErrno::SGetAndClear());}
         );
 
-        CompleteStartPromise(MakeSP<GpItcResult>());
+        CompleteStartPromise(MakeSP<StartItcResultT>(size_t(0)));
     } catch (const GpException& e)
     {
-        CompleteStartPromise(MakeSP<GpItcResult>(e));
+        CompleteStartPromise(MakeSP<StartItcResultT>(e));
         throw;
     } catch (const std::exception& e)
     {
-        CompleteStartPromise(MakeSP<GpItcResult>(e));
+        CompleteStartPromise(MakeSP<StartItcResultT>(e));
         throw;
     } catch (...)
     {
-        CompleteStartPromise(MakeSP<GpItcResult>(std::runtime_error("Exception")));
+        //CompleteStartPromise(MakeSP<StartItcResultT>(std::runtime_error("Exception")));
+        CompleteStartPromise(MakeSP<StartItcResultT>(GpException(u8"Other exception")));
         throw;
     }
 }
@@ -76,7 +82,7 @@ GpTaskDoRes GpIOEventPollerEpoll::OnStep (EventOptRefT /*aEvent*/)
     }
 
     //Check for errors
-    THROW_COND_GP(nfds >= 0, [&](){return GpErrno::SGetAndClear();});
+    THROW_COND_GP(nfds >= 0, [&](){return std::u8string(GpErrno::SGetAndClear());});
 
     if (nfds == 0)
     {

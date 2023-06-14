@@ -2,6 +2,7 @@
 
 #include "GpHttpRequest.hpp"
 #include "GpHttpResponse.hpp"
+#include "../../../../GpCore2/GpUtils/EventBus/GpEvent.hpp"
 
 namespace GPlatform {
 

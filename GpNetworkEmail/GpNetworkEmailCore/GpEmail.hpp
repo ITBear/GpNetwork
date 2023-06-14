@@ -10,7 +10,7 @@ class GP_NETWORK_EMAIL_CORE_API GpEmail final: public GpReflectObject
 {
 public:
     CLASS_DD(GpEmail)
-    REFLECT_DECLARE("1e137d1b-8a9b-486f-a3d6-5708a02b7360"_uuid)
+    REFLECT_DECLARE(u8"1e137d1b-8a9b-486f-a3d6-5708a02b7360"_uuid)
 
 public:
                                     GpEmail             (void) noexcept;
@@ -22,8 +22,8 @@ public:
     GpEmailAddr                     from;
     GpEmailAddr::C::Vec::SP         to;
     GpEmailAddr::C::Vec::SP         cc;
-    std::string                     subject;
-    std::string                     link_unsubscribe;
+    std::u8string                   subject;
+    std::u8string                   link_unsubscribe;
     GpEmailPart::C::Vec::SP         parts;
 };
 

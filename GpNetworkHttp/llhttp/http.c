@@ -8,8 +8,10 @@
 int llhttp_message_needs_eof(const llhttp_t* parser);
 int llhttp_should_keep_alive(const llhttp_t* parser);
 
-int llhttp__before_headers_complete(llhttp_t* parser, const char* /*p*/,
-                                    const char* /*endp*/) {
+int llhttp__before_headers_complete(llhttp_t* parser, const char* p,
+                                    const char* endp) {
+  (void)p;
+  (void)endp;
   /* Set this here so that on_headers_complete() callbacks can see it */
   if ((parser->flags & F_UPGRADE) &&
       (parser->flags & F_CONNECTION_UPGRADE)) {
@@ -34,8 +36,11 @@ int llhttp__before_headers_complete(llhttp_t* parser, const char* /*p*/,
  * 4 - body_identity_eof
  * 5 - invalid transfer-encoding for request
  */
-int llhttp__after_headers_complete(llhttp_t* parser, const char* /*p*/,
-                                   const char* /*endp*/) {
+int llhttp__after_headers_complete(llhttp_t* parser, const char* p,
+                                   const char* endp) {
+  (void)p;
+  (void)endp;
+
   int hasBody;
 
   hasBody = parser->flags & F_CHUNKED || parser->content_length > 0;
@@ -93,8 +98,11 @@ int llhttp__after_headers_complete(llhttp_t* parser, const char* /*p*/,
 }
 
 
-int llhttp__after_message_complete(llhttp_t* parser, const char* /*p*/,
-                                   const char* /*endp*/) {
+int llhttp__after_message_complete(llhttp_t* parser, const char* p,
+                                   const char* endp) {
+  (void)p;
+  (void)endp;
+
   int should_keep_alive;
 
   should_keep_alive = llhttp_should_keep_alive(parser);

@@ -1,5 +1,6 @@
 #include "GpHttpRequestTask.hpp"
 #include "GpHttpRequestDoneEvent.hpp"
+#include "../../../../GpLog/GpLogCore/GpLog.hpp"
 
 namespace GPlatform {
 
@@ -12,7 +13,7 @@ GpTaskDoRes GpHttpRequestTask::OnStep (EventOptRefT /*aEvent*/)
 {
     LOG_INFO
     (
-        "[GpHttpRequestTask::OnStep]: HTTP RQ:\n"_sv + iHttpRequest.V().ToString(),
+        u8"[GpHttpRequestTask::OnStep]: HTTP RQ:\n"_sv + iHttpRequest.V().ToString(),
         Guid()
     );
 
@@ -22,14 +23,14 @@ GpTaskDoRes GpHttpRequestTask::OnStep (EventOptRefT /*aEvent*/)
     {
         LOG_INFO
         (
-            "[GpHttpRequestTask::OnStep]: HTTP RS:\n"_sv + httpResponse.V().ToString(),
+            u8"[GpHttpRequestTask::OnStep]: HTTP RS:\n"_sv + httpResponse.V().ToString(),
             Guid()
         );
     } else
     {
         LOG_ERROR
         (
-            "[GpHttpRequestTask::OnStep]: HTTP RS:\n"_sv + httpResponse.V().ToString(),
+            u8"[GpHttpRequestTask::OnStep]: HTTP RS:\n"_sv + httpResponse.V().ToString(),
             Guid()
         );
     }

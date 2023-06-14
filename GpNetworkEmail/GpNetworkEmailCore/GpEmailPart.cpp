@@ -25,7 +25,7 @@ data(std::move(aPart.data))
 GpEmailPart::GpEmailPart
 (
     const GpHttpContentType::EnumT  aContentType,
-    std::string&&                   aData
+    std::u8string&&                 aData
 ) noexcept:
 content_type(aContentType),
 data(std::move(aData))
@@ -35,7 +35,7 @@ data(std::move(aData))
 GpEmailPart::GpEmailPart
 (
     const GpHttpContentType::EnumT  aContentType,
-    std::string_view                aData
+    std::u8string_view              aData
 ):
 content_type(aContentType),
 data(aData)

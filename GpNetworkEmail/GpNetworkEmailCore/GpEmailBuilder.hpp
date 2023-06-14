@@ -14,19 +14,19 @@ public:
 
     GpEmail::SP         Build           (void) noexcept {return iEmail;}
 
-    GpEmailBuilder&     From            (std::string_view aName, std::string_view aAddress);
-    GpEmailBuilder&     From            (std::string_view aAddress);
-    GpEmailBuilder&     To              (std::string_view aName, std::string_view aAddress);
-    GpEmailBuilder&     To              (std::string_view aAddress);
-    GpEmailBuilder&     Cc              (std::string_view aName, std::string_view aAddress);
-    GpEmailBuilder&     Cc              (std::string_view aAddress);
-    GpEmailBuilder&     Subject         (std::string_view aSubject);
-    GpEmailBuilder&     LinkUnsubscribe (std::string_view aLink);
+    GpEmailBuilder&     From            (std::u8string_view aName, std::u8string_view aAddress);
+    GpEmailBuilder&     From            (std::u8string_view aAddress);
+    GpEmailBuilder&     To              (std::u8string_view aName, std::u8string_view aAddress);
+    GpEmailBuilder&     To              (std::u8string_view aAddress);
+    GpEmailBuilder&     Cc              (std::u8string_view aName, std::u8string_view aAddress);
+    GpEmailBuilder&     Cc              (std::u8string_view aAddress);
+    GpEmailBuilder&     Subject         (std::u8string_view aSubject);
+    GpEmailBuilder&     LinkUnsubscribe (std::u8string_view aLink);
     GpEmailBuilder&     Part            (GpEmailPart::SP aPart);
     GpEmailBuilder&     Part            (const GpHttpContentType::EnumT aContentType,
-                                         std::string&&                  aData);
+                                         std::u8string&&                aData);
     GpEmailBuilder&     Part            (const GpHttpContentType::EnumT aContentType,
-                                         std::string_view               aData);
+                                         std::u8string_view             aData);
 
 private:
     GpEmail&            _Email          (void);

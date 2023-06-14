@@ -2,59 +2,59 @@
 
 namespace GPlatform {
 
-std::array<std::string, GpHttpVersion::SCount()>        GpHttpResponseSerializer::sHttpVersion =
+std::array<std::u8string, GpHttpVersion::SCount()>      GpHttpResponseSerializer::sHttpVersion =
 {
-    std::string("HTTP/1.0"_sv), //HTTP_1_0
-    std::string("HTTP/1.1"_sv)  //HTTP_1_1
+    std::u8string(u8"HTTP/1.0"_sv), //HTTP_1_0
+    std::u8string(u8"HTTP/1.1"_sv)  //HTTP_1_1
 };
 
-std::array<std::string, GpHttpResponseCode::SCount()>   GpHttpResponseSerializer::sHttpResponseCode =
+std::array<std::u8string, GpHttpResponseCode::SCount()> GpHttpResponseSerializer::sHttpResponseCode =
 {
-    std::string("100 Continue"_sv),
-    std::string("101 Switching Protocols"_sv),
-    std::string("102 Processing"_sv),
-    std::string("103 Early Hints"_sv),
-    std::string("200 OK"_sv),
-    std::string("201 Created"_sv),
-    std::string("202 Accepted_"_sv),
-    std::string("203 Non Authoritative Information"_sv),
-    std::string("204 No Content"_sv),
-    std::string("205 Reset Content"_sv),
-    std::string("206 Partial Content"_sv),
-    std::string("300 Multiple Choices"_sv),
-    std::string("301 Moved Permanently"_sv),
-    std::string("302 Found"_sv),
-    std::string("303 See Other"_sv),
-    std::string("304 Not Modified"_sv),
-    std::string("305 Use Proxy"_sv),
-    std::string("306 Switch Proxy"_sv),
-    std::string("307 Temporary Redirect"_sv),
-    std::string("308 Permanent Redirect"_sv),
-    std::string("400 Bad Request"_sv),
-    std::string("401 Unauthorized"_sv),
-    std::string("402 Payment Required"_sv),
-    std::string("403 Forbidden"_sv),
-    std::string("404 Not Found"_sv),
-    std::string("405 Method Not Allowed"_sv),
-    std::string("406 Not Acceptable"_sv),
-    std::string("407 Proxy Authentication Required"_sv),
-    std::string("408 Request Timeout"_sv),
-    std::string("409 Conflict"_sv),
-    std::string("410 Gone"_sv),
-    std::string("411 Length Required"_sv),
-    std::string("412 Precondition Failed"_sv),
-    std::string("413 Payload Too Large"_sv),
-    std::string("414 Uri Too Long"_sv),
-    std::string("415 Unsupported Media Type"_sv),
-    std::string("416 Range Not Satisfiable"_sv),
-    std::string("417 Expectation Failed"_sv),
-    std::string("500 Internal Server Error"_sv),
-    std::string("501 Not Implemented"_sv),
-    std::string("502 Bad Gateway"_sv),
-    std::string("503 Service Unavailable"_sv),
-    std::string("504 Gateway Timeout"_sv),
-    std::string("505 Http Version Not Supported"_sv),
-    std::string("506 Variant Also Negotiates"_sv)
+    std::u8string(u8"100 Continue"_sv),
+    std::u8string(u8"101 Switching Protocols"_sv),
+    std::u8string(u8"102 Processing"_sv),
+    std::u8string(u8"103 Early Hints"_sv),
+    std::u8string(u8"200 OK"_sv),
+    std::u8string(u8"201 Created"_sv),
+    std::u8string(u8"202 Accepted_"_sv),
+    std::u8string(u8"203 Non Authoritative Information"_sv),
+    std::u8string(u8"204 No Content"_sv),
+    std::u8string(u8"205 Reset Content"_sv),
+    std::u8string(u8"206 Partial Content"_sv),
+    std::u8string(u8"300 Multiple Choices"_sv),
+    std::u8string(u8"301 Moved Permanently"_sv),
+    std::u8string(u8"302 Found"_sv),
+    std::u8string(u8"303 See Other"_sv),
+    std::u8string(u8"304 Not Modified"_sv),
+    std::u8string(u8"305 Use Proxy"_sv),
+    std::u8string(u8"306 Switch Proxy"_sv),
+    std::u8string(u8"307 Temporary Redirect"_sv),
+    std::u8string(u8"308 Permanent Redirect"_sv),
+    std::u8string(u8"400 Bad Request"_sv),
+    std::u8string(u8"401 Unauthorized"_sv),
+    std::u8string(u8"402 Payment Required"_sv),
+    std::u8string(u8"403 Forbidden"_sv),
+    std::u8string(u8"404 Not Found"_sv),
+    std::u8string(u8"405 Method Not Allowed"_sv),
+    std::u8string(u8"406 Not Acceptable"_sv),
+    std::u8string(u8"407 Proxy Authentication Required"_sv),
+    std::u8string(u8"408 Request Timeout"_sv),
+    std::u8string(u8"409 Conflict"_sv),
+    std::u8string(u8"410 Gone"_sv),
+    std::u8string(u8"411 Length Required"_sv),
+    std::u8string(u8"412 Precondition Failed"_sv),
+    std::u8string(u8"413 Payload Too Large"_sv),
+    std::u8string(u8"414 Uri Too Long"_sv),
+    std::u8string(u8"415 Unsupported Media Type"_sv),
+    std::u8string(u8"416 Range Not Satisfiable"_sv),
+    std::u8string(u8"417 Expectation Failed"_sv),
+    std::u8string(u8"500 Internal Server Error"_sv),
+    std::u8string(u8"501 Not Implemented"_sv),
+    std::u8string(u8"502 Bad Gateway"_sv),
+    std::u8string(u8"503 Service Unavailable"_sv),
+    std::u8string(u8"504 Gateway Timeout"_sv),
+    std::u8string(u8"505 Http Version Not Supported"_sv),
+    std::u8string(u8"506 Variant Also Negotiates"_sv)
 };
 
 void    GpHttpResponseSerializer::SSerializeHeaders
@@ -76,13 +76,13 @@ void    GpHttpResponseSerializer::SHeadersFirstLine
     const GpHttpResponse& response = aResponse;
 
     //Http version
-    aWriter.Bytes(sHttpVersion.at(response.http_version.ID()));
+    aWriter.Bytes(sHttpVersion.at(NumOps::SConvert<size_t>(response.http_version.ID())));
 
     //Space
     aWriter.Bytes(" "_sv);
 
     //Code
-    aWriter.Bytes(sHttpResponseCode.at(response.code.ID()));
+    aWriter.Bytes(sHttpResponseCode.at(NumOps::SConvert<size_t>(response.code.ID())));
 
     //Next line
     aWriter.Bytes("\r\n"_sv);
@@ -100,9 +100,9 @@ void    GpHttpResponseSerializer::SHeaders
     for (const auto&[name, header]: headers.Headers())
     {
         aWriter.Bytes(name);
-        aWriter.Bytes(": "_sv);
-        aWriter.Bytes(StrOps::SJoin<std::string_view>(header.V().elements, ";"_sv));
-        aWriter.Bytes("\r\n"_sv);
+        aWriter.Bytes(u8": "_sv);
+        aWriter.Bytes(StrOps::SJoin<std::u8string_view>(header.V().elements, u8";"_sv));
+        aWriter.Bytes(u8"\r\n"_sv);
     }
 
     //Next line

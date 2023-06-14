@@ -9,16 +9,16 @@ class GP_NETWORK_EMAIL_CORE_API GpSmtpClientPoolCatalog
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpSmtpClientPoolCatalog)
     CLASS_DD(GpSmtpClientPoolCatalog)
-    CLASS_TAG(THREAD_SAFE)
+    TAG_SET(THREAD_SAFE)
 
-    using PoolsT = GpElementsCatalog<std::string, GpSmtpClientPool::SP>;
+    using PoolsT = GpDictionary<std::u8string, GpSmtpClientPool::SP>;
 
 private:
                                     GpSmtpClientPoolCatalog     (void) noexcept;
                                     ~GpSmtpClientPoolCatalog    (void) noexcept;
 
 public:
-    static GpSmtpClientPoolCatalog& S                           (void) noexcept;
+    static GpSmtpClientPoolCatalog& S                           (void) noexcept {return sInstance;}
 
     void                            Clear                       (void);
 
@@ -27,14 +27,16 @@ public:
                                                                  const size_t               aMaxCount);
 
     void                            AddPool                     (GpSmtpClientPool::SP   aPool,
-                                                                 std::string_view       aName);
-    GpSmtpClientPool&               Pool                        (std::string_view aName);
+                                                                 std::u8string_view     aName);
+    GpSmtpClientPool&               Pool                        (std::u8string_view aName);
 
 private:
     PoolsT                          iPools;
     GpSmtpClientFactory::SP         iDefaultFactory;
     size_t                          iDefaultInitCount   = 0;
     size_t                          iDefaultMaxCount    = 0;
+
+    static GpSmtpClientPoolCatalog  sInstance;
 };
 
 }//GPlatform

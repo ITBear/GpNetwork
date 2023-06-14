@@ -12,8 +12,8 @@ GpIOEventPollerEpollFactory::~GpIOEventPollerEpollFactory (void) noexcept
 
 GpIOEventPoller::SP GpIOEventPollerEpollFactory::NewInstance
 (
-    std::string     aName,
-    GpItcPromise&&  aStartPromise
+    std::u8string       aName,
+    StartItcPromiseT&&  aStartPromise
 ) const
 {
     GpIOEventPollerEpoll::SP epollSP = MakeSP<GpIOEventPollerEpoll>

@@ -10,7 +10,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpProtoHeaders: public GpReflectObject
 {
 public:
     CLASS_DD(GpHttpProtoHeaders)
-    REFLECT_DECLARE("88a01e4e-9105-4cd5-9990-4578ebb14b51"_uuid)
+    REFLECT_DECLARE(u8"88a01e4e-9105-4cd5-9990-4578ebb14b51"_uuid)
 
 public:
     explicit                                GpHttpProtoHeaders  (void) noexcept;
@@ -26,36 +26,36 @@ public:
     const GpProtoHeaderValue::C::MapStr::SP&
                                             Headers             (void) const noexcept {return headers;}
 
-    GpHttpProtoHeaders&                     Replace             (std::string        aName,
-                                                                 std::string_view   aValue);
-    GpHttpProtoHeaders&                     Replace             (std::string        aName,
-                                                                 std::string&&      aValue);
-    GpHttpProtoHeaders&                     Replace             (std::string        aName,
+    GpHttpProtoHeaders&                     Replace             (std::u8string      aName,
+                                                                 std::u8string_view aValue);
+    GpHttpProtoHeaders&                     Replace             (std::u8string      aName,
+                                                                 std::u8string&&    aValue);
+    GpHttpProtoHeaders&                     Replace             (std::u8string      aName,
                                                                  const u_int_64     aValue);
 
-    GpHttpProtoHeaders&                     Add                 (std::string        aName,
-                                                                 std::string_view   aValue);
-    GpHttpProtoHeaders&                     Add                 (std::string        aName,
-                                                                 std::string&&      aValue);
-    GpHttpProtoHeaders&                     Add                 (std::string        aName,
+    GpHttpProtoHeaders&                     Add                 (std::u8string      aName,
+                                                                 std::u8string_view aValue);
+    GpHttpProtoHeaders&                     Add                 (std::u8string      aName,
+                                                                 std::u8string&&        aValue);
+    GpHttpProtoHeaders&                     Add                 (std::u8string      aName,
                                                                  const u_int_64     aValue);
 protected:
     template<typename T, typename V>
     GpHttpProtoHeaders&                     Replace             (const typename T::EnumT    aType,
-                                                                 std::string_view           aValue);
+                                                                 std::u8string_view         aValue);
     template<typename T, typename V>
     GpHttpProtoHeaders&                     Replace             (const typename T::EnumT    aType,
-                                                                 std::string&&              aValue);
+                                                                 std::u8string&&            aValue);
     template<typename T, typename V>
     GpHttpProtoHeaders&                     Replace             (const typename T::EnumT    aType,
                                                                  const u_int_64             aValue);
 
     template<typename T, typename V>
     GpHttpProtoHeaders&                     Add                 (const typename T::EnumT    aType,
-                                                                 std::string_view           aValue);
+                                                                 std::u8string_view         aValue);
     template<typename T, typename V>
     GpHttpProtoHeaders&                     Add                 (const typename T::EnumT    aType,
-                                                                 std::string&&              aValue);
+                                                                 std::u8string&&            aValue);
     template<typename T, typename V>
     GpHttpProtoHeaders&                     Add                 (const typename T::EnumT    aType,
                                                                  const u_int_64             aValue);
@@ -63,28 +63,28 @@ private:
     GpProtoHeaderValue::C::MapStr::SP       headers;
 
 public:
-    static const std::array<std::string, GpHttpContentType::SCount()>   sContentType;
-    static const std::array<std::string, GpHttpCharset::SCount()>       sCharset;
+    static const std::array<std::u8string, GpHttpContentType::SCount()> sContentType;
+    static const std::array<std::u8string, GpHttpCharset::SCount()>     sCharset;
 };
 
 template<typename T, typename V>
 GpHttpProtoHeaders& GpHttpProtoHeaders::Replace
 (
     const typename T::EnumT aType,
-    std::string_view        aValue
+    std::u8string_view      aValue
 )
 {
-    return Replace<T, V>(aType, std::string(aValue));
+    return Replace<T, V>(aType, std::u8string(aValue));
 }
 
 template<typename T, typename V>
 GpHttpProtoHeaders& GpHttpProtoHeaders::Replace
 (
     const typename T::EnumT aType,
-    std::string&&           aValue
+    std::u8string&&         aValue
 )
 {
-    const std::string& headerName = V::sHeadersNames.at(size_t(aType));
+    const std::u8string& headerName = V::sHeadersNames.at(size_t(aType));
     headers[headerName] = MakeSP<GpProtoHeaderValue>(std::move(aValue));
 
     return *this;
@@ -103,20 +103,20 @@ template<typename T, typename V>
 GpHttpProtoHeaders& GpHttpProtoHeaders::Add
 (
     const typename T::EnumT aType,
-    std::string_view        aValue
+    std::u8string_view      aValue
 )
 {
-    return Add<T, V>(aType, std::string(aValue));
+    return Add<T, V>(aType, std::u8string(aValue));
 }
 
 template<typename T, typename V>
 GpHttpProtoHeaders& GpHttpProtoHeaders::Add
 (
     const typename T::EnumT aType,
-    std::string&&           aValue
+    std::u8string&&         aValue
 )
 {
-    const std::string& headerName = V::sHeadersNames.at(size_t(aType));
+    const std::u8string& headerName = V::sHeadersNames.at(size_t(aType));
     auto iter = headers.find(headerName);
 
     if (iter == headers.end())

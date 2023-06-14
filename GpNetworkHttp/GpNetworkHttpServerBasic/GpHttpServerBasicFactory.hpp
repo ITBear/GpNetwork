@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GpNetworkHttpServerBasic_global.hpp"
+#include "../GpNetworkHttpCore/Server/GpHttpServerFactory.hpp"
 
 namespace GPlatform {
 
@@ -15,7 +16,7 @@ public:
                                                              GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory) noexcept;
     virtual                     ~GpHttpServerBasicFactory   (void) noexcept override final;
 
-    virtual GpSP<GpHttpServer>  NewInstance                 (std::string            aName,
+    virtual GpSP<GpHttpServer>  NewInstance                 (std::u8string          aName,
                                                              GpIOEventPoller::SP    aEventPoller) const override final;
 
 private:

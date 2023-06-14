@@ -9,7 +9,7 @@ GpHttpServerBasicFactory::~GpHttpServerBasicFactory (void) noexcept
 
 GpHttpServer::SP    GpHttpServerBasicFactory::NewInstance
 (
-    std::string         aName,
+    std::u8string       aName,
     GpIOEventPoller::SP aEventPoller
 ) const
 {

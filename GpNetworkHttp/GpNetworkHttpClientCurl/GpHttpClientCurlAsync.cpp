@@ -70,8 +70,8 @@ size_t GpHttpClientCurlAsync_S_RS_Headers_writer
     {
         aHeaders->GpProtoHeaders::Replace
         (
-            std::string(parts.at(0).AsStringView()),
-            parts.at(1).AsStringView()
+            std::u8string(parts.at(0).AsStringViewU8()),
+            parts.at(1).AsStringViewU8()
         );
     }
 
@@ -142,7 +142,7 @@ GpHttpResponse::SP  GpHttpClientCurlAsync::Do
 
     for (const auto&[name, header]: requestHeaders.Headers())
     {
-        std::string headerStr = name + ": "_sv + StrOps::SJoin<std::string_view>(header.V().elements, ";"_sv);
+        std::u8string headerStr = name + u8": "_sv + StrOps::SJoin<std::u8string_view>(header.V().elements, ";"_sv);
         curlHeadersList = curl_slist_append(curlHeadersList, headerStr.data());
     }
 
@@ -185,7 +185,7 @@ GpHttpResponse::SP  GpHttpClientCurlAsync::Do
     THROW_COND_GP
     (
         res_code == CURLE_OK,
-        [&](){return "curl_easy_perform failed: "_sv + curl_easy_strerror(res_code);}
+        [&](){return u8"curl_easy_perform failed: "_sv + curl_easy_strerror(res_code);}
     );
 
 
@@ -201,7 +201,7 @@ GpHttpResponse::SP  GpHttpClientCurlAsync::Do
         (
             httpResponseCode == 200,
             GpHttpResponseCodeUtils::SFromId(httpResponseCode),
-            [&](){return "HTTP request failed (code "_sv + httpResponseCode + "): "_sv + responseBodyPtr.AsStringView();}
+            [&](){return u8"HTTP request failed (code "_sv + httpResponseCode + u8"): "_sv + responseBodyPtr.AsStringViewU8();}
         );
     }
 

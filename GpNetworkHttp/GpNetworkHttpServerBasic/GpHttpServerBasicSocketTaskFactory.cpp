@@ -14,7 +14,7 @@ GpHttpServerBasicSocketTaskFactory::~GpHttpServerBasicSocketTaskFactory (void) n
 
 GpSocketTask::SP    GpHttpServerBasicSocketTaskFactory::NewInstance
 (
-    std::string         aName,
+    std::u8string       aName,
     GpIOEventPoller::SP aIOPoller,
     GpSocket::SP        aSocket
 ) const

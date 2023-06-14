@@ -14,27 +14,27 @@ public:
                                     GpSmtpClient    (void) noexcept;
     virtual                         ~GpSmtpClient   (void) noexcept;
 
-    void                            SetSmtp         (std::string_view aSmtp);
-    void                            SetAuth         (std::string_view aLogin,
-                                                     std::string_view aPassword);
+    void                            SetSmtp         (std::u8string_view aSmtp);
+    void                            SetAuth         (std::u8string_view aLogin,
+                                                     std::u8string_view aPassword);
 
-    std::string_view                Smtp            (void) const noexcept {return iSmtp;}
-    std::string_view                Login           (void) const noexcept {return iLogin;}
-    std::string_view                Password        (void) const noexcept {return iPassword;}
+    std::u8string_view              Smtp            (void) const noexcept {return iSmtp;}
+    std::u8string_view              Login           (void) const noexcept {return iLogin;}
+    std::u8string_view              Password        (void) const noexcept {return iPassword;}
 
 
-    virtual std::string/*msg_id*/   Send            (const GpEmail& aEmail) = 0;
+    virtual std::u8string/*msg_id*/ Send            (const GpEmail& aEmail) = 0;
 
     virtual bool                    IsValid         (void) const noexcept = 0;
 
 protected:
-    std::string                     MakeBody        (const GpEmail& aEmail,
+    std::u8string                   MakeBody        (const GpEmail& aEmail,
                                                      GpByteWriter&  aWriter);
 
 private:
-    std::string                     iSmtp;
-    std::string                     iLogin;
-    std::string                     iPassword;
+    std::u8string                   iSmtp;
+    std::u8string                   iLogin;
+    std::u8string                   iPassword;
 };
 
 }//namespace GPlatform

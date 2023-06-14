@@ -149,6 +149,7 @@ size_t  GpSocketTCP::Read (GpByteWriter& aWriter)
         if (rcvSize < 0)
         {
 GP_WARNING_PUSH()
+GP_WARNING_DISABLE(unknown-warning-option)
 GP_WARNING_DISABLE(logical-op)
             if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
 GP_WARNING_POP()
@@ -190,6 +191,7 @@ size_t  GpSocketTCP::Write (GpByteReader& aReader)
     if (sendSize < 0)
     {
 GP_WARNING_PUSH()
+GP_WARNING_DISABLE(unknown-warning-option)
 GP_WARNING_DISABLE(logical-op)
         if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
 GP_WARNING_POP()
@@ -258,7 +260,7 @@ void    GpSocketTCP::ConnectAsync (const GpSocketAddr& aAddr)
             if (ioEvents.TestFlagE(GpIODeviceEvent::CLOSED) ||
                 ioEvents.TestFlagE(GpIODeviceEvent::ERROR_OCCURRED))
             {
-                THROW_GP_EXCEPTION("Failed to connect to "_sv + aAddr.ToString());
+                THROW_GP("Failed to connect to "_sv + aAddr.ToString());
             }*/
         } else
         {
