@@ -3,28 +3,23 @@ TEMPLATE = subdirs
 os_linux {
 	SUBDIRS += \
 		./GpNetworkCore \
-		./GpNetworkHttp \
-		./GpNetworkEmail
+		./GpNetworkHttp
 } else:os_android {
 	SUBDIRS += \
 		./GpNetworkCore \
-		./GpNetworkHttp \
-		./GpNetworkEmail
+		./GpNetworkHttp
 } else:os_ios {
 	SUBDIRS += \
 		./GpNetworkCore \
-		./GpNetworkHttp \
-		./GpNetworkEmail
+		./GpNetworkHttp
 } else:os_windows {
 	SUBDIRS += \
 		./GpNetworkCore \
-		./GpNetworkHttp \
-		./GpNetworkEmail
+		./GpNetworkHttp
 } else:os_macx {
 	SUBDIRS += \
 		./GpNetworkCore \
-		./GpNetworkHttp \
-		./GpNetworkEmail
+		./GpNetworkHttp
 } else:os_browser {
 	SUBDIRS +=
 } else {

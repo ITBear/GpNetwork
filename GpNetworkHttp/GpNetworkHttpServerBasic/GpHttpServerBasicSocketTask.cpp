@@ -71,7 +71,7 @@ GpTaskDoRes GpHttpServerBasicSocketTask::OnSockReadyToRead (GpSocket& aSocket)
             aSocket.Read(writer);
             writer.ShrinkToFit();
 
-            if (data.size() > 0)
+            if (!data.empty())
             {
                 THROW_GP(u8"Data income while RS in progress '"_sv + GpSpanPtrCharR(data).AsStringViewU8() + u8"'"_sv);
             }
@@ -125,7 +125,7 @@ GpTaskDoRes GpHttpServerBasicSocketTask::WriteToSocket (GpSocket& aSocket)
     }
 
     //Serialize rs headers
-    if (iRsHeadersData.size() == 0)
+    if (iRsHeadersData.empty())
     {
         const GpBytesArray& body = iRs.V().body;
         iRs.V().headers.SetContentLength(body.size());
@@ -162,7 +162,7 @@ GpTaskDoRes GpHttpServerBasicSocketTask::WriteToSocket (GpSocket& aSocket)
                     //Check if there are body
                     const GpBytesArray& body = iRs.V().body;
 
-                    if (body.size() > 0)
+                    if (!body.empty())
                     {
                         iRsWriteState       = RsWriteStateT::WRITE_BODY;
                         iRsReaderStorage    = GpByteReaderStorage(GpSpanPtrByteR(body.data(), body.size()));

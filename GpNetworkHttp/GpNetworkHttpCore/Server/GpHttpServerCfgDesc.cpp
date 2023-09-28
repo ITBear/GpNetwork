@@ -13,7 +13,10 @@ void    GpHttpServerCfgDesc::_SReflectCollectProps (GpReflectProp::C::Vec::Val& 
 {
     PROP(listen_ip);
     PROP(listen_port);
-    PROP(event_poller);
+    PROP(listen_max_queue_size);
+    PROP(event_poller_name);
+    PROP(accept_socket_flags);
+    PROP(listen_socket_flags);
 }
 
 }//namespace GPlatform

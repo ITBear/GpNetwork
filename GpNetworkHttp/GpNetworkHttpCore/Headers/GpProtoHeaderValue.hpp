@@ -14,25 +14,15 @@ public:
 
 public:
                                 GpProtoHeaderValue  (void) noexcept = default;
-    inline                      GpProtoHeaderValue  (std::u8string_view aElement);
-    inline                      GpProtoHeaderValue  (std::u8string&& aElement);
     inline                      GpProtoHeaderValue  (const GpProtoHeaderValue& aValue);
     inline                      GpProtoHeaderValue  (GpProtoHeaderValue&& aValue) noexcept;
+    inline                      GpProtoHeaderValue  (std::u8string_view aElement);
+    inline                      GpProtoHeaderValue  (std::u8string aElement);
     virtual                     ~GpProtoHeaderValue (void) noexcept override final;
 
 public:
     std::vector<std::u8string>  elements;
 };
-
-GpProtoHeaderValue::GpProtoHeaderValue (std::u8string_view aElement)
-{
-    elements.emplace_back(std::move(aElement));
-}
-
-GpProtoHeaderValue::GpProtoHeaderValue (std::u8string&& aElement)
-{
-    elements.emplace_back(std::move(aElement));
-}
 
 GpProtoHeaderValue::GpProtoHeaderValue (const GpProtoHeaderValue& aValue):
 GpReflectObject(aValue),
@@ -43,6 +33,16 @@ elements(GpReflectUtils::SCopyValue(aValue.elements))
 GpProtoHeaderValue::GpProtoHeaderValue (GpProtoHeaderValue&& aValue) noexcept:
 GpReflectObject(std::move(aValue)),
 elements(std::move(aValue.elements))
+{
+}
+
+GpProtoHeaderValue::GpProtoHeaderValue (std::u8string_view aElement)
+{
+    elements.emplace_back(std::move(aElement));
+}
+
+GpProtoHeaderValue::GpProtoHeaderValue (std::u8string aElement):
+elements({std::move(aElement)})
 {
 }
 

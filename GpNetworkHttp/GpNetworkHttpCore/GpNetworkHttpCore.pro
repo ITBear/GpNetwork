@@ -20,73 +20,75 @@ os_linux{
 #------------------------------- LIBS END ----------------------------------
 
 SOURCES += \
-    Client/GpHttpClientGuard.cpp \
-    Client/GpHttpClientPool.cpp \
-    Client/GpHttpClientPoolCatalog.cpp \
+    Body/GpHttpBodyPayload.cpp \
+    Body/GpHttpBodyPayloadFixed.cpp \
+    Body/GpHttpBodyPayloadType.cpp \
+    Enums/GpHttpCacheControl.cpp \
+    Enums/GpHttpCharset.cpp \
+    Enums/GpHttpConnectionFlag.cpp \
+    Enums/GpHttpContentType.cpp \
+    Enums/GpHttpHeaderType.cpp \
+    Enums/GpHttpRequestType.cpp \
+    Enums/GpHttpResponseCode.cpp \
+    Enums/GpHttpVersion.cpp \
     Exceptions/GpHttpException.cpp \
-    Headers/GpHttpCacheControl.cpp \
-    Headers/GpHttpCharset.cpp \
-    Headers/GpHttpConnectionFlag.cpp \
-    Headers/GpHttpContentType.cpp \
-    Headers/GpHttpHeaderType.cpp \
     Headers/GpHttpHeaders.cpp \
-    Headers/GpHttpProtoHeaders.cpp \
-    Headers/GpHttpRequestType.cpp \
-    Headers/GpHttpResponseCode.cpp \
-    Headers/GpHttpVersion.cpp \
     Headers/GpProtoHeaderValue.cpp \
+    Headers/GpProtoHeadersMap.cpp \
+    RequestHandlers/GpHttpRequestHandler.cpp \
+    Routers/RulesRouter/GpHttpRouterRule.cpp \
+    Routers/TableRouter/GpHttpRouteTableStatic.cpp \
+    Routers/TableRouter/GpHttpTableRouter.cpp \
     RqRs/GpHttpRequest.cpp \
-    RqRs/GpHttpRequestDoneEvent.cpp \
-    RqRs/GpHttpRequestHandler.cpp \
-    RqRs/GpHttpRequestRouteTable.cpp \
-    RqRs/GpHttpRequestRouterStatic.cpp \
-    RqRs/GpHttpRequestTask.cpp \
+    RqRs/GpHttpRequestNoBodyDesc.cpp \
     RqRs/GpHttpResponse.cpp \
-    RqRs/GpHttpResponseSerializer.cpp \
-    RqRs/GpHttpRqRs.cpp \
-    RqRs/GpUrl.cpp \
-    RqRs/GpUrlAuthority.cpp \
-    RqRs/GpUrlQuery.cpp \
-    RqRs/GpUrlReflection.cpp \
+    RqRs/GpHttpResponseNoBodyDesc.cpp \
+    Server/GpHttpRequestSocketTask.cpp \
+    Server/GpHttpRequestSocketTaskFactory.cpp \
+    Server/GpHttpResponseSerializer.cpp \
     Server/GpHttpServer.cpp \
-    Server/GpHttpServerCfgDesc.cpp
+    Server/GpHttpServerCfgDesc.cpp \
+    Url/GpUrl.cpp \
+    Url/GpUrlAuthority.cpp \
+    Url/GpUrlQuery.cpp \
+    Url/GpUrlReflection.cpp
+
 
 HEADERS += \
-    Client/GpHttpClient.hpp \
-    Client/GpHttpClientFactory.hpp \
-    Client/GpHttpClientGuard.hpp \
-    Client/GpHttpClientPool.hpp \
-    Client/GpHttpClientPoolCatalog.hpp \
+    Body/GpHttpBodyPayload.hpp \
+    Body/GpHttpBodyPayloadFixed.hpp \
+    Body/GpHttpBodyPayloadType.hpp \
+    Enums/GpHttpCacheControl.hpp \
+    Enums/GpHttpCharset.hpp \
+    Enums/GpHttpConnectionFlag.hpp \
+    Enums/GpHttpContentType.hpp \
+    Enums/GpHttpHeaderType.hpp \
+    Enums/GpHttpRequestType.hpp \
+    Enums/GpHttpResponseCode.hpp \
+    Enums/GpHttpVersion.hpp \
     Exceptions/GpHttpException.hpp \
-    GpNetworkHttpCore.hpp \
     GpNetworkHttpCore_global.hpp \
-    Headers/GpHttpCacheControl.hpp \
-    Headers/GpHttpCharset.hpp \
-    Headers/GpHttpConnectionFlag.hpp \
-    Headers/GpHttpContentType.hpp \
-    Headers/GpHttpHeaderType.hpp \
     Headers/GpHttpHeaders.hpp \
-    Headers/GpHttpProtoHeaders.hpp \
-    Headers/GpHttpRequestType.hpp \
-    Headers/GpHttpResponseCode.hpp \
-    Headers/GpHttpVersion.hpp \
     Headers/GpProtoHeaderValue.hpp \
+    Headers/GpProtoHeadersMap.hpp \
+    RequestHandlers/GpHttpRequestHandler.hpp \
+    RequestHandlers/GpHttpRequestHandlerFactory.hpp \
+    Routers/GpHttpRouter.hpp \
+    Routers/RulesRouter/GpHttpRouterRule.hpp \
+    Routers/TableRouter/GpHttpRouteTable.hpp \
+    Routers/TableRouter/GpHttpRouteTableStatic.hpp \
+    Routers/TableRouter/GpHttpTableRouter.hpp \
     RqRs/GpHttpRequest.hpp \
-    RqRs/GpHttpRequestDoneEvent.hpp \
-    RqRs/GpHttpRequestHandler.hpp \
-    RqRs/GpHttpRequestHandlerFactory.hpp \
-    RqRs/GpHttpRequestRouteTable.hpp \
-    RqRs/GpHttpRequestRouter.hpp \
-    RqRs/GpHttpRequestRouterStatic.hpp \
-    RqRs/GpHttpRequestTask.hpp \
+    RqRs/GpHttpRequestNoBodyDesc.hpp \
     RqRs/GpHttpResponse.hpp \
-    RqRs/GpHttpResponseSerializer.hpp \
-    RqRs/GpHttpRqRs.hpp \
-    RqRs/GpUrl.hpp \
-    RqRs/GpUrlAuthority.hpp \
-    RqRs/GpUrlQuery.hpp \
-    RqRs/GpUrlReflection.hpp \
+    RqRs/GpHttpResponseNoBodyDesc.hpp \
+    Server/GpHttpRequestSocketTask.hpp \
+    Server/GpHttpRequestSocketTaskFactory.hpp \
+    Server/GpHttpResponseSerializer.hpp \
     Server/GpHttpServer.hpp \
     Server/GpHttpServerCfgDesc.hpp \
-    Server/GpHttpServerFactory.hpp \
-    Server/GpHttpServerSocketTaskFactory.hpp
+    Url/GpUrl.hpp \
+    Url/GpUrlAuthority.hpp \
+    Url/GpUrlQuery.hpp \
+    Url/GpUrlReflection.hpp
+

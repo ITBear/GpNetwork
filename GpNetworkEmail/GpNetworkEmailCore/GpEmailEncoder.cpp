@@ -69,7 +69,7 @@ void    GpEmailEncoder::To (void)
 
 void    GpEmailEncoder::Cc (void)
 {
-    if (iEmail.cc.size() > 0)
+    if (!iEmail.cc.empty())
     {
         WriteHeaderBegin(GpEmailHeaderType::CC);
         Addrs(iEmail.cc);

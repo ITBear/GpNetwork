@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Headers/GpHttpResponseCode.hpp"
+#include "../Enums/GpHttpResponseCode.hpp"
 #include "../../../../GpCore2/GpUtils/Types/Strings/GpUTF.hpp"
 #include "../../../../GpCore2/GpUtils/Exceptions/GpExceptionCode.hpp"
 

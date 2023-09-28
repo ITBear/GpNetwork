@@ -1,41 +1,35 @@
 #pragma once
 
-#include "../RqRs/GpHttpRqRs.hpp"
+#include "../Routers/GpHttpRouter.hpp"
+#include "GpHttpServerCfgDesc.hpp"
+#include "../../../GpNetworkCore/Tasks/GpTcpAcceptServerTask.hpp"
 
 namespace GPlatform {
 
-class GP_NETWORK_HTTP_CORE_API GpHttpServer: public GpLogTaskFiberBase
+class GP_NETWORK_HTTP_CORE_API GpHttpServer
 {
 public:
-    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpServer)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpServer)
     CLASS_DD(GpHttpServer)
-
-protected:
-    inline                              GpHttpServer            (std::u8string                      aName,
-                                                                 GpHttpRequestHandlerFactory::SP    aRequestHandlerFactory) noexcept;
+    TAG_SET(THREAD_SAFE)
 
 public:
-    virtual                             ~GpHttpServer           (void) noexcept override;
+                                    GpHttpServer    (void) noexcept;
+                                    GpHttpServer    (GpHttpServerCfgDesc    aServerCfgDesc,
+                                                     GpHttpRouter::SP       aRouter);
+                                    ~GpHttpServer   (void) noexcept;
 
-protected:
-    GpHttpRequestHandlerFactory::SP     RequestHandlerFactory   (void) {return iRequestHandlerFactory;}
-
-    virtual void                        OnStart                 (void) override = 0;
-    virtual GpTaskDoRes                 OnStep                  (EventOptRefT aEvent) override = 0;
-    virtual void                        OnStop                  (void) noexcept override = 0;
+    void                            Start           (void);
+    void                            Start           (GpHttpServerCfgDesc    aServerCfgDesc,
+                                                     GpHttpRouter::SP       aRouter);
+    void                            RequestStop     (void);
+    void                            WaitForStop     (void);
 
 private:
-    GpHttpRequestHandlerFactory::SP     iRequestHandlerFactory;
+    mutable std::mutex              iMutex;
+    GpHttpServerCfgDesc             iServerCfgDesc;
+    GpHttpRouter::SP                iRouter;
+    GpTcpAcceptServerTask::SP       iAcceptSocketsTask;
 };
-
-GpHttpServer::GpHttpServer
-(
-    std::u8string                   aName,
-    GpHttpRequestHandlerFactory::SP aRequestHandlerFactory
-) noexcept:
-GpLogTaskFiberBase(std::move(aName)),
-iRequestHandlerFactory(std::move(aRequestHandlerFactory))
-{
-}
 
 }//namespace GPlatform

@@ -139,13 +139,16 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
     //RQ headers
     struct curl_slist* curlHeadersList = nullptr;
 
-    GpRAIIonDestruct listDestructor([&]()
-    {
-        if (curlHeadersList != nullptr)
+    GpRAIIonDestruct listDestructor
+    (
+        [&]()
         {
-            curl_slist_free_all(curlHeadersList);
+            if (curlHeadersList != nullptr)
+            {
+                curl_slist_free_all(curlHeadersList);
+            }
         }
-    });
+    );
 
     curlHeadersList = curl_slist_append(curlHeadersList, "Expect:");
 

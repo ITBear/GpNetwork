@@ -1,53 +1,73 @@
 #include "GpHttpResponse.hpp"
-#include "../../../../GpCore2/GpReflection/GpReflectManager.hpp"
+#include "../Body/GpHttpBodyPayloadFixed.hpp"
 
 namespace GPlatform {
-
-REFLECT_IMPLEMENT(GpHttpResponse, GP_MODULE_UUID)
 
 GpHttpResponse::~GpHttpResponse (void) noexcept
 {
 }
 
-void    GpHttpResponse::SetFromException (const GpHttpException& aHttpEx)
+GpHttpResponse::SP  GpHttpResponse::SFromException
+(
+    const GpHttpException&          aHttpEx,
+    const GpHttpRequestNoBodyDesc&  aRqDesc
+)
 {
-    code    = aHttpEx.Code();
-    body    = GpBytesArrayUtils::SMake(GpUTF::S_STR_To_UTF8(aHttpEx.what()));
+    GpHttpResponseNoBodyDesc rsDesc;
 
-    headers
+    rsDesc.code         = aHttpEx.Code();
+    rsDesc.http_version = aRqDesc.http_version;
+    rsDesc.headers
         .SetContentType(GpHttpContentType::TEXT_PLAIN, GpHttpCharset::UTF_8)
-        .SetConnection(GpHttpConnectionFlag::CLOSE)
         .SetCacheControl(GpHttpCacheControl::NO_STORE);
+
+    return MakeSP<GpHttpResponse>
+    (
+        std::move(rsDesc),
+        MakeSP<GpHttpBodyPayloadFixed>(GpBytesArrayUtils::SMake(GpUTF::S_STR_To_UTF8(aHttpEx.what())))
+    );
 }
 
-void    GpHttpResponse::SetFromException (const GpException& aEx)
+GpHttpResponse::SP  GpHttpResponse::SFromException
+(
+    const GpException&              aEx,
+    const GpHttpRequestNoBodyDesc&  aRqDesc
+)
 {
-    code    = GpHttpResponseCode::INTERNAL_SERVER_ERROR_500;
-    body    = GpBytesArrayUtils::SMake(GpUTF::S_STR_To_UTF8(aEx.what()));
+    GpHttpResponseNoBodyDesc rsDesc;
 
-    headers
+    rsDesc.code         = GpHttpResponseCode::INTERNAL_SERVER_ERROR_500;
+    rsDesc.http_version = aRqDesc.http_version;
+    rsDesc.headers
         .SetContentType(GpHttpContentType::TEXT_PLAIN, GpHttpCharset::UTF_8)
-        .SetConnection(GpHttpConnectionFlag::CLOSE)
         .SetCacheControl(GpHttpCacheControl::NO_STORE);
+
+    return MakeSP<GpHttpResponse>
+    (
+        std::move(rsDesc),
+        MakeSP<GpHttpBodyPayloadFixed>(GpBytesArrayUtils::SMake(GpUTF::S_STR_To_UTF8(aEx.what())))
+    );
 }
 
-void    GpHttpResponse::SetFromException (const std::exception& aEx)
+GpHttpResponse::SP  GpHttpResponse::SFromException
+(
+    const std::exception&           aEx,
+    const GpHttpRequestNoBodyDesc&  aRqDesc
+)
 {
-    code    = GpHttpResponseCode::INTERNAL_SERVER_ERROR_500;
-    body    = GpBytesArrayUtils::SMake(GpUTF::S_STR_To_UTF8(aEx.what()));
+    GpHttpResponseNoBodyDesc rsDesc;
 
-    headers
+    rsDesc.code         = GpHttpResponseCode::INTERNAL_SERVER_ERROR_500;
+    rsDesc.http_version = aRqDesc.http_version;
+    rsDesc.headers
         .SetContentType(GpHttpContentType::TEXT_PLAIN, GpHttpCharset::UTF_8)
-        .SetConnection(GpHttpConnectionFlag::CLOSE)
         .SetCacheControl(GpHttpCacheControl::NO_STORE);
-}
 
-void    GpHttpResponse::_SReflectCollectProps (GpReflectProp::C::Vec::Val& aPropsOut)
-{
-    PROP(http_version);
-    PROP(code);
-    PROP(headers);
-    PROP(body);
+    return MakeSP<GpHttpResponse>
+    (
+        std::move(rsDesc),
+        MakeSP<GpHttpBodyPayloadFixed>(GpBytesArrayUtils::SMake(GpUTF::S_STR_To_UTF8(aEx.what())))
+    );
 }
 
 }//namespace GPlatform

@@ -20,46 +20,43 @@ os_linux{
 #------------------------------- LIBS END ----------------------------------
 
 SOURCES += \
-    IO/Events/GpIOEvent.cpp \
-    IO/Events/GpIOEventPoller.cpp \
-    IO/Events/GpIOEventPollerCatalog.cpp \
-    IO/Events/GpIOEventPollerCfgDesc.cpp \
-    IO/Events/GpIOEventPollerEpoll.cpp \
-    IO/Events/GpIOEventPollerEpollCfgDesc.cpp \
-    IO/Events/GpIOEventPollerEpollFactory.cpp \
-    IO/Events/GpIOEventType.cpp \
-    IO/Sockets/GpSocket.cpp \
-    IO/Sockets/GpSocketAddr.cpp \
-    IO/Sockets/GpSocketFlags.cpp \
-    IO/Sockets/GpSocketIPv.cpp \
-    IO/Sockets/GpSocketProtocol.cpp \
-    IO/Sockets/GpSocketTCP.cpp \
-    IO/Sockets/GpSocketTask.cpp \
-    IO/Sockets/GpTcpServerTask.cpp
+	Pollers/Epoll/GpIOEventPollerEpoll.cpp \
+	Pollers/Epoll/GpIOEventPollerEpollCfgDesc.cpp \
+	Pollers/Epoll/GpIOEventPollerEpollFactory.cpp \
+	Pollers/GpIOEventPoller.cpp \
+	Pollers/GpIOEventPollerCatalog.cpp \
+	Pollers/GpIOEventPollerCfgDesc.cpp \
+	Pollers/GpIOEventType.cpp \
+	Sockets/GpSocket.cpp \
+	Sockets/GpSocketFactoryTCP.cpp \
+	Sockets/GpSocketFlags.cpp \
+	Sockets/GpSocketIPv.cpp \
+	Sockets/GpSocketProtocol.cpp \
+	Sockets/GpSocketTCP.cpp \
+	Tasks/GpSocketTask.cpp \
+	Tasks/GpTcpAcceptServerTask.cpp
 
 HEADERS += \
-    GpNetworkCore.hpp \
-    GpNetworkCore_global.hpp \
-    IO/Events/GpIOEvent.hpp \
-    IO/Events/GpIOEventPoller.hpp \
-    IO/Events/GpIOEventPollerCatalog.hpp \
-    IO/Events/GpIOEventPollerCfgDesc.hpp \
-    IO/Events/GpIOEventPollerEpoll.hpp \
-    IO/Events/GpIOEventPollerEpollCfgDesc.hpp \
-    IO/Events/GpIOEventPollerEpollFactory.hpp \
-    IO/Events/GpIOEventPollerFactory.hpp \
-    IO/Events/GpIOEventType.hpp \
-    IO/Events/GpIOEvents.hpp \
-    IO/GpIO.hpp \
-    IO/GpIOObjectId.hpp \
-    IO/Sockets/GpSocket.hpp \
-    IO/Sockets/GpSocketAddr.hpp \
-    IO/Sockets/GpSocketFlags.hpp \
-    IO/Sockets/GpSocketIPv.hpp \
-    IO/Sockets/GpSocketProtocol.hpp \
-    IO/Sockets/GpSocketTCP.hpp \
-    IO/Sockets/GpSocketTask.hpp \
-    IO/Sockets/GpSocketTaskFactory.hpp \
-    IO/Sockets/GpSockets.hpp \
-    IO/Sockets/GpSockets_global.hpp \
-    IO/Sockets/GpTcpServerTask.hpp
+	GpIOObjectId.hpp \
+	GpNetworkCore_global.hpp \
+	Pollers/Epoll/GpIOEventPollerEpoll.hpp \
+	Pollers/Epoll/GpIOEventPollerEpollCfgDesc.hpp \
+	Pollers/Epoll/GpIOEventPollerEpollFactory.hpp \
+	Pollers/GpIOEventPoller.hpp \
+	Pollers/GpIOEventPollerCatalog.hpp \
+	Pollers/GpIOEventPollerCfgDesc.hpp \
+	Pollers/GpIOEventPollerFactory.hpp \
+	Pollers/GpIOEventType.hpp \
+	Sockets/GpSocket.hpp \
+	Sockets/GpSocketAddr.hpp \
+	Sockets/GpSocketFactory.hpp \
+	Sockets/GpSocketFactoryTCP.hpp \
+	Sockets/GpSocketFlags.hpp \
+	Sockets/GpSocketIPv.hpp \
+	Sockets/GpSocketProtocol.hpp \
+	Sockets/GpSocketTCP.hpp \
+	Sockets/GpSockets_global.hpp \
+	Tasks/GpSocketTask.hpp \
+	Tasks/GpSocketTaskFactory.hpp \
+	Tasks/GpTcpAcceptServerTask.hpp
+
