@@ -31,20 +31,19 @@ public:
     inline static GpSocketAddr  SRemoteFromSocketId (const GpIOObjectId aSocketId);
 
     inline IPvTE                IPv                 (void) const noexcept;
+    inline void                 SetIPv              (const IPvTE aIPv) noexcept;
     inline u_int_16             Port                (void) const noexcept;
 
     inline const sockaddr*      Raw                 (void) const noexcept;
+    inline sockaddr*            Raw                 (void) noexcept;
     inline const sockaddr_in*   Raw_v4              (void) const noexcept;
+    inline sockaddr_in*         Raw_v4              (void) noexcept;
     inline const sockaddr_in6*  Raw_v6              (void) const noexcept;
+    inline sockaddr_in6*        Raw_v6              (void) noexcept;
     inline socklen_t            RawSize             (void) const noexcept;
 
     inline std::u8string        ToString            (void) const;
     inline std::u8string        ToStringIP          (void) const;
-
-private:
-    inline sockaddr*            Raw                 (void) noexcept {return reinterpret_cast<sockaddr*>(&iAddr);}
-    inline sockaddr_in*         Raw_v4              (void) noexcept {return reinterpret_cast<sockaddr_in*>(&iAddr);}
-    inline sockaddr_in6*        Raw_v6              (void) noexcept {return reinterpret_cast<sockaddr_in6*>(&iAddr);}
 
 public:
     IPvTE                       iIPv    = IPvTE::IPv4;
@@ -199,6 +198,11 @@ GpSocketAddr::IPvTE GpSocketAddr::IPv (void) const noexcept
     return iIPv;
 }
 
+void    GpSocketAddr::SetIPv (const IPvTE aIPv) noexcept
+{
+    iIPv = aIPv;
+}
+
 u_int_16    GpSocketAddr::Port (void) const noexcept
 {
     u_int_16 port = 0;
@@ -219,14 +223,29 @@ const sockaddr* GpSocketAddr::Raw (void) const noexcept
     return reinterpret_cast<const sockaddr*>(&iAddr);
 }
 
+sockaddr*   GpSocketAddr::Raw (void) noexcept
+{
+    return reinterpret_cast<sockaddr*>(&iAddr);
+}
+
 const sockaddr_in*  GpSocketAddr::Raw_v4 (void) const noexcept
 {
     return reinterpret_cast<const sockaddr_in*>(&iAddr);
 }
 
+sockaddr_in*    GpSocketAddr::Raw_v4 (void) noexcept
+{
+    return reinterpret_cast<sockaddr_in*>(&iAddr);
+}
+
 const sockaddr_in6* GpSocketAddr::Raw_v6 (void) const noexcept
 {
     return reinterpret_cast<const sockaddr_in6*>(&iAddr);
+}
+
+sockaddr_in6*   GpSocketAddr::Raw_v6 (void) noexcept
+{
+    return reinterpret_cast<sockaddr_in6*>(&iAddr);
 }
 
 socklen_t   GpSocketAddr::RawSize   (void) const noexcept

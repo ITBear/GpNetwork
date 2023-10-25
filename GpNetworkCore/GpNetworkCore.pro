@@ -33,6 +33,7 @@ SOURCES += \
 	Sockets/GpSocketIPv.cpp \
 	Sockets/GpSocketProtocol.cpp \
 	Sockets/GpSocketTCP.cpp \
+	Sockets/GpSocketUDP.cpp \
 	Tasks/GpSocketTask.cpp \
 	Tasks/GpTcpAcceptServerTask.cpp
 
@@ -55,6 +56,7 @@ HEADERS += \
 	Sockets/GpSocketIPv.hpp \
 	Sockets/GpSocketProtocol.hpp \
 	Sockets/GpSocketTCP.hpp \
+	Sockets/GpSocketUDP.hpp \
 	Sockets/GpSockets_global.hpp \
 	Tasks/GpSocketTask.hpp \
 	Tasks/GpSocketTaskFactory.hpp \

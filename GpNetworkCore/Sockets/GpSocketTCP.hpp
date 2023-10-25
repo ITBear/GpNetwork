@@ -21,41 +21,44 @@ public:
     };
 
 public:
-    inline                      GpSocketTCP     (void) noexcept;
-    inline                      GpSocketTCP     (GpSocketTCP&& aSocket) noexcept;
-    inline                      GpSocketTCP     (const GpSocketFlags&   aFlags,
-                                                 const CloseModeT       aCloseMode) noexcept;
-    virtual                     ~GpSocketTCP    (void) noexcept override final;
+    inline                          GpSocketTCP     (void) noexcept;
+    inline                          GpSocketTCP     (GpSocketTCP&& aSocket) noexcept;
+    inline                          GpSocketTCP     (const GpSocketFlags&   aFlags,
+                                                     const CloseModeT       aCloseMode) noexcept;
+    virtual                         ~GpSocketTCP    (void) noexcept override final;
 
-    inline GpSocketTCP&         operator=       (GpSocketTCP&& aSocket);
-    inline void                 Set             (GpSocketTCP&& aSocket);
+    inline GpSocketTCP&             operator=       (GpSocketTCP&& aSocket);
+    inline void                     Set             (GpSocketTCP&& aSocket);
 
-    static GpSocketTCP::SP      SFromID         (GpIOObjectId       aId,
-                                                 const CloseModeT   aCloseMode,
-                                                 const StateT       aState);
+    static GpSocketTCP::SP          SFromID         (GpIOObjectId       aId,
+                                                     const CloseModeT   aCloseMode,
+                                                     const StateT       aState);
 
-    StateT                      State           (void) const noexcept {return iState;}
+    StateT                          State           (void) const noexcept {return iState;}
 
-    void                        Listen          (const GpSocketAddr&    aAddr,
-                                                 const size_t           aMaxQueueSize);
-    void                        Connect         (const GpSocketAddr&    aAddr,
-                                                 const milliseconds_t   aTimeout);
-    GpSocketTCP::C::Opt::Val    Accept          (const GpSocketFlags& aFlags);
+    void                            Listen          (const GpSocketAddr&    aAddr,
+                                                     const size_t           aMaxQueueSize);
+    void                            Connect         (const GpSocketAddr&    aAddr,
+                                                     const milliseconds_t   aTimeout);
+    GpSocketTCP::C::Opt::Val        Accept          (const GpSocketFlags& aFlags);
 
-    virtual size_t              Read            (GpByteWriter& aWriter) override final;
-    virtual size_t              Write           (GpByteReader& aReader) override final;
+    [[nodiscard]] size_t            Read            (GpByteWriter& aWriter);
+    [[nodiscard]] size_t            Write           (GpByteReader& aReader);
 
-private:
-    void                        SetFromRawTCP   (const GpIOObjectId aId,
-                                                 const StateT       aState);
-
-    void                        ConnectSync     (const GpSocketAddr&    aAddr);
-    void                        ConnectAsync    (const GpSocketAddr&    aAddr);
-
-    void                        SetUserTimeout  (const milliseconds_t aTimeout);
+    inline GpBytesArray             Read            (void);
+    [[nodiscard]] inline size_t     Write           (GpSpanPtrByteR aData);
 
 private:
-    StateT                      iState  = StateT::NOT_CONNECTED;
+    void                            SetFromRawTCP   (const GpIOObjectId aId,
+                                                     const StateT       aState);
+
+    void                            ConnectSync     (const GpSocketAddr&    aAddr);
+    void                            ConnectAsync    (const GpSocketAddr&    aAddr);
+
+    void                            SetUserTimeout  (const milliseconds_t aTimeout);
+
+private:
+    StateT                          iState  = StateT::NOT_CONNECTED;
 };
 
 GpSocketTCP::GpSocketTCP (void) noexcept:
@@ -90,6 +93,27 @@ void    GpSocketTCP::Set (GpSocketTCP&& aSocket)
     GpSocket::Set(std::move(aSocket));
     iState = aSocket.State();
     aSocket.iState = StateT::NOT_CONNECTED;
+}
+
+GpBytesArray    GpSocketTCP::Read (void)
+{
+    GpBytesArray dataBuffer;
+
+    GpByteWriterStorageByteArray    dataWriterStorage(dataBuffer);
+    GpByteWriter                    dataWriter(dataWriterStorage);
+
+    std::ignore = Read(dataWriter);
+    dataBuffer.resize(dataWriter.TotalWrite());
+
+    return dataBuffer;
+}
+
+size_t  GpSocketTCP::Write (GpSpanPtrByteR aData)
+{
+    GpByteReaderStorage dataReaderStorage(aData);
+    GpByteReader        dataReader(dataReaderStorage);
+
+    return Write(dataReader);
 }
 
 }//namespace GPlatform

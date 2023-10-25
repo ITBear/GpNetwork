@@ -143,7 +143,7 @@ GpTaskRunRes::EnumT GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
         );
 
         // Add to scheduler
-        GpTaskScheduler::S().NewToReady(std::move(acceptedSocketTaskSP), 0.0_si_ms);
+        GpTaskScheduler::S().NewToReady(std::move(acceptedSocketTaskSP));
     }
 
     return GpTaskRunRes::READY_TO_RUN;

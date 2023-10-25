@@ -11,11 +11,11 @@ GpSocketTCP::~GpSocketTCP (void) noexcept
 GpSocketTCP::SP GpSocketTCP::SFromID
 (
     GpIOObjectId        aId,
-    const CloseModeT    aIsCloseMode,
+    const CloseModeT    aCloseMode,
     const StateT        aState
 )
 {
-    GpSocketTCP::SP socketSP    = MakeSP<GpSocketTCP>(GpSocketFlags{}, aIsCloseMode);
+    GpSocketTCP::SP socketSP    = MakeSP<GpSocketTCP>(GpSocketFlags{}, aCloseMode);
     GpSocketTCP&    socket      = socketSP.V();
 
     socket.SetFromRawTCP(aId, aState);
@@ -153,7 +153,7 @@ size_t  GpSocketTCP::Read (GpByteWriter& aWriter)
             0
         );
 
-        if (rcvSize < 0)
+        if (rcvSize < 0) [[unlikely]]
         {
 GP_WARNING_PUSH()
 GP_WARNING_DISABLE(unknown-warning-option)
@@ -175,7 +175,7 @@ GP_WARNING_POP()
         totalRcvSize = NumOps::SAdd(totalRcvSize, size_t(rcvSize));
         aWriter.Offset(size_t(rcvSize));
 
-        if (size_t(rcvSize) < writerStoragePtr.Count())
+        if (size_t(rcvSize) < writerStoragePtr.Count()) [[likely]]
         {
             break;
         }

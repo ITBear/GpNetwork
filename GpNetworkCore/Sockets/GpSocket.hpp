@@ -32,66 +32,60 @@ public:
     };
 
 protected:
-    inline                  GpSocket            (void) noexcept;
-    inline                  GpSocket            (GpSocket&& aSocket) noexcept;
-    inline                  GpSocket            (const ProtocolTE       aProtocol,
-                                                 const GpSocketFlags&   aFlags,
-                                                 const CloseModeT       aCloseMode) noexcept;
+    inline                          GpSocket            (void) noexcept;
+    inline                          GpSocket            (GpSocket&& aSocket) noexcept;
+    inline                          GpSocket            (const ProtocolTE       aProtocol,
+                                                         const GpSocketFlags&   aFlags,
+                                                         const CloseModeT       aCloseMode) noexcept;
 
-    inline                  GpSocket            (const GpIOObjectId     aId,
-                                                 const IPvTE            aIpV,
-                                                 const ProtocolTE       aProtocol,
-                                                 const GpSocketFlags&   aFlags,
-                                                 const CloseModeT       aCloseMode) noexcept;
+    inline                          GpSocket            (const GpIOObjectId     aId,
+                                                         const IPvTE            aIpV,
+                                                         const ProtocolTE       aProtocol,
+                                                         const GpSocketFlags&   aFlags,
+                                                         const CloseModeT       aCloseMode) noexcept;
 
 public:
-    virtual                 ~GpSocket           (void) noexcept;
+    virtual                         ~GpSocket           (void) noexcept;
 
-    ProtocolTE              Protocol            (void) const noexcept {return iProtocol;}
-    GpIOObjectId            Id                  (void) const noexcept {return iId;}
-    bool                    IsValidId           (void) const noexcept {return iId != GpIOObjectId_Default();}
-    IPvTE                   IPv                 (void) const noexcept {return iIPv;}
-    const GpSocketAddr&     AddrLocal           (void) const noexcept {return iAddrLocal;}
-    const GpSocketAddr&     AddrRemote          (void) const noexcept {return iAddrRemote;}
-    const GpSocketFlags&    Flags               (void) const noexcept {return iFlags;}
-    CloseModeT              CloseMode           (void) const noexcept {return iCloseMode;}
+    ProtocolTE                      Protocol            (void) const noexcept {return iProtocol;}
+    GpIOObjectId                    Id                  (void) const noexcept {return iId;}
+    bool                            IsValidId           (void) const noexcept {return iId != GpIOObjectId_Default();}
+    IPvTE                           IPv                 (void) const noexcept {return iIPv;}
+    const GpSocketAddr&             AddrLocal           (void) const noexcept {return iAddrLocal;}
+    const GpSocketAddr&             AddrRemote          (void) const noexcept {return iAddrRemote;}
+    const GpSocketFlags&            Flags               (void) const noexcept {return iFlags;}
+    CloseModeT                      CloseMode           (void) const noexcept {return iCloseMode;}
 
-    virtual size_t          Read                (GpByteWriter& aWriter) = 0;
-    virtual size_t          Write               (GpByteReader& aReader) = 0;
-
-    inline GpBytesArray     Read                (void);
-    inline size_t           Write               (GpSpanPtrByteR aData);
-
-    inline void             CheckForErrors      (void) const;
-    inline void             Close               (void);
+    inline void                     CheckForErrors      (void) const;
+    inline void                     Close               (void);
 
 protected:
-    GpSocket&               operator=           (GpSocket&&) noexcept = delete;
-    inline void             Set                 (GpSocket&& aSocket);
+    GpSocket&                       operator=           (GpSocket&&) noexcept = delete;
+    inline void                     Set                 (GpSocket&& aSocket);
 
-    inline void             Bind                (const GpSocketAddr& aAddr);
-    inline void             Create              (IPvTE aIPv);
-    inline void             SetAddrLocal        (const GpSocketAddr& aAddr) noexcept {iAddrLocal = aAddr;}
-    inline void             SetAddrRemote       (const GpSocketAddr& aAddr) noexcept {iAddrRemote = aAddr;}
+    inline void                     Bind                (const GpSocketAddr& aAddr);
+    inline void                     Create              (IPvTE aIPv);
+    inline void                     SetAddrLocal        (const GpSocketAddr& aAddr) noexcept {iAddrLocal = aAddr;}
+    inline void                     SetAddrRemote       (const GpSocketAddr& aAddr) noexcept {iAddrRemote = aAddr;}
 
-    inline void             SetFromRaw          (const GpIOObjectId aId);
+    inline void                     SetFromRaw          (const GpIOObjectId aId);
 
 protected:
-    inline void             ApplyFlags          (void);
-    inline void             SetFlag_ReuseAddr   (bool aValue);
-    inline void             SetFlag_ReusePort   (bool aValue);
-    inline void             SetFlag_NoBlock     (bool aValue);
-    inline void             SetFlag_LingerZero  (bool aValue);
-    inline void             SetFlag_NoDelay     (bool aValue);
+    inline void                     ApplyFlags          (void);
+    inline void                     SetFlag_ReuseAddr   (bool aValue);
+    inline void                     SetFlag_ReusePort   (bool aValue);
+    inline void                     SetFlag_NoBlock     (bool aValue);
+    inline void                     SetFlag_LingerZero  (bool aValue);
+    inline void                     SetFlag_NoDelay     (bool aValue);
 
 private:
-    GpIOObjectId            iId         = GpIOObjectId_Default();
-    IPvTE                   iIPv        = IPvTE::IPv4;
-    ProtocolTE              iProtocol;
-    GpSocketAddr            iAddrLocal;
-    GpSocketAddr            iAddrRemote;
-    GpSocketFlags           iFlags;
-    CloseModeT              iCloseMode  = CloseModeT::CLOSE_ON_DESTRUCT;
+    GpIOObjectId                    iId         = GpIOObjectId_Default();
+    IPvTE                           iIPv        = IPvTE::IPv4;
+    ProtocolTE                      iProtocol;
+    GpSocketAddr                    iAddrLocal;
+    GpSocketAddr                    iAddrRemote;
+    GpSocketFlags                   iFlags;
+    CloseModeT                      iCloseMode  = CloseModeT::CLOSE_ON_DESTRUCT;
 };
 
 GpSocket::GpSocket (void) noexcept
@@ -138,26 +132,6 @@ iProtocol (aProtocol),
 iFlags    (aFlags),
 iCloseMode(aCloseMode)
 {
-}
-
-GpBytesArray    GpSocket::Read (void)
-{
-    GpBytesArray dataBuffer;
-
-    GpByteWriterStorageByteArray    dataWriterStorage(dataBuffer);
-    GpByteWriter                    dataWriter(dataWriterStorage);
-
-    Read(dataWriter);
-
-    return dataBuffer;
-}
-
-size_t  GpSocket::Write (GpSpanPtrByteR aData)
-{
-    GpByteReaderStorage dataReaderStorage(aData);
-    GpByteReader        dataReader(dataReaderStorage);
-
-    return Write(dataReader);
 }
 
 void    GpSocket::CheckForErrors (void) const

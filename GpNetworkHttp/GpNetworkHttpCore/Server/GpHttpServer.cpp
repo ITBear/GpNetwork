@@ -47,7 +47,7 @@ void    GpHttpServer::Start (void)
     );
 
     // Add to scheduler
-    GpTaskScheduler::S().NewToReady(std::move(iAcceptSocketsTask), 0.0_si_ms);
+    GpTaskScheduler::S().NewToReady(std::move(iAcceptSocketsTask));
 
     // TODO: add task dependency (this to iAcceptSocketsTask)
 }

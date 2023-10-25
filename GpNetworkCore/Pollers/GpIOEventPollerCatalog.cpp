@@ -54,7 +54,7 @@ void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::
 
         //Start and wait for start
         GpTaskFiber::StartFutureT::SP startFuture = poller->GetStartFuture();
-        GpTaskScheduler::S().NewToReady(poller, 0.0_si_ms);
+        GpTaskScheduler::S().NewToReady(poller);
 
         if (startFuture->WaitFor(2000.0_si_ms) == false)
         {
