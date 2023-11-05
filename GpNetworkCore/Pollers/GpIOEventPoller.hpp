@@ -15,7 +15,7 @@ public:
     CLASS_DD(GpIOEventPoller)
     TAG_SET(THREAD_SAFE)
 
-    using SubsribersEventChannelT   = GpEventChannel<GpTask::IdT, GpIOEventsTypes>;
+    using SubsribersEventChannelT   = GpEventChannel<GpTaskId, GpIOEventsTypes>;
     using SubsribersByObjectT       = std::unordered_map<GpIOObjectId, SubsribersEventChannelT>;
 
 protected:
@@ -25,10 +25,10 @@ public:
     virtual                             ~GpIOEventPoller    (void) noexcept override;
 
     void                                AddSubscription     (const GpIOObjectId                     aIOObjectId,
-                                                             const GpTask::IdT                      aTaskId,
+                                                             const GpTaskId                         aTaskId,
                                                              SubsribersEventChannelT::CallbackFnT&& aFn);
     void                                RemoveSubscription  (const GpIOObjectId aIOObjectId,
-                                                             const GpTask::IdT  aTaskId);
+                                                             const GpTaskId     aTaskId);
 
 protected:
     void                                ProcessEvents       (const GpIOObjectId aIOObjectId,
@@ -42,7 +42,7 @@ protected:
     virtual void                        OnRemoveObject      (const GpIOObjectId aIOObjectId) = 0;
 
 protected:
-    mutable GpSpinlock                  iLock;
+    mutable GpSpinLock                  iLock;
 
 private:
     SubsribersByObjectT                 iSubsribersByObject;

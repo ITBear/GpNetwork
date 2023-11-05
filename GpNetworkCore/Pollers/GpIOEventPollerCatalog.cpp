@@ -41,7 +41,7 @@ void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::
 
     for (const auto&[pollerName, pollerCfg]: aCfgs)
     {
-        //Try to find poller type
+        // Try to find poller type
         const auto pollerTypeIter = iRegisteredPollerTypes.find(pollerCfg->ReflectModelUid());
 
         if (pollerTypeIter == iRegisteredPollerTypes.end())
@@ -49,13 +49,14 @@ void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::
             THROW_GP(u8"Unknown IO event poller '" + pollerName + u8"', config type UID ="_sv + pollerCfg->ReflectModelUid().ToString())
         );
 
-        //Create new poller
+        // Create new poller
         GpIOEventPoller::SP poller = pollerTypeIter->second(pollerName, pollerCfg.V());
 
-        //Start and wait for start
+        // Start
         GpTaskFiber::StartFutureT::SP startFuture = poller->GetStartFuture();
         GpTaskScheduler::S().NewToReady(poller);
 
+        // Wait for started
         if (startFuture->WaitFor(2000.0_si_ms) == false)
         {
             poller->UpStopRequestFlag();
@@ -65,25 +66,11 @@ void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::
 
         std::u8string pollerNameStr(pollerName);
 
-        // Wait for started
-        while (!startFuture.Vn().IsReady())
-        {
-            startFuture.Vn().WaitFor(100.0_si_ms);
-        }
-
         // Check start result
         GpTaskFiber::StartFutureT::SCheckIfReady
         (
             startFuture.V(),
             [&](typename GpTaskFiber::StartFutureT::value_type&)//OnSuccessFnT
-            {
-                iCatalog.Set
-                (
-                    std::move(pollerNameStr),
-                    std::move(poller)
-                );
-            },
-            [&](void)//OnEmptyFnT
             {
                 iCatalog.Set
                 (

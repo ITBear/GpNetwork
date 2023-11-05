@@ -44,7 +44,7 @@ public:
         socket->Listen(iAddr, iMaxQueueSize);
 
         // Add soket to event poller
-        const GpTask::IdT socketTaskId = GpTask::SCurrentTask().value().get().Id();
+        const GpTaskId socketTaskId = GpTask::SCurrentTask().value().get().Id();
         eventPollerOpt.value()->AddSubscription
         (
             socket->Id(),
@@ -130,7 +130,7 @@ GpTaskRunRes::EnumT GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
         );
 
         // Subscribe task to IO events
-        const GpTask::IdT acceptedSocketTaskId = acceptedSocketTaskSP->Id();
+        const GpTaskId acceptedSocketTaskId = acceptedSocketTaskSP->Id();
 
         iEventPoller->AddSubscription
         (

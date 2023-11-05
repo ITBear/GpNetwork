@@ -9,7 +9,7 @@ GpIOEventPoller::~GpIOEventPoller (void) noexcept
 void    GpIOEventPoller::AddSubscription
 (
     const GpIOObjectId                      aIOObjectId,
-    const GpTask::IdT                       aTaskId,
+    const GpTaskId                          aTaskId,
     SubsribersEventChannelT::CallbackFnT&&  aFn
 )
 {
@@ -30,7 +30,7 @@ void    GpIOEventPoller::AddSubscription
 void    GpIOEventPoller::RemoveSubscription
 (
     const GpIOObjectId  aIOObjectId,
-    const GpTask::IdT   aTaskId
+    const GpTaskId      aTaskId
 )
 {
     std::scoped_lock lock(iLock);
