@@ -2,7 +2,8 @@
 
 #include "GpHttpRouteTable.hpp"
 #include "../../RequestHandlers/GpHttpRequestHandlerFactory.hpp"
-#include "../../../../../GpCore2/GpUtils/SyncPrimitives/GpRWSpinLock.hpp"
+
+#include <GpCore2/GpUtils/SyncPrimitives/GpRWSpinLock.hpp>
 
 namespace GPlatform {
 

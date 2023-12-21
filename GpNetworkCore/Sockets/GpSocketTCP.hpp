@@ -1,7 +1,12 @@
 #pragma once
 
 #include "GpSocket.hpp"
-#include "../../../GpCore2/GpUtils/Types/Units/SI/GpUnitsSI_Time.hpp"
+
+#include <GpCore2/GpUtils/Types/Units/SI/GpUnitsSI_Time.hpp>
+#include <GpCore2/GpUtils/Streams/GpByteWriter.hpp>
+#include <GpCore2/GpUtils/Streams/GpByteWriterStorageByteArray.hpp>
+#include <GpCore2/GpUtils/Streams/GpByteReader.hpp>
+#include <GpCore2/GpUtils/Streams/GpByteReaderStorage.hpp>
 
 namespace GPlatform {
 
@@ -56,6 +61,7 @@ private:
     void                            ConnectAsync    (const GpSocketAddr&    aAddr);
 
     void                            SetUserTimeout  (const milliseconds_t aTimeout);
+    inline void                     SetFlag_NoDelay     (bool aValue);
 
 private:
     StateT                          iState  = StateT::NOT_CONNECTED;
@@ -103,7 +109,9 @@ GpBytesArray    GpSocketTCP::Read (void)
     GpByteWriter                    dataWriter(dataWriterStorage);
 
     std::ignore = Read(dataWriter);
-    dataBuffer.resize(dataWriter.TotalWrite());
+
+
+    dataWriter.OnEnd();
 
     return dataBuffer;
 }
@@ -116,4 +124,14 @@ size_t  GpSocketTCP::Write (GpSpanPtrByteR aData)
     return Write(dataReader);
 }
 
-}//namespace GPlatform
+void    GpSocketTCP::SetFlag_NoDelay (bool aValue)
+{
+    int option = aValue ? 1 : 0;
+
+    if (setsockopt(Id(), SOL_TCP, TCP_NODELAY, &option, sizeof(option)) != 0)
+    {
+        THROW_GP(GpErrno::SGetAndClear());
+    }
+}
+
+}// namespace GPlatform

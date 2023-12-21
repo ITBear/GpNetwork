@@ -1,8 +1,9 @@
 #include "GpUrlReflection.hpp"
-//#include "../../../../GpCore2/GpReflection/GpReflectType.hpp"
-//#include "../../../../GpCore2/GpReflection/GpReflectContainerType.hpp"
-//#include "../../../../GpCore2/GpReflection/GpReflectModel.hpp"
-//#include "../../../../GpCore2/GpUtils/Other/GpCallHandler2.hpp"
+
+//#include <GpCore2/GpReflection/GpReflectType.hpp>
+//#include <GpCore2/GpReflection/GpReflectContainerType.hpp>
+//#include <GpCore2/GpReflection/GpReflectModel.hpp>
+//#include <GpCore2/GpUtils/Other/GpCallHandler2.hpp>
 
 namespace GPlatform {
 

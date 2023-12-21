@@ -1,6 +1,6 @@
 #include "GpSocket.hpp"
 
-#include "../../../GpCore2/GpUtils/Types/Strings/GpStringUtils.hpp"
+#include <GPlatform/GpCore2/GpUtils/Types/Strings/GpStringUtils.hpp>
 
 namespace GPlatform {
 
@@ -21,4 +21,4 @@ GpSocket::~GpSocket (void) noexcept
     }
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

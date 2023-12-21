@@ -2,9 +2,9 @@
 
 #if defined(GP_OS_LINUX)
 
-#include "../../../../GpCore2/GpUtils/Exceptions/GpException.hpp"
-#include "../../../../GpCore2/GpUtils/Other/GpErrno.hpp"
-#include "../../../../GpLog/GpLogCore/GpLog.hpp"
+#include <GpCore2/GpUtils/Exceptions/GpException.hpp>
+#include <GpCore2/GpUtils/Other/GpErrno.hpp>
+#include <GpLog/GpLogCore/GpLog.hpp>
 
 #if defined(GP_POSIX)
 #   include <unistd.h>
@@ -80,7 +80,7 @@ GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
         }
     }
 
-    //Poll wait...
+    // Poll wait...
     const int nfds = epoll_wait
     (
         iEpollId,
@@ -95,7 +95,7 @@ GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
         return GpTaskRunRes::READY_TO_RUN;
     }
 
-    //Check for errors
+    // Check for errors
     THROW_COND_GP
     (
         nfds >= 0,
@@ -107,7 +107,7 @@ GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
         return GpTaskRunRes::READY_TO_RUN;
     }
 
-    //Process events
+    // Process events
     const size_t    eventsCount = NumOps::SConvert<size_t>(nfds);
     const EventT*   epEvent     = eventsPtr;
 

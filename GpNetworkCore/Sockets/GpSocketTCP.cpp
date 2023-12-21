@@ -1,6 +1,7 @@
 #include "GpSocketTCP.hpp"
-#include "../../../GpCore2/GpUtils/Streams/GpByteWriter.cpp"
-#include "../../../GpCore2/GpUtils/Streams/GpByteReader.hpp"
+
+#include <GpCore2/GpUtils/Streams/GpByteWriter.cpp>
+#include <GpCore2/GpUtils/Streams/GpByteReader.hpp>
 
 namespace GPlatform {
 
@@ -301,4 +302,4 @@ void    GpSocketTCP::SetUserTimeout (const milliseconds_t aTimeout)
     }
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

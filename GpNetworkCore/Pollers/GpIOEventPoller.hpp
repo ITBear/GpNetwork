@@ -1,10 +1,11 @@
 #pragma once
 
 #include "../GpIOObjectId.hpp"
-#include "../../../GpCore2/GpUtils/Types/Enums/GpEnum.hpp"
-#include "../../../GpCore2/GpTasks/Fibers/GpTaskFiber.hpp"
-#include "../../../GpCore2/GpUtils/EventBus/GpEventChannel.hpp"
 #include "GpIOEventType.hpp"
+
+#include <GpCore2/GpUtils/Types/Enums/GpEnum.hpp>
+#include <GpCore2/GpTasks/Fibers/GpTaskFiber.hpp>
+#include <GpCore2/GpUtils/EventBus/GpEventChannel.hpp>
 
 namespace GPlatform {
 

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "GpNetworkCore_global.hpp"
-#include "../../GpCore2/GpUtils/Types/Numerics/GpNumericTypes.hpp"
+
+#include <GpCore2/GpUtils/Types/Numerics/GpNumericTypes.hpp>
 
 namespace GPlatform {
 

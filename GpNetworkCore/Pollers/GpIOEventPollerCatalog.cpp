@@ -1,11 +1,14 @@
 #include "GpIOEventPollerCatalog.hpp"
-#include "../../../GpCore2/GpReflection/GpReflectManager.hpp"
-#include "../../../GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp"
+
+#include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
 
 #if defined(GP_OS_LINUX)
 #   include "Epoll/GpIOEventPollerEpollFactory.hpp"
 #   include "Epoll/GpIOEventPollerEpollCfgDesc.hpp"
 #endif
+
+#include <fmt/include/fmt/core.h>
 
 namespace GPlatform {
 
@@ -17,6 +20,31 @@ GpIOEventPollerCatalog::GpIOEventPollerCatalog (void) noexcept
 
 GpIOEventPollerCatalog::~GpIOEventPollerCatalog (void) noexcept
 {
+}
+
+GpIOEventPollerCatalog::CatalogT::ValueOptT GpIOEventPollerCatalog::GetOpt (std::u8string_view aPollerName) noexcept
+{
+    return iCatalog.GetOpt(aPollerName);
+}
+
+GpIOEventPoller::SP GpIOEventPollerCatalog::Get (std::u8string_view aPollerName)
+{
+    CatalogT::ValueOptT eventPollerOpt = iCatalog.GetOpt(aPollerName);
+
+    THROW_COND_GP
+    (
+        eventPollerOpt.has_value(),
+        [aPollerName]()
+        {
+            return fmt::format
+            (
+                "Event poller not found by name '{}'",
+                GpUTF::S_UTF8_To_STR(aPollerName)
+            );
+        }
+    );
+
+    return eventPollerOpt.value();
 }
 
 void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::SP& aCfgs)

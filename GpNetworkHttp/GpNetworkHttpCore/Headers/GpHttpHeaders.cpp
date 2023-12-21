@@ -1,6 +1,7 @@
 #include "GpHttpHeaders.hpp"
-#include "../../../GpCore2/GpReflection/GpReflectManager.hpp"
-#include "../../../GpCore2/GpUtils/Encoders/GpBase64.hpp"
+
+#include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpUtils/Encoders/GpBase64.hpp>
 
 namespace GPlatform {
 

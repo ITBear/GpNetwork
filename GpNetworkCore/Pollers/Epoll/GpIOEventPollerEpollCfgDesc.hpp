@@ -1,9 +1,10 @@
 #pragma once
 
 #include "../GpIOEventPollerCfgDesc.hpp"
-#include "../../../../GpCore2/GpReflection/GpReflectObject.hpp"
-#include "../../../../GpCore2/GpReflection/GpReflectUtils.hpp"
-#include "../../../../GpCore2/GpUtils/Types/Units/SI/GpUnitsSI_Time.hpp"
+
+#include <GpCore2/GpReflection/GpReflectObject.hpp>
+#include <GpCore2/GpReflection/GpReflectUtils.hpp>
+#include <GpCore2/GpUtils/Types/Units/SI/GpUnitsSI_Time.hpp>
 
 namespace GPlatform {
 

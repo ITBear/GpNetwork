@@ -2,7 +2,8 @@
 
 #include "GpIOEventPoller.hpp"
 #include "GpIOEventPollerCfgDesc.hpp"
-#include "../../../GpCore2/GpUtils/Types/Containers/GpDictionary.hpp"
+
+#include <GpCore2/GpUtils/Types/Containers/GpDictionary.hpp>
 
 namespace GPlatform {
 
@@ -29,7 +30,8 @@ public:
     const CatalogT&                 Catalog                 (void) const noexcept {return iCatalog;}
     CatalogT&                       Catalog                 (void) noexcept {return iCatalog;}
 
-    inline CatalogT::ValueOptT      Get                     (std::u8string_view aPollerName) noexcept;
+    CatalogT::ValueOptT             GetOpt                  (std::u8string_view aPollerName) noexcept;
+    GpIOEventPoller::SP             Get                     (std::u8string_view aPollerName);
 
 private:
     void                            Start                   (const GpIOEventPollerCfgDesc::C::MapStr::SP& aCfgs);
@@ -43,10 +45,5 @@ private:
     CreatePollerFnsCatalogT         iRegisteredPollerTypes;
     static GpIOEventPollerCatalog   sInstance;
 };
-
-GpIOEventPollerCatalog::CatalogT::ValueOptT GpIOEventPollerCatalog::Get (std::u8string_view aPollerName) noexcept
-{
-    return iCatalog.GetOpt(aPollerName);
-}
 
 }//namespace GPlatform

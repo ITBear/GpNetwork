@@ -1,8 +1,8 @@
 #include "GpTcpAcceptServerTask.hpp"
-#include "../../../GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp"
 #include "../Pollers/GpIOEventPollerCatalog.hpp"
 #include "../Sockets/GpSocketTCP.hpp"
 
+#include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
 #include <iostream>
 
 namespace GPlatform {
@@ -26,13 +26,7 @@ public:
     virtual GpSocket::SP    NewInstance                         (void) const override final
     {
         // Get event poller
-        auto eventPollerOpt = GpIOEventPollerCatalog::S().Get(iEventPollerName);
-
-        THROW_COND_GP
-        (
-            eventPollerOpt.has_value(),
-            [this](){return u8"Event poller not found by name '"_sv + iEventPollerName + u8"'"_sv;}
-        );
+        GpIOEventPoller::SP eventPoller = GpIOEventPollerCatalog::S().Get(iEventPollerName);
 
         // Create socket
         GpSocketTCP::SP socket = MakeSP<GpSocketTCP>
@@ -45,17 +39,27 @@ public:
 
         // Add soket to event poller
         const GpTaskId socketTaskId = GpTask::SCurrentTask().value().get().Id();
-        eventPollerOpt.value()->AddSubscription
+        eventPoller->AddSubscription
         (
             socket->Id(),
             socketTaskId,
-            [socketTaskId](const GpIOEventsTypes aIOEventsTypes)
+            [](const GpTaskId aTaskId, const GpIOEventsTypes aIOEventsTypes)
             {
-                GpTaskScheduler::S().MakeTaskReady(socketTaskId, aIOEventsTypes);
+                GpTaskScheduler::S().MakeTaskReady(aTaskId, aIOEventsTypes);
             }
         );
 
         return socket;
+    }
+
+    virtual void            DestroyInstance     (GpSocket& aSocket) const override final
+    {
+        // Get event poller
+        GpIOEventPoller::SP eventPoller = GpIOEventPollerCatalog::S().Get(iEventPollerName);
+
+        // Remove socket from event poller
+        const GpTaskId socketTaskId = GpTask::SCurrentTask().value().get().Id();
+        eventPoller->RemoveSubscription(aSocket.Id(), socketTaskId);
     }
 
 private:
@@ -95,15 +99,7 @@ GpTaskRunRes::EnumT GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
     if (iEventPoller == nullptr) [[unlikely]]
     {
         // Get event poller
-        auto eventPollerOpt = GpIOEventPollerCatalog::S().Get(iEventPollerName);
-
-        THROW_COND_GP
-        (
-            eventPollerOpt.has_value(),
-            [this](){return u8"Event poller not found by name '"_sv + iEventPollerName + u8"'"_sv;}
-        );
-
-        iEventPoller = eventPollerOpt.value().P();
+        iEventPoller = GpIOEventPollerCatalog::S().Get(iEventPollerName).P();
     }
 
     // Accept
@@ -136,9 +132,9 @@ GpTaskRunRes::EnumT GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
         (
             acceptedSocketId,
             acceptedSocketTaskId,
-            [acceptedSocketTaskId](const GpIOEventsTypes aIOEventsTypes)
+            [](const GpTaskId aTaskId, const GpIOEventsTypes aIOEventsTypes)
             {
-                GpTaskScheduler::S().MakeTaskReady(acceptedSocketTaskId, aIOEventsTypes);
+                GpTaskScheduler::S().MakeTaskReady(aTaskId, aIOEventsTypes);
             }
         );
 

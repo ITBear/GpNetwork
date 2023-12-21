@@ -2,8 +2,9 @@
 
 #include "../Sockets/GpSocket.hpp"
 #include "../Sockets/GpSocketFactory.hpp"
-#include "../../../GpCore2/GpTasks/Fibers/GpTaskFiber.hpp"
 #include "../Pollers/GpIOEventType.hpp"
+
+#include <GpCore2/GpTasks/Fibers/GpTaskFiber.hpp>
 
 namespace GPlatform {
 

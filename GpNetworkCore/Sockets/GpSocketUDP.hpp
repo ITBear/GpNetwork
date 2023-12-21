@@ -4,6 +4,8 @@
 
 namespace GPlatform {
 
+class GpByteWriter;
+
 class GP_NETWORK_CORE_API GpSocketUDP final: public GpSocket
 {
 public:
@@ -11,21 +13,23 @@ public:
     CLASS_DD(GpSocketUDP)
 
 public:
-    inline                          GpSocketUDP     (void) noexcept;
-    inline                          GpSocketUDP     (GpSocketUDP&& aSocket) noexcept;
-    inline                          GpSocketUDP     (const GpSocketFlags&   aFlags,
-                                                     const CloseModeT       aCloseMode) noexcept;
-    virtual                         ~GpSocketUDP    (void) noexcept override final;
+    inline                              GpSocketUDP     (void) noexcept;
+    inline                              GpSocketUDP     (GpSocketUDP&& aSocket) noexcept;
+    inline                              GpSocketUDP     (const GpSocketFlags&   aFlags,
+                                                         const CloseModeT       aCloseMode) noexcept;
+    virtual                             ~GpSocketUDP    (void) noexcept override final;
 
-    inline GpSocketUDP&             operator=       (GpSocketUDP&& aSocket);
-    inline void                     Set             (GpSocketUDP&& aSocket);
+    inline GpSocketUDP&                 operator=       (GpSocketUDP&& aSocket);
+    inline void                         Set             (GpSocketUDP&& aSocket);
 
-    static GpSocketUDP::SP          SFromID         (GpIOObjectId       aId,
-                                                     const CloseModeT   aCloseMode);
+    void                                Connect         (const GpSocketAddr&    aAddr);
 
-    [[nodiscard]] size_t            Read            (GpByteWriter& aWriter,
-                                                     GpSocketAddr& aFromAddrOut);
-    [[nodiscard]] size_t            Write           (GpSpanPtrByteR aPacket);
+    [[nodiscard]] std::optional<size_t> ReadFrom        (GpByteWriter& aWriter,
+                                                         GpSocketAddr& aFromAddrOut);
+    [[nodiscard]] std::optional<size_t> Read            (GpByteWriter& aWriter);
+    [[nodiscard]] bool                  WriteTo         (GpSpanPtrByteR         aData,
+                                                         const GpSocketAddr&    aToAddr);
+    [[nodiscard]] bool                  Write           (GpSpanPtrByteR aData);
 };
 
 GpSocketUDP::GpSocketUDP (void) noexcept:
@@ -43,7 +47,12 @@ GpSocketUDP::GpSocketUDP
     const GpSocketFlags&    aFlags,
     const CloseModeT        aCloseMode
 ) noexcept:
-GpSocket(ProtocolT::UDP, aFlags, aCloseMode)
+GpSocket
+(
+    ProtocolT::UDP,
+    aFlags,
+    aCloseMode
+)
 {
 }
 
@@ -59,4 +68,4 @@ void    GpSocketUDP::Set (GpSocketUDP&& aSocket)
     GpSocket::Set(std::move(aSocket));
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

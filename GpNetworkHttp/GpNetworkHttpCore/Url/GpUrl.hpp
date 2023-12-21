@@ -2,9 +2,10 @@
 
 #include "GpUrlAuthority.hpp"
 #include "GpUrlQuery.hpp"
-#include "../../../../GpCore2/GpUtils/Types/Strings/GpStringOps.hpp"
-#include "../../../../GpCore2/GpReflection/GpReflectObject.hpp"
-#include "../../../../GpCore2/GpReflection/GpReflectUtils.hpp"
+
+#include <GpCore2/GpUtils/Types/Strings/GpStringOps.hpp>
+#include <GpCore2/GpReflection/GpReflectObject.hpp>
+#include <GpCore2/GpReflection/GpReflectUtils.hpp>
 
 namespace GPlatform {
 

@@ -34,6 +34,7 @@ SOURCES += \
 	Pollers/GpIOEventPollerCfgDesc.cpp \
 	Pollers/GpIOEventType.cpp \
 	Sockets/GpSocket.cpp \
+	Sockets/GpSocketAddr.cpp \
 	Sockets/GpSocketFactoryTCP.cpp \
 	Sockets/GpSocketFlags.cpp \
 	Sockets/GpSocketIPv.cpp \

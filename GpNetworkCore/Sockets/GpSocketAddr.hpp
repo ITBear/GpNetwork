@@ -2,12 +2,13 @@
 
 #include "GpSocketIPv.hpp"
 #include "../GpIOObjectId.hpp"
-#include "../../../GpCore2/GpUtils/Types/Bits/GpBitOps.hpp"
-#include "../../../GpCore2/GpUtils/Other/GpErrno.hpp"
+
+#include <GpCore2/GpUtils/Types/Bits/GpBitOps.hpp>
+#include <GpCore2/GpUtils/Other/GpErrno.hpp>
 
 namespace GPlatform {
 
-class GpSocketAddr
+class GP_NETWORK_CORE_API GpSocketAddr
 {
 public:
     using IPvT      = GpSocketIPv;
@@ -20,7 +21,9 @@ public:
     inline                      ~GpSocketAddr       (void) noexcept;
 
     inline void                 Clear               (void) noexcept;
-    inline void                 Init                (const IPvTE        aIPv,
+    inline void                 SetAutoIPv          (std::u8string_view aIP,
+                                                     const u_int_16     aPort);
+    inline void                 Set                 (const IPvTE        aIPv,
                                                      std::u8string_view aIP,
                                                      const u_int_16     aPort);
     inline void                 Set                 (const GpSocketAddr& aAddr) noexcept;
@@ -44,6 +47,8 @@ public:
 
     inline std::u8string        ToString            (void) const;
     inline std::u8string        ToStringIP          (void) const;
+
+    static IPvTE                SDetectIPv          (std::u8string_view aIP);
 
 public:
     IPvTE                       iIPv    = IPvTE::IPv4;
@@ -78,7 +83,21 @@ void    GpSocketAddr::Clear (void) noexcept
     iAddr.ss_family = GpSocketIPv_SSFamily(IPvTE::IPv4);
 }
 
-void    GpSocketAddr::Init
+void    GpSocketAddr::SetAutoIPv
+(
+    std::u8string_view  aIP,
+    const u_int_16      aPort
+)
+{
+    Set
+    (
+        SDetectIPv(aIP),
+        aIP,
+        aPort
+    );
+}
+
+void    GpSocketAddr::Set
 (
     const IPvTE         aIPv,
     std::u8string_view  aIP,
@@ -290,4 +309,4 @@ std::u8string   GpSocketAddr::ToStringIP (void) const
     return std::u8string(reinterpret_cast<const char8_t*>(buff.data()));
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

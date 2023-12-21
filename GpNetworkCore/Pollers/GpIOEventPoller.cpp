@@ -70,7 +70,7 @@ void    GpIOEventPoller::ProcessEvents
     channel.PushEvent(aEvents);
 
     if (   aEvents.Test(GpIOEventType::CLOSED)
-        || aEvents.Test(GpIOEventType::ERROR))
+        || aEvents.Test(GpIOEventType::ERROR)) [[unlikely]]
     {
         iSubsribersByObject.erase(aIOObjectId);
         OnRemoveObject(aIOObjectId);

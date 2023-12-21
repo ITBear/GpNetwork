@@ -50,11 +50,15 @@ std::optional<GpException>  GpSocketTask::OnStop (void) noexcept
     {
         if (iSocket.IsNotNULL())
         {
-            OnClosed(iSocket.Vn());
+            if (iSocketFactory.IsNotNULL())
+            {
+                iSocketFactory.Vn().DestroyInstance(iSocket.Vn());
+            }
+
             iSocket->Close();
+            OnClosed(iSocket.Vn());
             iSocket.Clear();
         }
-
     } catch (const GpException& e)
     {
         ex = e;

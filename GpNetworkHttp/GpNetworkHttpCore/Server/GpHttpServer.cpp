@@ -1,6 +1,7 @@
 #include "GpHttpServer.hpp"
-#include "../../../../GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp"
 #include "GpHttpRequestSocketTaskFactory.hpp"
+
+#include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
 
 namespace GPlatform {
 
@@ -34,7 +35,7 @@ void    GpHttpServer::Start (void)
 
     // Create accept sockets task
     GpSocketAddr sockAddr;
-    sockAddr.Init(GpSocketIPv::IPv4, iServerCfgDesc.listen_ip, iServerCfgDesc.listen_port);
+    sockAddr.SetAutoIPv(iServerCfgDesc.listen_ip, iServerCfgDesc.listen_port);
 
     iAcceptSocketsTask = MakeSP<GpTcpAcceptServerTask>
     (

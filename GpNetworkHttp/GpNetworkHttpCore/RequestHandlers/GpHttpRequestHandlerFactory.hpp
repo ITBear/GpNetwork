@@ -1,9 +1,10 @@
 #pragma once
 
 #include "../GpNetworkHttpCore_global.hpp"
-#include "../../../../GpCore2/GpUtils/Macro/GpMacroClass.hpp"
-#include "../../../../GpCore2/GpUtils/Types/Containers/GpContainersT.hpp"
 #include "GpHttpRequestHandler.hpp"
+
+#include <GpCore2/GpUtils/Macro/GpMacroClass.hpp>
+#include <GpCore2/GpUtils/Types/Containers/GpContainersT.hpp>
 
 namespace GPlatform {
 

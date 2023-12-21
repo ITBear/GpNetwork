@@ -17,6 +17,7 @@ public:
     virtual                 ~GpSocketFactory    (void) noexcept = default;
 
     virtual GpSocket::SP    NewInstance         (void) const = 0;
+    virtual void            DestroyInstance     (GpSocket& aSocket) const = 0;
 };
 
 }//namespace GPlatform

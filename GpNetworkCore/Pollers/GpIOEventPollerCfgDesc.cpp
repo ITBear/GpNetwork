@@ -1,7 +1,7 @@
 #include "GpIOEventPollerCfgDesc.hpp"
 
-#include "../../../GpCore2/GpReflection/GpReflectManager.hpp"
-#include "../../../GpCore2/GpReflection/GpReflectUtils.hpp"
+#include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpReflection/GpReflectUtils.hpp>
 
 namespace GPlatform {
 
