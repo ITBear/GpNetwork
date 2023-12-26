@@ -7,7 +7,6 @@ namespace GPlatform {
 
 GpSocketUDP::~GpSocketUDP (void) noexcept
 {
-    [[maybe_unused]] int d = 0;
 }
 
 void    GpSocketUDP::Connect (const GpSocketAddr& aAddr)
@@ -39,11 +38,9 @@ std::optional<size_t>   GpSocketUDP::ReadFrom
     GpSocketAddr& aFromAddrOut
 )
 {
-    constexpr const size_t maxPayloadSize = 2048;//TODO: move to socket settings (or get serttings from OS)
-
-    if (const size_t sizeLeft = aWriter.SizeLeft(); sizeLeft < maxPayloadSize) [[unlikely]]
+    if (const size_t sizeLeft = aWriter.SizeLeft(); sizeLeft < size_t(GP_NETWORK_UDP_MAX_PACKET_SIZE)) [[unlikely]]
     {
-        aWriter.ReserveNext(maxPayloadSize - sizeLeft);
+        aWriter.ReserveNext(size_t(GP_NETWORK_UDP_MAX_PACKET_SIZE) - sizeLeft);
     }
 
     GpSpanPtrByteRW dataStoragePtr  = aWriter.StoragePtr();
@@ -85,11 +82,9 @@ GP_WARNING_POP()
 
 std::optional<size_t>   GpSocketUDP::Read (GpByteWriter& aWriter)
 {
-    constexpr const size_t maxPayloadSize = 2048;//TODO: move to socket settings (or get serttings from OS)
-
-    if (const size_t sizeLeft = aWriter.SizeLeft(); sizeLeft < maxPayloadSize) [[unlikely]]
+    if (const size_t sizeLeft = aWriter.SizeLeft(); sizeLeft < size_t(GP_NETWORK_UDP_MAX_PACKET_SIZE)) [[unlikely]]
     {
-        aWriter.ReserveNext(maxPayloadSize - sizeLeft);
+        aWriter.ReserveNext(size_t(GP_NETWORK_UDP_MAX_PACKET_SIZE) - sizeLeft);
     }
 
     GpSpanPtrByteRW dataStoragePtr  = aWriter.StoragePtr();
@@ -108,15 +103,60 @@ std::optional<size_t>   GpSocketUDP::Read (GpByteWriter& aWriter)
         return static_cast<size_t>(rcvSize);
     } else if (rcvSize < 0) [[unlikely]]
     {
-        GP_WARNING_PUSH()
-        GP_WARNING_DISABLE(unknown-warning-option)
-        GP_WARNING_DISABLE(logical-op)
+GP_WARNING_PUSH()
+GP_WARNING_DISABLE(unknown-warning-option)
+GP_WARNING_DISABLE(logical-op)
         if (   (errno == EAGAIN)
             || (errno == EWOULDBLOCK))
-            GP_WARNING_POP()
-            {
+GP_WARNING_POP()
+        {
             return std::nullopt;
-            } else
+        } else
+        {
+            THROW_GP(GpErrno::SGetAndClear());
+        }
+    } else// rcvSize == 0
+    {
+        return 0;
+    }
+}
+
+std::optional<size_t>   GpSocketUDP::RecvMsg (GpSocketMessage& aMessageOut)
+{
+    struct msghdr               msg;
+    std::array<struct iovec, 1> iov;
+
+    memset(&msg, 0, sizeof(msg));
+
+    iov[0].iov_base     = aMessageOut.DataStorage().Ptr();
+    iov[0].iov_len      = aMessageOut.DataStorage().Count();
+    msg.msg_iov         = iov.data();
+    msg.msg_iovlen      = iov.size();
+    msg.msg_name        = aMessageOut.Addr().Raw();
+    msg.msg_namelen     = aMessageOut.Addr().RawSize();
+    msg.msg_control     = aMessageOut.ControlPayload().Ptr();
+    msg.msg_controllen  = aMessageOut.ControlPayload().Count();
+
+    const ssize_t rcvSize = recvmsg(Id(), &msg, 0);
+
+    if (rcvSize > 0) [[likely]]
+    {
+        aMessageOut
+            .SetDataPayloadSize(static_cast<size_t>(rcvSize))
+            .SetFlags(msg.msg_flags);
+
+        return aMessageOut.DataPayload().Count();
+    } else if (rcvSize < 0) [[unlikely]]
+    {
+GP_WARNING_PUSH()
+GP_WARNING_DISABLE(unknown-warning-option)
+GP_WARNING_DISABLE(logical-op)
+        if (   (errno == EAGAIN)
+            || (errno == EWOULDBLOCK))
+GP_WARNING_POP()
+        {
+            return std::nullopt;
+        } else
         {
             THROW_GP(GpErrno::SGetAndClear());
         }
@@ -173,12 +213,55 @@ bool    GpSocketUDP::Write (GpSpanPtrByteR aData)
 
     if (sendSize < 0) [[unlikely]]
     {
-        GP_WARNING_PUSH()
-        GP_WARNING_DISABLE(unknown-warning-option)
-        GP_WARNING_DISABLE(logical-op)
+GP_WARNING_PUSH()
+GP_WARNING_DISABLE(unknown-warning-option)
+GP_WARNING_DISABLE(logical-op)
         if (   (errno == EAGAIN)
             || (errno == EWOULDBLOCK))
-        GP_WARNING_POP()
+GP_WARNING_POP()
+        {
+            return false;
+        } else
+        {
+            THROW_GP(GpErrno::SGetAndClear());
+        }
+    }
+
+    return true;
+}
+
+bool    GpSocketUDP::SendMsg (const GpSocketMessage& aMessage)
+{
+    struct msghdr               msg;
+    std::array<struct iovec, 1> iov;
+
+    memset(&msg, 0, sizeof(msg));
+
+    iov[0].iov_base     = const_cast<std::byte*>(aMessage.DataPayload().Ptr());
+    iov[0].iov_len      = aMessage.DataPayload().Count();
+    msg.msg_iov         = iov.data();
+    msg.msg_iovlen      = iov.size();
+    msg.msg_name        = const_cast<sockaddr*>(aMessage.Addr().Raw());
+    msg.msg_namelen     = aMessage.Addr().RawSize();
+    msg.msg_control     = const_cast<std::byte*>(aMessage.ControlPayload().Ptr());
+    msg.msg_controllen  = aMessage.ControlPayload().Count();
+    msg.msg_flags       = aMessage.Flags();
+
+    const ssize_t sendSize = sendmsg
+    (
+        Id(),
+        &msg,
+        0
+    );
+
+    if (sendSize < 0) [[unlikely]]
+    {
+GP_WARNING_PUSH()
+GP_WARNING_DISABLE(unknown-warning-option)
+GP_WARNING_DISABLE(logical-op)
+        if (   (errno == EAGAIN)
+            || (errno == EWOULDBLOCK))
+GP_WARNING_POP()
         {
             return false;
         } else

@@ -43,7 +43,7 @@ public:
         (
             socket->Id(),
             socketTaskId,
-            [](const GpTaskId aTaskId, const GpIOEventsTypes aIOEventsTypes)
+            [](const GpTaskId aTaskId, const GpIOEventPoller::SubsriberResValT aIOEventsTypes)
             {
                 GpTaskScheduler::S().MakeTaskReady(aTaskId, aIOEventsTypes);
             }
@@ -71,14 +71,14 @@ private:
 
 GpTcpAcceptServerTask::GpTcpAcceptServerTask
 (
-    GpSocketAddr            aSocketAddr,
-    const size_t            aSocketMaxQueueSize,
-    const GpSocketFlags     aListenSocketFlags,
-    const GpSocketFlags     aAcceptSocketFlags,
-    std::u8string           aEventPollerName,
-    GpSocketTaskFactory::SP aTaskFactory
+    GpSocketAddr                    aSocketAddr,
+    const size_t                    aSocketMaxQueueSize,
+    const GpSocketFlags             aListenSocketFlags,
+    const GpSocketFlags             aAcceptSocketFlags,
+    std::u8string                   aEventPollerName,
+    GpSingleSocketTaskFactory::SP   aTaskFactory
 ) noexcept:
-GpSocketTask
+GpSingleSocketTask
 (
     MakeSP<GpTcpAcceptServerTaskSocketFactory>(aSocketAddr, aListenSocketFlags, aSocketMaxQueueSize, aEventPollerName)
 ),
@@ -92,7 +92,7 @@ GpTcpAcceptServerTask::~GpTcpAcceptServerTask (void) noexcept
 {
 }
 
-GpTaskRunRes::EnumT GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
+void    GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
 {
     GpSocketTCP& serverSocket = static_cast<GpSocketTCP&>(aSocket);
 
@@ -113,14 +113,14 @@ GpTaskRunRes::EnumT GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
 
         if (!acceptedSocketOpt.has_value())
         {
-            return GpTaskRunRes::WAIT;
+            return;
         }
 
         GpSocketTCP&        acceptedSocket      = acceptedSocketOpt.value();
         const GpIOObjectId  acceptedSocketId    = acceptedSocket.Id();
 
         // Create socket task from factory
-        GpSocketTask::SP acceptedSocketTaskSP = iTaskFactory->NewInstance
+        GpSingleSocketTask::SP acceptedSocketTaskSP = iTaskFactory->NewInstance
         (
             MakeSP<GpSocketTCP>(std::move(acceptedSocket))
         );
@@ -132,7 +132,7 @@ GpTaskRunRes::EnumT GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
         (
             acceptedSocketId,
             acceptedSocketTaskId,
-            [](const GpTaskId aTaskId, const GpIOEventsTypes aIOEventsTypes)
+            [](const GpTaskId aTaskId, const GpIOEventPoller::SubsriberResValT aIOEventsTypes)
             {
                 GpTaskScheduler::S().MakeTaskReady(aTaskId, aIOEventsTypes);
             }
@@ -142,12 +142,12 @@ GpTaskRunRes::EnumT GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
         GpTaskScheduler::S().NewToReady(std::move(acceptedSocketTaskSP));
     }
 
-    return GpTaskRunRes::READY_TO_RUN;
+    return;
 }
 
-GpTaskRunRes::EnumT GpTcpAcceptServerTask::OnReadyToWrite (GpSocket& /*aSocket*/)
+void    GpTcpAcceptServerTask::OnReadyToWrite (GpSocket& /*aSocket*/)
 {
-    return GpTaskRunRes::READY_TO_RUN;
+    //TODO: add message to log
 }
 
 void    GpTcpAcceptServerTask::OnClosed (GpSocket& /*aSocket*/)

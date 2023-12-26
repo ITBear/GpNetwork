@@ -1,11 +1,11 @@
 #pragma once
 
 #include "../GpNetworkHttpCore_global.hpp"
-#include "../../../GpNetworkCore/Tasks/GpSocketTask.hpp"
+#include "../../../GpNetworkCore/Tasks/GpSingleSocketTask.hpp"
 
 namespace GPlatform {
 
-class GP_NETWORK_HTTP_CORE_API GpHttpRequestSocketTask final: public GpSocketTask
+class GP_NETWORK_HTTP_CORE_API GpHttpRequestSocketTask final: public GpSingleSocketTask
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpRequestSocketTask)
@@ -15,8 +15,8 @@ public:
     inline                          GpHttpRequestSocketTask     (GpSocket::SP   aSocket) noexcept;
     virtual                         ~GpHttpRequestSocketTask    (void) noexcept override final;
 
-    virtual GpTaskRunRes::EnumT     OnReadyToRead               (GpSocket& aSocket) override final;
-    virtual GpTaskRunRes::EnumT     OnReadyToWrite              (GpSocket& aSocket) override final;
+    virtual void                    OnReadyToRead               (GpSocket& aSocket) override final;
+    virtual void                    OnReadyToWrite              (GpSocket& aSocket) override final;
     virtual void                    OnClosed                    (GpSocket& aSocket) override final;
     virtual void                    OnError                     (GpSocket& aSocket) override final;
 
@@ -27,8 +27,8 @@ GpHttpRequestSocketTask::GpHttpRequestSocketTask
 (
     GpSocket::SP    aSocket
 ) noexcept:
-GpSocketTask(std::move(aSocket))
+GpSingleSocketTask(std::move(aSocket))
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

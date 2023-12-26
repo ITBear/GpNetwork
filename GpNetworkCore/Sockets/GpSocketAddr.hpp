@@ -124,7 +124,7 @@ void    GpSocketAddr::Set
 
     if (   (aIP.length() == 0)
         || (aIP.length() > maxLength)
-        || (inet_pton(GpSocketIPv_SSFamily(aIPv), GpUTF::S_UTF8_To_STR(ipStr).data(), sinAddrPtr) != 1))
+        || (inet_pton(GpSocketIPv_SSFamily(aIPv), GpUTF::S_As_STR(ipStr).data(), sinAddrPtr) != 1))
     {
         THROW_GP(u8"'"_sv + aIP + u8"' is not valid IP address"_sv);
     }

@@ -8,7 +8,7 @@ GpHttpRequestSocketTaskFactory::~GpHttpRequestSocketTaskFactory (void) noexcept
 
 }
 
-GpSocketTask::SP    GpHttpRequestSocketTaskFactory::NewInstance (GpSocket::SP aSocket) const
+GpSingleSocketTask::SP  GpHttpRequestSocketTaskFactory::NewInstance (GpSocket::SP aSocket) const
 {
     return MakeSP<GpHttpRequestSocketTask>(std::move(aSocket));
 }

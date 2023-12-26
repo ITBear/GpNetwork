@@ -177,6 +177,16 @@ void    GpIOEventPollerEpoll::OnAddObject (const GpIOObjectId aIOObjectId)
 
 void    GpIOEventPollerEpoll::OnRemoveObject (const GpIOObjectId aIOObjectId)
 {
+    if (aIOObjectId == GpIOObjectId_Default()) [[unlikely]]
+    {
+        return;
+    }
+
+    if (iEpollId < 0) [[unlikely]]
+    {
+        return;
+    }
+
     const int fd = NumOps::SConvert<int>(aIOObjectId);
 
     if (epoll_ctl(iEpollId, EPOLL_CTL_DEL, fd, nullptr) != 0)

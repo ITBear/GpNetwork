@@ -8,7 +8,7 @@
 #   include "Epoll/GpIOEventPollerEpollCfgDesc.hpp"
 #endif
 
-#include <fmt/include/fmt/core.h>
+#include <fmt/core.h>
 
 namespace GPlatform {
 
@@ -39,7 +39,7 @@ GpIOEventPoller::SP GpIOEventPollerCatalog::Get (std::u8string_view aPollerName)
             return fmt::format
             (
                 "Event poller not found by name '{}'",
-                GpUTF::S_UTF8_To_STR(aPollerName)
+                GpUTF::S_As_STR(aPollerName)
             );
         }
     );

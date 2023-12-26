@@ -6,7 +6,7 @@ GpHttpRequestSocketTask::~GpHttpRequestSocketTask (void) noexcept
 {
 }
 
-GpTaskRunRes::EnumT GpHttpRequestSocketTask::OnReadyToRead (GpSocket& /*aSocket*/)
+void    GpHttpRequestSocketTask::OnReadyToRead (GpSocket& /*aSocket*/)
 {
     // TODO: implement
     THROW_GP_NOT_IMPLEMENTED();
@@ -47,7 +47,7 @@ GpTaskRunRes::EnumT GpHttpRequestSocketTask::OnReadyToRead (GpSocket& /*aSocket*
     return GpTaskDoRes::DONE;*/
 }
 
-GpTaskRunRes::EnumT GpHttpRequestSocketTask::OnReadyToWrite (GpSocket& /*aSocket*/)
+void    GpHttpRequestSocketTask::OnReadyToWrite (GpSocket& /*aSocket*/)
 {
     // TODO: implement
     THROW_GP_NOT_IMPLEMENTED();
@@ -65,4 +65,4 @@ void    GpHttpRequestSocketTask::OnError (GpSocket& /*aSocket*/)
     THROW_GP_NOT_IMPLEMENTED();
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

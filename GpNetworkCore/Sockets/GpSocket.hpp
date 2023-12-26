@@ -5,6 +5,9 @@
 #include "GpSocketFlags.hpp"
 #include "GpSocketAddr.hpp"
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+
 namespace GPlatform {
 
 class GP_NETWORK_CORE_API GpSocket
@@ -68,6 +71,7 @@ protected:
     inline void             SetFlag_ReusePort   (bool aValue);
     inline void             SetFlag_NoBlock     (bool aValue);
     inline void             SetFlag_LingerZero  (bool aValue);
+    inline void             SetFlag_RecvPktInfo (bool aValue);
 
 private:
     GpIOObjectId            iId         = GpIOObjectId_Default();
@@ -167,7 +171,10 @@ void    GpSocket::Close (void)
     THROW_COND_GP
     (
         res == 0,
-        [](){return std::u8string(GpErrno::SGetAndClear());}
+        []()
+        {
+            return std::u8string(GpErrno::SGetAndClear());
+        }
     );
 }
 
@@ -259,30 +266,60 @@ void    GpSocket::SetFromRaw (const GpIOObjectId aId)
 
 void    GpSocket::ApplyFlags (void)
 {
-    SetFlag_ReuseAddr (iFlags.Test(GpSocketFlag::REUSE_ADDR));
-    SetFlag_ReusePort (iFlags.Test(GpSocketFlag::REUSE_PORT));
-    SetFlag_NoBlock   (iFlags.Test(GpSocketFlag::NO_BLOCK));
-    SetFlag_LingerZero(iFlags.Test(GpSocketFlag::LINGER_ZERO));
+    if (iFlags.Test(GpSocketFlag::REUSE_ADDR))
+    {
+        SetFlag_ReuseAddr(true);
+    }
+
+    if (iFlags.Test(GpSocketFlag::REUSE_PORT))
+    {
+        SetFlag_ReusePort(true);
+    }
+
+    if (iFlags.Test(GpSocketFlag::NO_BLOCK))
+    {
+        SetFlag_NoBlock(true);
+    }
+
+    if (iFlags.Test(GpSocketFlag::LINGER_ZERO))
+    {
+        SetFlag_LingerZero(true);
+    }
+
+    if (iFlags.Test(GpSocketFlag::RECV_PKT_INFO))
+    {
+        SetFlag_RecvPktInfo(true);
+    }
+
     //SetFlag_NoDelay (iFlags.Test(GpSocketFlag::NO_DELAY));
 }
 
 void    GpSocket::SetFlag_ReuseAddr (bool aValue)
 {
     int option = aValue ? 1 : 0;
-    if (setsockopt(Id(), SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) != 0)
-    {
-        THROW_GP(GpErrno::SGetAndClear());
-    }
+
+    THROW_COND_GP
+    (
+        setsockopt(Id(), SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) == 0,
+        []()
+        {
+            return std::u8string(GpErrno::SGetAndClear());
+        }
+    );
 }
 
 void    GpSocket::SetFlag_ReusePort (bool aValue)
 {
     int option = aValue ? 1 : 0;
 
-    if (setsockopt(Id(), SOL_SOCKET, SO_REUSEPORT, &option, sizeof(option)) != 0)
-    {
-        THROW_GP(GpErrno::SGetAndClear());
-    }
+    THROW_COND_GP
+    (
+        setsockopt(Id(), SOL_SOCKET, SO_REUSEPORT, &option, sizeof(option)) == 0,
+        []()
+        {
+            return std::u8string(GpErrno::SGetAndClear());
+        }
+    );
 }
 
 void    GpSocket::SetFlag_NoBlock (bool aValue)
@@ -292,7 +329,10 @@ void    GpSocket::SetFlag_NoBlock (bool aValue)
     THROW_COND_GP
     (
         opts >= 0,
-        [&](){return std::u8string(GpErrno::SGetAndClear());}
+        []()
+        {
+            return std::u8string(GpErrno::SGetAndClear());
+        }
     );
 
     if (aValue)
@@ -319,10 +359,29 @@ void    GpSocket::SetFlag_LingerZero (bool aValue)
     sl.l_onoff  = aValue ? 1 : 0;
     sl.l_linger = 0;
 
-    if (setsockopt(Id(), SOL_SOCKET, SO_LINGER, &sl, sizeof(sl)) != 0)
-    {
-        THROW_GP(GpErrno::SGetAndClear());
-    }
+    THROW_COND_GP
+    (
+        setsockopt(Id(), SOL_SOCKET, SO_LINGER, &sl, sizeof(sl)) == 0,
+        []()
+        {
+            return std::u8string(GpErrno::SGetAndClear());
+        }
+    );
+}
+
+void    GpSocket::SetFlag_RecvPktInfo (bool aValue)
+{
+    int enable  = aValue ? 1 : 0;
+    int level   = iIPv == IPvTE::IPv4 ? IPPROTO_IP :IPPROTO_IPV6;
+
+    THROW_COND_GP
+    (
+        setsockopt(Id(), level, IP_PKTINFO, &enable, sizeof(enable)) == 0,
+        []()
+        {
+            return std::u8string(GpErrno::SGetAndClear());
+        }
+    );
 }
 
 }// namespace GPlatform

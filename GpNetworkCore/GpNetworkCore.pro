@@ -41,7 +41,9 @@ SOURCES += \
 	Sockets/GpSocketProtocol.cpp \
 	Sockets/GpSocketTCP.cpp \
 	Sockets/GpSocketUDP.cpp \
-	Tasks/GpSocketTask.cpp \
+	Sockets/GpSocketUtils.cpp \
+	Tasks/GpSingleSocketTask.cpp \
+	Tasks/GpSocketsTask.cpp \
 	Tasks/GpTcpAcceptServerTask.cpp
 
 HEADERS += \
@@ -62,11 +64,14 @@ HEADERS += \
 	Sockets/GpSocketFactoryTCP.hpp \
 	Sockets/GpSocketFlags.hpp \
 	Sockets/GpSocketIPv.hpp \
+	Sockets/GpSocketMessage.hpp \
 	Sockets/GpSocketProtocol.hpp \
 	Sockets/GpSocketTCP.hpp \
 	Sockets/GpSocketUDP.hpp \
+	Sockets/GpSocketUtils.hpp \
 	Sockets/GpSockets_global.hpp \
-	Tasks/GpSocketTask.hpp \
-	Tasks/GpSocketTaskFactory.hpp \
+	Tasks/GpSingleSocketTask.hpp \
+	Tasks/GpSingleSocketTaskFactory.hpp \
+	Tasks/GpSocketsTask.hpp \
 	Tasks/GpTcpAcceptServerTask.hpp
 

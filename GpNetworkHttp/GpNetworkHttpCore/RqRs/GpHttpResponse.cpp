@@ -24,7 +24,7 @@ GpHttpResponse::SP  GpHttpResponse::SFromException
     return MakeSP<GpHttpResponse>
     (
         std::move(rsDesc),
-        MakeSP<GpHttpBodyPayloadFixed>(GpBytesArrayUtils::SConvert(GpUTF::S_STR_To_UTF8(aHttpEx.what())))
+        MakeSP<GpHttpBodyPayloadFixed>(GpBytesArrayUtils::SConvert(GpUTF::S_As_UTF8(aHttpEx.what())))
     );
 }
 
@@ -45,7 +45,7 @@ GpHttpResponse::SP  GpHttpResponse::SFromException
     return MakeSP<GpHttpResponse>
     (
         std::move(rsDesc),
-        MakeSP<GpHttpBodyPayloadFixed>(GpBytesArrayUtils::SConvert(GpUTF::S_STR_To_UTF8(aEx.what())))
+        MakeSP<GpHttpBodyPayloadFixed>(GpBytesArrayUtils::SConvert(GpUTF::S_As_UTF8(aEx.what())))
     );
 }
 
@@ -66,7 +66,7 @@ GpHttpResponse::SP  GpHttpResponse::SFromException
     return MakeSP<GpHttpResponse>
     (
         std::move(rsDesc),
-        MakeSP<GpHttpBodyPayloadFixed>(GpBytesArrayUtils::SConvert(GpUTF::S_STR_To_UTF8(aEx.what())))
+        MakeSP<GpHttpBodyPayloadFixed>(GpBytesArrayUtils::SConvert(GpUTF::S_As_UTF8(aEx.what())))
     );
 }
 

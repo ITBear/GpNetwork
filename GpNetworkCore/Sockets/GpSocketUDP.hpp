@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GpSocket.hpp"
+#include "GpSocketMessage.hpp"
 
 namespace GPlatform {
 
@@ -27,9 +28,12 @@ public:
     [[nodiscard]] std::optional<size_t> ReadFrom        (GpByteWriter& aWriter,
                                                          GpSocketAddr& aFromAddrOut);
     [[nodiscard]] std::optional<size_t> Read            (GpByteWriter& aWriter);
+    [[nodiscard]] std::optional<size_t> RecvMsg         (GpSocketMessage& aMessageOut);
+
     [[nodiscard]] bool                  WriteTo         (GpSpanPtrByteR         aData,
                                                          const GpSocketAddr&    aToAddr);
     [[nodiscard]] bool                  Write           (GpSpanPtrByteR aData);
+    [[nodiscard]] bool                  SendMsg         (const GpSocketMessage& aMessage);
 };
 
 GpSocketUDP::GpSocketUDP (void) noexcept:

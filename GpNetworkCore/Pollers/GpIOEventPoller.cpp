@@ -37,7 +37,7 @@ void    GpIOEventPoller::RemoveSubscription
 
     auto iter = iSubsribersByObject.find(aIOObjectId);
 
-    if (iter == iSubsribersByObject.end())
+    if (iter == iSubsribersByObject.end()) [[unlikely]]
     {
         return;
     }
@@ -67,7 +67,7 @@ void    GpIOEventPoller::ProcessEvents
     }
 
     SubsribersEventChannelT& channel = iter->second;
-    channel.PushEvent(aEvents);
+    channel.PushEvent(SubsriberResValT{aIOObjectId, aEvents});
 
     if (   aEvents.Test(GpIOEventType::CLOSED)
         || aEvents.Test(GpIOEventType::ERROR)) [[unlikely]]

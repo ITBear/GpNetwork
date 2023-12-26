@@ -16,8 +16,10 @@ public:
     CLASS_DD(GpIOEventPoller)
     TAG_SET(THREAD_SAFE)
 
-    using SubsribersEventChannelT   = GpEventChannel<GpTaskId, GpIOEventsTypes>;
+    using SubsriberResValT          = std::tuple<GpIOObjectId, GpIOEventsTypes>;
+    using SubsribersEventChannelT   = GpEventChannel<GpTaskId, SubsriberResValT>;
     using SubsribersByObjectT       = std::unordered_map<GpIOObjectId, SubsribersEventChannelT>;
+
 
 protected:
     inline                              GpIOEventPoller     (std::u8string aName) noexcept;
