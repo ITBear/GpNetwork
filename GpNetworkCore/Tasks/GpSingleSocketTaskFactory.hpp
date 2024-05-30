@@ -16,7 +16,8 @@ protected:
 public:
     virtual                         ~GpSingleSocketTaskFactory  (void) noexcept = default;
 
-    virtual GpSingleSocketTask::SP  NewInstance                 (GpSocket::SP aSocket) const = 0;
+    virtual GpSingleSocketTask::SP  NewInstance                 (GpSocket::SP       aSocket,
+                                                                 GpIOEventPollerIdx aIOEventPollerIdx) const = 0;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

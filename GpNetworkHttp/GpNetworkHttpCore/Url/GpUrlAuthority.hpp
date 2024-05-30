@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../GpNetworkHttpCore_global.hpp"
+#include "../Headers/GpHttpHeaders.hpp"
 
 #include <GpCore2/GpUtils/Macro/GpMacroClass.hpp>
 #include <GpCore2/GpUtils/Types/Containers/GpContainersT.hpp>
@@ -13,60 +14,45 @@ class GP_NETWORK_HTTP_CORE_API GpUrlAuthority final: public GpReflectObject
 {
 public:
     CLASS_DD(GpUrlAuthority)
-    REFLECT_DECLARE(u8"e54c96c2-2021-4283-04bd-9b742e90fd36"_uuid)
+    REFLECT_DECLARE("e54c96c2-2021-4283-04bd-9b742e90fd36"_uuid)
 
 public:
-                        GpUrlAuthority  (void) noexcept = default;
-    inline              GpUrlAuthority  (const GpUrlAuthority& aAuthority);
-    inline              GpUrlAuthority  (GpUrlAuthority&& aAuthority) noexcept;
-    inline              GpUrlAuthority  (std::u8string  aUserName,
-                                         std::u8string  aPassword,
-                                         std::u8string  aHost,
-                                         const u_int_16 aPort) noexcept;
-                        ~GpUrlAuthority (void) noexcept;
+                            GpUrlAuthority      (void) noexcept = default;
+                            GpUrlAuthority      (const GpUrlAuthority& aAuthority);
+                            GpUrlAuthority      (GpUrlAuthority&& aAuthority) noexcept;
+                            GpUrlAuthority      (std::string    aUserName,
+                                                 std::string    aPassword,
+                                                 std::string    aHost,
+                                                 const u_int_16 aPort) noexcept;
+                            ~GpUrlAuthority     (void) noexcept;
 
-    std::u8string_view  UserName        (void) const noexcept {return user_name;}
-    std::u8string_view  Password        (void) const noexcept {return password;}
-    std::u8string_view  Host            (void) const noexcept {return host;}
-    u_int_16            Port            (void) const noexcept {return port;}
+    GpUrlAuthority&         operator=           (const GpUrlAuthority& aAuthority);
+    GpUrlAuthority&         operator=           (GpUrlAuthority&& aAuthority) noexcept;
+
+    void                    Clear               (void);
+    void                    SetFromHeaders      (const GpHttpHeaders& aHeaders);
+
+    std::string_view        UserName            (void) const noexcept {return user_name;}
+    std::string_view        Password            (void) const noexcept {return password;}
+    std::string_view        Host                (void) const noexcept {return host;}
+    u_int_16                Port                (void) const noexcept {return port;}
+
+    static std::string      SToString           (const GpUrlAuthority& aAuthority);
+    static GpUrlAuthority   SFromString         (std::string_view aAuthority);
 
 private:
-    std::u8string       user_name;
-    std::u8string       password;
-    std::u8string       host;
-    u_int_16            port = 0;
+    static void             SUserPasswordFromStr(std::string_view   aUserNameAndPasswordStr,
+                                                 std::string&       aUserNameOut,
+                                                 std::string&       aPasswordOut);
+    static void             SHostPortFromStr    (std::string_view   aHostAndPortStr,
+                                                 std::string&       aHostOut,
+                                                 u_int_16&          aPortOut);
+
+private:
+    std::string             user_name;
+    std::string             password;
+    std::string             host;
+    u_int_16                port = 0;
 };
 
-GpUrlAuthority::GpUrlAuthority (const GpUrlAuthority& aAuthority):
-GpReflectObject(aAuthority),
-user_name(GpReflectUtils::SCopyValue(aAuthority.user_name)),
-password (GpReflectUtils::SCopyValue(aAuthority.password)),
-host     (GpReflectUtils::SCopyValue(aAuthority.host)),
-port     (GpReflectUtils::SCopyValue(aAuthority.port))
-{
-}
-
-GpUrlAuthority::GpUrlAuthority (GpUrlAuthority&& aAuthority) noexcept:
-GpReflectObject(std::move(aAuthority)),
-user_name(std::move(aAuthority.user_name)),
-password (std::move(aAuthority.password)),
-host     (std::move(aAuthority.host)),
-port     (std::move(aAuthority.port))
-{
-}
-
-GpUrlAuthority::GpUrlAuthority
-(
-    std::u8string   aUserName,
-    std::u8string   aPassword,
-    std::u8string   aHost,
-    const u_int_16  aPort
-) noexcept:
-user_name(std::move(aUserName)),
-password (std::move(aPassword)),
-host     (std::move(aHost)),
-port     (std::move(aPort))
-{
-}
-
-}//namespace GPlatform
+}// namespace GPlatform

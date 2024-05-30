@@ -10,10 +10,14 @@ public:
     CLASS_DD(GpHttpBodyPayloadFixed)
 
 public:
-                        GpHttpBodyPayloadFixed  (void) noexcept = delete;
+                        GpHttpBodyPayloadFixed  (void) noexcept = default;
     inline              GpHttpBodyPayloadFixed  (const GpBytesArray& aData);
     inline              GpHttpBodyPayloadFixed  (GpBytesArray&& aData) noexcept;
     virtual             ~GpHttpBodyPayloadFixed (void) noexcept override final;
+
+    GpSpanByteRW        Data                    (void) noexcept {return iData;}
+    GpSpanByteR         Data                    (void) const noexcept {return iData;}
+    GpBytesArray&       DataStorage             (void) noexcept {return iData;}
 
 private:
     GpBytesArray        iData;
@@ -28,10 +32,10 @@ GpHttpBodyPayloadFixed::GpHttpBodyPayloadFixed (GpBytesArray&& aData) noexcept:
 GpHttpBodyPayload
 (
     GpHttpBodyPayloadType::FIXED_SIZE,
-    aData.size()
+    std::size(aData)
 ),
 iData(std::move(aData))
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

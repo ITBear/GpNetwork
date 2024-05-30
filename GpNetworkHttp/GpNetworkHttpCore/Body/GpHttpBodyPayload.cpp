@@ -6,4 +6,4 @@ GpHttpBodyPayload::~GpHttpBodyPayload (void) noexcept
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

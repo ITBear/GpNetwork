@@ -6,4 +6,4 @@ GpHttpRequest::~GpHttpRequest (void) noexcept
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

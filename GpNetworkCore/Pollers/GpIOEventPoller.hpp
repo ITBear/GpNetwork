@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../GpIOObjectId.hpp"
 #include "GpIOEventType.hpp"
 
 #include <GpCore2/GpUtils/Types/Enums/GpEnum.hpp>
@@ -16,44 +15,38 @@ public:
     CLASS_DD(GpIOEventPoller)
     TAG_SET(THREAD_SAFE)
 
-    using SubsriberResValT          = std::tuple<GpIOObjectId, GpIOEventsTypes>;
+    using SubsriberResValT          = std::tuple<GpSocketId, GpIOEventsTypes>;
     using SubsribersEventChannelT   = GpEventChannel<GpTaskId, SubsriberResValT>;
-    using SubsribersByObjectT       = std::unordered_map<GpIOObjectId, SubsribersEventChannelT>;
-
+    using SubsribersByObjectT       = std::unordered_map<GpSocketId, SubsribersEventChannelT>;
 
 protected:
-    inline                              GpIOEventPoller     (std::u8string aName) noexcept;
+                                GpIOEventPoller     (std::string aName) noexcept;
 
 public:
-    virtual                             ~GpIOEventPoller    (void) noexcept override;
+    virtual                     ~GpIOEventPoller    (void) noexcept override;
 
-    void                                AddSubscription     (const GpIOObjectId                     aIOObjectId,
-                                                             const GpTaskId                         aTaskId,
-                                                             SubsribersEventChannelT::CallbackFnT&& aFn);
-    void                                RemoveSubscription  (const GpIOObjectId aIOObjectId,
-                                                             const GpTaskId     aTaskId);
-
-protected:
-    void                                ProcessEvents       (const GpIOObjectId aIOObjectId,
-                                                             GpIOEventsTypes    aEvents);
-
-    virtual void                        OnStart             (void) override = 0;
-    virtual GpTaskRunRes::EnumT         OnStep              (void) override = 0;
-    virtual std::optional<GpException>  OnStop              (void) noexcept override = 0;
-
-    virtual void                        OnAddObject         (const GpIOObjectId aIOObjectId) = 0;
-    virtual void                        OnRemoveObject      (const GpIOObjectId aIOObjectId) = 0;
+    void                        AddSubscription     (GpSocketId                             aSocketId,
+                                                     GpTaskId                               aTaskId,
+                                                     SubsribersEventChannelT::CallbackFnT&& aFn);
+    void                        RemoveSubscription  (GpSocketId aSocketId,
+                                                     GpTaskId   aTaskId);
 
 protected:
-    mutable GpSpinLock                  iLock;
+    void                        ProcessEvents       (GpSocketId         aSocketId,
+                                                     GpIOEventsTypes    aEvents) REQUIRES(iSpinLock);
+
+    virtual void                OnStart             (void) override = 0;
+    virtual GpTaskRunRes::EnumT OnStep              (void) override = 0;
+    virtual GpException::C::Opt OnStop              (void) noexcept override = 0;
+
+    virtual void                OnAddObject         (GpSocketId aSocketId) REQUIRES(iSpinLock) = 0;
+    virtual void                OnRemoveObject      (GpSocketId aSocketId) REQUIRES(iSpinLock) = 0;
+
+protected:
+    mutable GpSpinLock          iSpinLock;
 
 private:
-    SubsribersByObjectT                 iSubsribersByObject;
+    SubsribersByObjectT         iSubsribersByIOObject GUARDED_BY(iSpinLock);
 };
 
-GpIOEventPoller::GpIOEventPoller (std::u8string aName) noexcept:
-GpTaskFiber(std::move(aName))
-{
-}
-
-}//GPlatform
+}// namespace GPlatform

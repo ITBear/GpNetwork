@@ -10,4 +10,4 @@ GpHttpRouterRule::~GpHttpRouterRule (void) noexcept
 {
 }*/
 
-}//namespace GPlatform
+}// namespace GPlatform

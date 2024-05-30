@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../GpIOEventPollerFactory.hpp"
+#include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPollerFactory.hpp>
 
 #if defined(GP_OS_LINUX)
 
@@ -17,7 +17,7 @@ public:
                                                                      const size_t           aMaxEventsCnt) noexcept;
     virtual                         ~GpIOEventPollerEpollFactory    (void) noexcept override final;
 
-    virtual GpSP<GpIOEventPoller>   NewInstance                     (std::u8string aName) const override final;
+    virtual GpSP<GpIOEventPoller>   NewInstance                     (std::string aName) const override final;
 
 private:
     const milliseconds_t            iMaxStepTime;
@@ -29,11 +29,11 @@ GpIOEventPollerEpollFactory::GpIOEventPollerEpollFactory
     const milliseconds_t    aMaxStepTime,
     const size_t            aMaxEventsCnt
 ) noexcept:
-iMaxStepTime (aMaxStepTime),
-iMaxEventsCnt(aMaxEventsCnt)
+iMaxStepTime {aMaxStepTime},
+iMaxEventsCnt{aMaxEventsCnt}
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform
 
-#endif//#if defined(GP_OS_LINUX)
+#endif// #if defined(GP_OS_LINUX)

@@ -2,25 +2,30 @@
 
 namespace GPlatform {
 
+GpIOEventPoller::GpIOEventPoller (std::string aName) noexcept:
+GpTaskFiber(std::move(aName))
+{
+}
+
 GpIOEventPoller::~GpIOEventPoller (void) noexcept
 {   
 }
 
 void    GpIOEventPoller::AddSubscription
 (
-    const GpIOObjectId                      aIOObjectId,
+    const GpSocketId                        aSocketId,
     const GpTaskId                          aTaskId,
     SubsribersEventChannelT::CallbackFnT&&  aFn
 )
 {
-    std::scoped_lock lock(iLock);
+    GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
 
-    auto iter = iSubsribersByObject.find(aIOObjectId);
+    auto iter = iSubsribersByIOObject.find(aSocketId);
 
-    if (iter == iSubsribersByObject.end())
+    if (iter == std::end(iSubsribersByIOObject))
     {
-        iSubsribersByObject[aIOObjectId].Subscribe(aTaskId, std::move(aFn));
-        OnAddObject(aIOObjectId);
+        iSubsribersByIOObject[aSocketId].Subscribe(aTaskId, std::move(aFn));
+        OnAddObject(aSocketId);
     } else
     {
         iter->second.Subscribe(aTaskId, std::move(aFn));
@@ -29,15 +34,15 @@ void    GpIOEventPoller::AddSubscription
 
 void    GpIOEventPoller::RemoveSubscription
 (
-    const GpIOObjectId  aIOObjectId,
+    const GpSocketId    aSocketId,
     const GpTaskId      aTaskId
 )
 {
-    std::scoped_lock lock(iLock);
+    GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
 
-    auto iter = iSubsribersByObject.find(aIOObjectId);
+    auto iter = iSubsribersByIOObject.find(aSocketId);
 
-    if (iter == iSubsribersByObject.end()) [[unlikely]]
+    if (iter == std::end(iSubsribersByIOObject)) [[unlikely]]
     {
         return;
     }
@@ -46,35 +51,33 @@ void    GpIOEventPoller::RemoveSubscription
 
     if (channel.Unsubscribe(aTaskId) == 0)
     {
-        iSubsribersByObject.erase(aIOObjectId);
-        OnRemoveObject(aIOObjectId);
+        iSubsribersByIOObject.erase(aSocketId);
+        OnRemoveObject(aSocketId);
     }
 }
 
 void    GpIOEventPoller::ProcessEvents
 (
-    const GpIOObjectId  aIOObjectId,
+    const GpSocketId    aSocketId,
     GpIOEventsTypes     aEvents
 )
 {
-    std::scoped_lock lock(iLock);
+    auto iter = iSubsribersByIOObject.find(aSocketId);
 
-    auto iter = iSubsribersByObject.find(aIOObjectId);
-
-    if (iter == iSubsribersByObject.end())
+    if (iter == std::end(iSubsribersByIOObject))
     {
         return;
     }
 
     SubsribersEventChannelT& channel = iter->second;
-    channel.PushEvent(SubsriberResValT{aIOObjectId, aEvents});
+    channel.PushEvent(SubsriberResValT{aSocketId, aEvents});
 
     if (   aEvents.Test(GpIOEventType::CLOSED)
-        || aEvents.Test(GpIOEventType::ERROR)) [[unlikely]]
+        || aEvents.Test(GpIOEventType::ERROR_OCCURRED)) [[unlikely]]
     {
-        iSubsribersByObject.erase(aIOObjectId);
-        OnRemoveObject(aIOObjectId);
+        iSubsribersByIOObject.erase(aSocketId);
+        OnRemoveObject(aSocketId);
     }
 }
 
-}//GPlatform
+}// namespace GPlatform

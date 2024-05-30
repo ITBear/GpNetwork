@@ -1,12 +1,9 @@
 #pragma once
 
-#include "../GpIOObjectId.hpp"
+#include "../GpNetworkErrors.hpp"
 #include "GpSocketProtocol.hpp"
 #include "GpSocketFlags.hpp"
 #include "GpSocketAddr.hpp"
-
-#include <sys/socket.h>
-#include <netinet/in.h>
 
 namespace GPlatform {
 
@@ -34,7 +31,7 @@ protected:
                                                  const GpSocketFlags&   aFlags,
                                                  const CloseModeT       aCloseMode) noexcept;
 
-    inline                  GpSocket            (const GpIOObjectId     aId,
+    inline                  GpSocket            (const GpSocketId       aId,
                                                  const IPvTE            aIpV,
                                                  const ProtocolTE       aProtocol,
                                                  const GpSocketFlags&   aFlags,
@@ -44,8 +41,8 @@ public:
     virtual                 ~GpSocket           (void) noexcept;
 
     ProtocolTE              Protocol            (void) const noexcept {return iProtocol;}
-    GpIOObjectId            Id                  (void) const noexcept {return iId;}
-    bool                    IsValidId           (void) const noexcept {return iId != GpIOObjectId_Default();}
+    GpSocketId              Id                  (void) const noexcept {return iId;}
+    bool                    IsValidId           (void) const noexcept {return iId != GpSocketId_Default();}
     IPvTE                   IPv                 (void) const noexcept {return iIPv;}
     const GpSocketAddr&     AddrLocal           (void) const noexcept {return iAddrLocal;}
     const GpSocketAddr&     AddrRemote          (void) const noexcept {return iAddrRemote;}
@@ -63,18 +60,26 @@ protected:
     inline void             SetAddrLocal        (const GpSocketAddr& aAddr) noexcept {iAddrLocal = aAddr;}
     inline void             SetAddrRemote       (const GpSocketAddr& aAddr) noexcept {iAddrRemote = aAddr;}
 
-    inline void             SetFromRaw          (const GpIOObjectId aId);
+    inline void             SetFromRaw          (const GpSocketId aId);
 
 protected:
     inline void             ApplyFlags          (void);
     inline void             SetFlag_ReuseAddr   (bool aValue);
-    inline void             SetFlag_ReusePort   (bool aValue);
     inline void             SetFlag_NoBlock     (bool aValue);
     inline void             SetFlag_LingerZero  (bool aValue);
     inline void             SetFlag_RecvPktInfo (bool aValue);
 
+#if defined(GP_POSIX)
+    inline void             SetFlag_ReusePort   (bool aValue);
+#endif// #if defined(GP_POSIX)
+    GpSocketId&             IdRef               (void) noexcept {return iId;}
+
+    inline static void      SClose              (GpSocketId& aId);
+    inline static void      SCheckResOrThrow    (int                    aRes,
+                                                 std::function<void()>  aFnOnThrow);
+
 private:
-    GpIOObjectId            iId         = GpIOObjectId_Default();
+    GpSocketId              iId         = GpSocketId_Default();
     IPvTE                   iIPv        = IPvTE::IPv4;
     ProtocolTE              iProtocol;
     GpSocketAddr            iAddrLocal;
@@ -96,8 +101,7 @@ iAddrRemote(std::move(aSocket.iAddrRemote)),
 iFlags     (std::move(aSocket.iFlags     )),
 iCloseMode (std::move(aSocket.iCloseMode ))
 {
-    //aSocket
-    aSocket.iId         = GpIOObjectId_Default();
+    aSocket.iId         = GpSocketId_Default();
     aSocket.iCloseMode  = CloseModeT::KEEP_ON_DESTRUCT;
 }
 
@@ -115,7 +119,7 @@ iCloseMode(aCloseMode)
 
 GpSocket::GpSocket
 (
-    const GpIOObjectId      aId,
+    const GpSocketId        aId,
     const IPvTE             aIpV,
     const ProtocolTE        aProtocol,
     const GpSocketFlags&    aFlags,
@@ -138,14 +142,17 @@ void    GpSocket::CheckForErrors (void) const
         iId,
         SOL_SOCKET,
         SO_ERROR,
-        &error,
+        reinterpret_cast<char*>(&error),
         &errlen
     );
 
     THROW_COND_GP
     (
         res == 0,
-        [&error](){return strerror(error);}
+        [&error]()
+        {
+            return strerror(error);
+        }
     );
 }
 
@@ -161,21 +168,11 @@ void    GpSocket::Close (void)
 
     if (iCloseMode != CloseModeT::CLOSE_ON_DESTRUCT)
     {
-        iId = GpIOObjectId_Default();
+        iId = GpSocketId_Default();
         return;
     }
 
-    const int res = close(Id());
-    iId = GpIOObjectId_Default();
-
-    THROW_COND_GP
-    (
-        res == 0,
-        []()
-        {
-            return std::u8string(GpErrno::SGetAndClear());
-        }
-    );
+    SClose(IdRef());
 }
 
 void    GpSocket::Bind (const GpSocketAddr& aAddr)
@@ -189,11 +186,7 @@ void    GpSocket::Bind (const GpSocketAddr& aAddr)
         aAddr.RawSize()
     );
 
-    if (res != 0)
-    {
-        Close();
-        THROW_GP(GpErrno::SGetAndClear());
-    }
+    SCheckResOrThrow(res, [&]{Close();});
 
     iAddrLocal = GpSocketAddr::SLocalFromSocketId(Id());
     iAddrRemote.Clear();
@@ -201,7 +194,7 @@ void    GpSocket::Bind (const GpSocketAddr& aAddr)
 
 void    GpSocket::Set (GpSocket&& aSocket)
 {
-    if (this == &aSocket)
+    if (this == &aSocket) [[unlikely]]
     {
         return;
     }
@@ -216,14 +209,13 @@ void    GpSocket::Set (GpSocket&& aSocket)
     iFlags      = std::move(aSocket.iFlags     );
     iCloseMode  = std::move(aSocket.iCloseMode );
 
-    //aSocket
-    aSocket.iId         = GpIOObjectId_Default();
+    aSocket.iId         = GpSocketId_Default();
     aSocket.iCloseMode  = CloseModeT::KEEP_ON_DESTRUCT;
 }
 
 void    GpSocket::Create (IPvTE aIPv)
 {
-    if (Id() != GpIOObjectId_Default())
+    if (Id() != GpSocketId_Default()) [[unlikely]]
     {
         Close();
     }
@@ -231,7 +223,7 @@ void    GpSocket::Create (IPvTE aIPv)
     iIPv = aIPv;
 
     const ProtocolTE    protocol = Protocol();
-    const GpIOObjectId  socketID = socket
+    const GpSocketId    socketID = socket
     (
         GpSocketIPv_SSFamily(iIPv),
         int(GpSocketProtocol_Type(protocol)),
@@ -240,8 +232,11 @@ void    GpSocket::Create (IPvTE aIPv)
 
     THROW_COND_GP
     (
-        socketID != GpIOObjectId_Default(),
-        [](){return std::u8string(GpErrno::SGetAndClear());}
+        socketID != GpSocketId_Default(),
+        []()
+        {
+            return GpNetworkErrors::SGetLastError();
+        }
     );
 
     iId = socketID;
@@ -249,9 +244,9 @@ void    GpSocket::Create (IPvTE aIPv)
     ApplyFlags();
 }
 
-void    GpSocket::SetFromRaw (const GpIOObjectId aId)
+void    GpSocket::SetFromRaw (const GpSocketId aId)
 {
-    if (Id() != GpIOObjectId_Default())
+    if (Id() != GpSocketId_Default())
     {
         Close();
     }
@@ -271,11 +266,6 @@ void    GpSocket::ApplyFlags (void)
         SetFlag_ReuseAddr(true);
     }
 
-    if (iFlags.Test(GpSocketFlag::REUSE_PORT))
-    {
-        SetFlag_ReusePort(true);
-    }
-
     if (iFlags.Test(GpSocketFlag::NO_BLOCK))
     {
         SetFlag_NoBlock(true);
@@ -291,49 +281,30 @@ void    GpSocket::ApplyFlags (void)
         SetFlag_RecvPktInfo(true);
     }
 
+#if defined(GP_POSIX)
+    if (iFlags.Test(GpSocketFlag::REUSE_PORT))
+    {
+        SetFlag_ReusePort(true);
+    }
+#endif// #if defined(GP_POSIX)
+
     //SetFlag_NoDelay (iFlags.Test(GpSocketFlag::NO_DELAY));
 }
 
 void    GpSocket::SetFlag_ReuseAddr (bool aValue)
 {
     int option = aValue ? 1 : 0;
+    const int res = setsockopt(Id(), SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&option), sizeof(option));
 
-    THROW_COND_GP
-    (
-        setsockopt(Id(), SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) == 0,
-        []()
-        {
-            return std::u8string(GpErrno::SGetAndClear());
-        }
-    );
-}
-
-void    GpSocket::SetFlag_ReusePort (bool aValue)
-{
-    int option = aValue ? 1 : 0;
-
-    THROW_COND_GP
-    (
-        setsockopt(Id(), SOL_SOCKET, SO_REUSEPORT, &option, sizeof(option)) == 0,
-        []()
-        {
-            return std::u8string(GpErrno::SGetAndClear());
-        }
-    );
+    SCheckResOrThrow(res, {});
 }
 
 void    GpSocket::SetFlag_NoBlock (bool aValue)
 {
+#if defined(GP_POSIX)
     int opts = fcntl(Id(), F_GETFL);
 
-    THROW_COND_GP
-    (
-        opts >= 0,
-        []()
-        {
-            return std::u8string(GpErrno::SGetAndClear());
-        }
-    );
+    SCheckResOrThrow(opts, {});
 
     if (aValue)
     {
@@ -343,14 +314,17 @@ void    GpSocket::SetFlag_NoBlock (bool aValue)
         opts = BitOps::Down_by_mask(opts, O_NONBLOCK);
     }
 
-    THROW_COND_GP
-    (
-        fcntl(Id(), F_SETFL, opts) >= 0,
-        []()
-        {
-            return std::u8string(GpErrno::SGetAndClear());
-        }
-    );
+    const int res = fcntl(Id(), F_SETFL, opts);
+
+    SCheckResOrThrow(res, {});
+#elif defined (GP_OS_WINDOWS)
+    unsigned long mode = aValue ? 1 : 0;
+    int res = ioctlsocket(Id(), FIONBIO, &mode);
+
+    SCheckResOrThrow(res, {});
+#else
+#   error Unsupported OS
+#endif
 }
 
 void    GpSocket::SetFlag_LingerZero (bool aValue)
@@ -359,14 +333,9 @@ void    GpSocket::SetFlag_LingerZero (bool aValue)
     sl.l_onoff  = aValue ? 1 : 0;
     sl.l_linger = 0;
 
-    THROW_COND_GP
-    (
-        setsockopt(Id(), SOL_SOCKET, SO_LINGER, &sl, sizeof(sl)) == 0,
-        []()
-        {
-            return std::u8string(GpErrno::SGetAndClear());
-        }
-    );
+    const int res = setsockopt(Id(), SOL_SOCKET, SO_LINGER, reinterpret_cast<const char*>(&sl), sizeof(sl));
+
+    SCheckResOrThrow(res, {});
 }
 
 void    GpSocket::SetFlag_RecvPktInfo (bool aValue)
@@ -374,12 +343,53 @@ void    GpSocket::SetFlag_RecvPktInfo (bool aValue)
     int enable  = aValue ? 1 : 0;
     int level   = iIPv == IPvTE::IPv4 ? IPPROTO_IP :IPPROTO_IPV6;
 
+    const int res = setsockopt(Id(), level, IP_PKTINFO, reinterpret_cast<const char*>(&enable), sizeof(enable));
+
+    SCheckResOrThrow(res, {});
+}
+
+#if defined(GP_POSIX)
+void    GpSocket::SetFlag_ReusePort (bool aValue)
+{
+    int option      = aValue ? 1 : 0;
+    const int res   = setsockopt(Id(), SOL_SOCKET, SO_REUSEPORT, reinterpret_cast<const char*>(&option), sizeof(option));
+
+    SCheckResOrThrow(res, {});
+}
+#endif// #if defined(GP_POSIX)
+
+void    GpSocket::SClose (GpSocketId& aId)
+{
+#if defined(GP_POSIX)
+    const int res = close(aId);
+    aId = GpSocketId_Default();
+    SCheckResOrThrow(res, {});
+#elif defined(GP_OS_WINDOWS)
+    const int res = closesocket(aId);
+    aId = GpSocketId_Default();
+    SCheckResOrThrow(res, {});
+#else
+#   error Unsupported OS
+#endif
+}
+
+void    GpSocket::SCheckResOrThrow
+(
+    int                     aRes,
+    std::function<void()>   aFnOnThrow
+)
+{
     THROW_COND_GP
     (
-        setsockopt(Id(), level, IP_PKTINFO, &enable, sizeof(enable)) == 0,
-        []()
+        aRes >= 0,
+        [&]()
         {
-            return std::u8string(GpErrno::SGetAndClear());
+            if (aFnOnThrow)
+            {
+                aFnOnThrow();
+            }
+
+            return GpNetworkErrors::SGetLastError();
         }
     );
 }

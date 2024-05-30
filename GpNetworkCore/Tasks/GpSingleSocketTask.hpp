@@ -1,7 +1,8 @@
 #pragma once
 
-#include "GpSocketsTask.hpp"
-#include "../Sockets/GpSocketFactory.hpp"
+#include <GpNetwork/GpNetworkCore/Tasks/GpSocketsTask.hpp>
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketFactory.hpp>
+#include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPollerCatalog.hpp>
 
 namespace GPlatform {
 
@@ -12,62 +13,41 @@ public:
     CLASS_DD(GpSingleSocketTask)
 
 protected:
-    inline                              GpSingleSocketTask  (GpSocketFactory::SP    aSocketFactory) noexcept;
-    inline                              GpSingleSocketTask  (GpSocketFactory::SP    aSocketFactory,
-                                                             std::u8string          aName) noexcept;
-    inline                              GpSingleSocketTask  (GpSocket::SP   aSocket) noexcept;
-    inline                              GpSingleSocketTask  (GpSocket::SP   aSocket,
-                                                             std::u8string  aName) noexcept;
+                                GpSingleSocketTask      (GpSocketFactory::SP    aSocketFactory,
+                                                         GpIOEventPollerIdx     aIOEventPollerIdx) noexcept;
+                                GpSingleSocketTask      (GpSocketFactory::SP    aSocketFactory,
+                                                         GpIOEventPollerIdx     aIOEventPollerIdx,
+                                                         std::string            aTaskName) noexcept;
+                                GpSingleSocketTask      (GpSocket::SP       aSocket,
+                                                         GpIOEventPollerIdx aIOEventPollerIdx) noexcept;
+                                GpSingleSocketTask      (GpSocket::SP       aSocket,
+                                                         GpIOEventPollerIdx aIOEventPollerIdx,
+                                                         std::string        aTaskName) noexcept;
 
 public:
-    virtual                             ~GpSingleSocketTask (void) noexcept override;
+    virtual                     ~GpSingleSocketTask     (void) noexcept override;
 
 protected:
-    virtual void                        OnStart             (void) override final;
-    virtual std::optional<GpException>  OnStop              (void) noexcept override final;
+    virtual void                OnStart                 (void) override final;
+    virtual GpException::C::Opt OnStop                  (void) noexcept override final;
 
-    virtual void                        OnReadyToRead       (GpSocket& aSocket) override = 0;
-    virtual void                        OnReadyToWrite      (GpSocket& aSocket) override = 0;
-    virtual void                        OnClosed            (GpSocket& aSocket) override = 0;
-    virtual void                        OnError             (GpSocket& aSocket) override = 0;
+    virtual void                OnReadyToRead           (GpSocket& aSocket) override = 0;
+    virtual void                OnReadyToWrite          (GpSocket& aSocket) override = 0;
+    virtual void                OnClosed                (GpSocket& aSocket) override = 0;
+    virtual void                OnError                 (GpSocket& aSocket) override = 0;
+    virtual void                ProcessOtherMessages    (GpAny& aMessage) override = 0;
 
-    virtual GpSocket::SP                FindSocket          (const GpIOObjectId aSocketId) override final;
+    virtual GpSocket::SP        FindSocket              (const GpSocketId aSocketId) override final;
 
-    GpSocket&                           Socket              (void) {return iSocket.V();}
+    const GpSocket&             Socket                  (void) const {return iSocket.V();}
+    GpSocket&                   Socket                  (void) {return iSocket.V();}
+    GpSocket::SP                SocketSP                (void) {return iSocket;}
+    const GpIOEventPollerIdx    IOEventPollerIdx        (void) const noexcept {return iIOEventPollerIdx;}
 
 private:
-    GpSocketFactory::SP                 iSocketFactory;
-    GpSocket::SP                        iSocket;
+    GpSocketFactory::SP         iSocketFactory;
+    GpSocket::SP                iSocket;
+    const GpIOEventPollerIdx    iIOEventPollerIdx;
 };
-
-GpSingleSocketTask::GpSingleSocketTask (GpSocketFactory::SP aSocketFactory) noexcept:
-iSocketFactory(std::move(aSocketFactory))
-{
-}
-
-GpSingleSocketTask::GpSingleSocketTask
-(
-    GpSocketFactory::SP aSocketFactory,
-    std::u8string       aName
-) noexcept:
-GpSocketsTask(std::move(aName)),
-iSocketFactory(std::move(aSocketFactory))
-{
-}
-
-GpSingleSocketTask::GpSingleSocketTask
-(
-    GpSocket::SP    aSocket,
-    std::u8string   aName
-) noexcept:
-GpSocketsTask(std::move(aName)),
-iSocket(std::move(aSocket))
-{
-}
-
-GpSingleSocketTask::GpSingleSocketTask (GpSocket::SP aSocket) noexcept:
-iSocket(std::move(aSocket))
-{
-}
 
 }// namespace GPlatform

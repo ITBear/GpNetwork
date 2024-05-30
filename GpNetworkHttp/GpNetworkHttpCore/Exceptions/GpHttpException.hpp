@@ -11,4 +11,4 @@ using GpHttpExceptionCode = GpHttpResponseCode;
 
 EXCEPTION_CODE(GP_NETWORK_HTTP_CORE_API, GpHttpException, HTTP)
 
-}//namespace GPlatform
+}// namespace GPlatform

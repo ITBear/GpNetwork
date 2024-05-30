@@ -1,6 +1,7 @@
 #include "GpProtoHeadersMap.hpp"
 
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
 
 namespace GPlatform {
 
@@ -10,17 +11,17 @@ GpProtoHeadersMap::~GpProtoHeadersMap (void) noexcept
 {
 }
 
-void    GpProtoHeadersMap::_SReflectCollectProps (GpReflectProp::C::Vec::Val& aPropsOut)
+void    GpProtoHeadersMap::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
 {
     PROP(headers);
 }
 
-std::vector<std::u8string>& GpProtoHeadersMap::GetOrCreateHeaders (std::u8string_view aName)
+std::vector<std::string>&   GpProtoHeadersMap::GetOrCreateHeaders (std::string_view aName)
 {
-    std::u8string lowerName = GpUTF::SToLower(aName);
+    std::string lowerName = GpUTF::SToLower(aName);
     auto iter = headers.find(lowerName);
 
-    if (iter == headers.end())
+    if (iter == std::end(headers))
     {
         return headers.emplace
         (
@@ -33,4 +34,4 @@ std::vector<std::u8string>& GpProtoHeadersMap::GetOrCreateHeaders (std::u8string
     }
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

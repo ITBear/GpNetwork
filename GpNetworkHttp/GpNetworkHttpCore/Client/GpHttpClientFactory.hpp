@@ -16,8 +16,14 @@ protected:
 public:
     virtual                     ~GpHttpClientFactory    (void) noexcept = default;
 
-    virtual GpHttpClient::SP    NewInstance             (void) const = 0;
+    virtual GpHttpClient::SP    NewInstance             (GpSocketFlags      aSocketFlags,
+                                                         GpIOEventPollerIdx aIOEventPollerIdx,
+                                                         milliseconds_t     aConnectTimeout) const = 0;
+
+    virtual GpHttpClient::SP    NewInstance             (GpSocketFlags      aSocketFlags,
+                                                         GpIOEventPollerIdx aIOEventPollerIdx,
+                                                         milliseconds_t     aConnectTimeout,
+                                                         std::string        aTaskName) const = 0;
 };
 
-}//namespace GPlatform
-
+}// namespace GPlatform

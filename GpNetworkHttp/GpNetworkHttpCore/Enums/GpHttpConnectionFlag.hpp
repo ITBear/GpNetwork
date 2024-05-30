@@ -12,7 +12,7 @@ GP_ENUM(GP_NETWORK_HTTP_CORE_API, GpHttpConnectionFlag,
     KEEP_ALIVE
 );
 
-std::u8string_view          GpProtoHeader_EnumToStr (GpHttpConnectionFlag::EnumT aValue);
-GpHttpConnectionFlag::EnumT GpProtoHeader_StrToEnum (std::u8string_view aStr, GpHttpConnectionFlag::EnumT);
+std::string_view            GP_NETWORK_HTTP_CORE_API GpProtoHeader_EnumToStr (GpHttpConnectionFlag::EnumT aValue);
+GpHttpConnectionFlag::EnumT GP_NETWORK_HTTP_CORE_API GpProtoHeader_StrToEnum (std::string_view aStr, GpHttpConnectionFlag::EnumT);
 
-}//namespace GPlatform
+}// namespace GPlatform

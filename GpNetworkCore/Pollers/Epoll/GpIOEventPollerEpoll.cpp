@@ -17,8 +17,7 @@
 namespace GPlatform {
 
 GpIOEventPollerEpoll::~GpIOEventPollerEpoll (void) noexcept
-{
-    //LOG_INFO(u8"[GpIOEventPollerEpoll::~GpIOEventPollerEpoll]:..."_sv + Name());
+{   
 }
 
 void    GpIOEventPollerEpoll::Configure
@@ -27,9 +26,16 @@ void    GpIOEventPollerEpoll::Configure
     const size_t            aMaxEventsCnt
 )
 {
-    LOG_INFO(u8"[GpIOEventPollerEpoll::Configure]: "_sv + Name());
+    LOG_INFO
+    (
+        fmt::format
+        (
+            "[GpIOEventPollerEpoll::Configure]: {}",
+            TaskName()
+        )
+    );
 
-    std::scoped_lock lock(iLock);
+    GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
 
     THROW_COND_GP
     (
@@ -37,37 +43,47 @@ void    GpIOEventPollerEpoll::Configure
         "Already started"_sv
     );
 
-    iMaxStepTime    = aMaxStepTime;
-    iNextStepTime   = aMaxStepTime;
+    iMaxStepTime = aMaxStepTime;
     iEvents.resize(aMaxEventsCnt);
 
-    //Create epoll
+    // Create epoll
     iEpollId = epoll_create1(EPOLL_CLOEXEC);
 
     THROW_COND_GP
     (
         iEpollId >= 0,
-        [&](){return std::u8string(GpErrno::SGetAndClear());}
+        []()
+        {
+            return std::string(GpErrno::SGetAndClear());
+        }
     );
 }
 
 void    GpIOEventPollerEpoll::OnStart (void)
 {
-    LOG_INFO(u8"[GpIOEventPollerEpoll::OnStart]: "_sv + Name());
+    LOG_INFO
+    (
+        fmt::format
+        (
+            "[GpIOEventPollerEpoll::OnStart]: {}",
+            TaskName()
+        )
+    );
 }
 
 GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
 {
-    //LOG_INFO(u8"[GpIOEventPollerEpoll::OnStep]: "_sv + Name());
-
     EventT* eventsPtr   = nullptr;
     int     eventsSize  = 0;
 
-    //Check
+    // Check
+    int             epollId = -1;
+    milliseconds_t  maxStepTime;
     {
-        std::scoped_lock lock(iLock);
-        eventsPtr   = iEvents.data();
-        eventsSize  = NumOps::SConvert<int>(iEvents.size());
+        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+
+        eventsPtr   = std::data(iEvents);
+        eventsSize  = NumOps::SConvert<int>(std::size(iEvents));
 
         if (eventsPtr == nullptr) [[unlikely]]
         {
@@ -78,15 +94,18 @@ GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
         {
             return GpTaskRunRes::READY_TO_RUN;
         }
+
+        epollId     = iEpollId;
+        maxStepTime = iMaxStepTime;
     }
 
     // Poll wait...
     const int nfds = epoll_wait
     (
-        iEpollId,
+        epollId,
         eventsPtr,
         eventsSize,
-        NumOps::SConvert<int>(iNextStepTime.Value())
+        NumOps::SConvert<int>(maxStepTime.Value())
     );
 
     if (   (nfds < 0)
@@ -99,7 +118,10 @@ GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
     THROW_COND_GP
     (
         nfds >= 0,
-        [&](){return std::u8string(GpErrno::SGetAndClear());}
+        [&]()
+        {
+            return std::string(GpErrno::SGetAndClear());
+        }
     );
 
     if (nfds == 0)
@@ -115,29 +137,39 @@ GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
     {
         const EventT*       epEventCurrent  = epEvent++;
         const u_int_32      eventsMask      = epEventCurrent->events;
-        const GpIOObjectId  fd              = epEventCurrent->data.fd;
+        const GpSocketId    fd              = epEventCurrent->data.fd;
 
         const GpIOEventsTypes::value_type events =
               GpIOEventsTypes::value_type((1 << GpIOEventType::READY_TO_WRITE) * bool(eventsMask & EPOLLOUT))
             | GpIOEventsTypes::value_type((1 << GpIOEventType::READY_TO_READ)  * bool((eventsMask & EPOLLIN) || (eventsMask & EPOLLPRI)))
             | GpIOEventsTypes::value_type((1 << GpIOEventType::CLOSED)         * bool((eventsMask & EPOLLRDHUP) || (eventsMask & EPOLLHUP)))
-            | GpIOEventsTypes::value_type((1 << GpIOEventType::ERROR)          * bool(eventsMask & EPOLLERR));
+            | GpIOEventsTypes::value_type((1 << GpIOEventType::ERROR_OCCURRED) * bool(eventsMask & EPOLLERR));
 
-        ProcessEvents(fd, GpIOEventsTypes(events));
+        {
+            GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+            ProcessEvents(fd, GpIOEventsTypes(events));
+        }
     }
 
     return GpTaskRunRes::READY_TO_RUN;
 }
 
-std::optional<GpException>  GpIOEventPollerEpoll::OnStop (void) noexcept
+GpException::C::Opt GpIOEventPollerEpoll::OnStop (void) noexcept
 {
-    LOG_INFO(u8"[GpIOEventPollerEpoll::OnStop]: "_sv + Name());
+    LOG_INFO
+    (
+        fmt::format
+        (
+            "[GpIOEventPollerEpoll::OnStop]: {}",
+            TaskName()
+        )
+    );
 
-    std::optional<GpException> ex;
+    GpException::C::Opt ex;
 
     try
     {
-        std::scoped_lock lock(iLock);
+        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
 
         if (iEpollId >= 0)
         {
@@ -155,15 +187,15 @@ std::optional<GpException>  GpIOEventPollerEpoll::OnStop (void) noexcept
         ex = GpException(e.what());
     } catch (...)
     {
-        ex = GpException(u8"[GpIOEventPollerEpoll::OnStop]: unknown exception"_sv);
+        ex = GpException("[GpIOEventPollerEpoll::OnStop]: unknown exception"_sv);
     }
 
     return ex;
 }
 
-void    GpIOEventPollerEpoll::OnAddObject (const GpIOObjectId aIOObjectId)
+void    GpIOEventPollerEpoll::OnAddObject (const GpSocketId aSocketId)
 {
-    const int fd = NumOps::SConvert<int>(aIOObjectId);
+    const int fd = NumOps::SConvert<int>(aSocketId);
 
     EventT listenev;
     listenev.data.fd    = fd;
@@ -172,12 +204,12 @@ void    GpIOEventPollerEpoll::OnAddObject (const GpIOObjectId aIOObjectId)
     if (epoll_ctl(iEpollId, EPOLL_CTL_ADD, fd, &listenev) != 0)
     {
         THROW_GP(GpErrno::SGetAndClear());
-    }
+    }   
 }
 
-void    GpIOEventPollerEpoll::OnRemoveObject (const GpIOObjectId aIOObjectId)
+void    GpIOEventPollerEpoll::OnRemoveObject (const GpSocketId aSocketId)
 {
-    if (aIOObjectId == GpIOObjectId_Default()) [[unlikely]]
+    if (aSocketId == GpSocketId_Default()) [[unlikely]]
     {
         return;
     }
@@ -185,9 +217,9 @@ void    GpIOEventPollerEpoll::OnRemoveObject (const GpIOObjectId aIOObjectId)
     if (iEpollId < 0) [[unlikely]]
     {
         return;
-    }
+    }       
 
-    const int fd = NumOps::SConvert<int>(aIOObjectId);
+    const int fd = NumOps::SConvert<int>(aSocketId);
 
     if (epoll_ctl(iEpollId, EPOLL_CTL_DEL, fd, nullptr) != 0)
     {
@@ -195,6 +227,6 @@ void    GpIOEventPollerEpoll::OnRemoveObject (const GpIOObjectId aIOObjectId)
     }
 }
 
-}//GPlatform
+}// GPlatform
 
-#endif//#if defined(GP_OS_LINUX)
+#endif// #if defined(GP_OS_LINUX)

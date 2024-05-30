@@ -24,4 +24,4 @@ private:
     GpHttpRouterRule::C::Vec::CSP       iChildRules;
 };*/
 
-}//namespace GPlatform
+}// namespace GPlatform

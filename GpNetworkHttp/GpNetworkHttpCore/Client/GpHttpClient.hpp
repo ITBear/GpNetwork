@@ -1,13 +1,16 @@
 #pragma once
 
-#include "../RqRs/GpHttpRqRs.hpp"
+#include "../RqRs/GpHttpRequest.hpp"
+#include "../RqRs/GpHttpResponse.hpp"
+
+#include <GpNetwork/GpNetworkCore/Tasks/GpTcpClientTask.hpp>
 
 namespace GPlatform {
 
-class GpHttpClient
+class GP_NETWORK_HTTP_CORE_API GpHttpClient: public GpTcpClientTask
 {
 public:
-    CLASS_REMOVE_CTRS_MOVE_COPY(GpHttpClient)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpClient)
     CLASS_DD(GpHttpClient)
 
     enum class ErorrMode
@@ -17,13 +20,17 @@ public:
     };
 
 public:
-                                    GpHttpClient    (void) noexcept = default;
-    virtual                         ~GpHttpClient   (void) noexcept = default;
+                                GpHttpClient        (GpSocketFlags      aSocketFlags,
+                                                     GpIOEventPollerIdx aIOEventPollerIdx,
+                                                     milliseconds_t     aConnectTimeout);
+                                GpHttpClient        (GpSocketFlags      aSocketFlags,
+                                                     GpIOEventPollerIdx aIOEventPollerIdx,
+                                                     milliseconds_t     aConnectTimeout,
+                                                     std::string        aTaskName);
+    virtual                     ~GpHttpClient       (void) noexcept;
 
-    virtual GpHttpResponse::SP      Do              (GpHttpRequest::SP  aRequest,
-                                                     const ErorrMode    aErorrMode) = 0;
-
-    virtual bool                    IsValid         (void) const noexcept = 0;
+    virtual GpHttpResponse::SP  DoRqAndWaitForRs    (GpHttpRequest::SP  aRequestSP,
+                                                     ErorrMode          aErorrMode) = 0;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

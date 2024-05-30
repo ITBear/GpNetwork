@@ -12,4 +12,4 @@ GP_ENUM(GP_NETWORK_HTTP_CORE_API, GpHttpVersion,
     HTTP_1_1
 );
 
-}//namespace GPlatform
+}// namespace GPlatform

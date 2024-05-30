@@ -8,16 +8,16 @@ GpHttpResponse::SP  GpHttpRequestHandler::ProcessRequest (GpHttpRequest::SP aReq
 
     try
     {
-        res = OnRequest(aRequest);
+        res = OnRequest(aRequest.V());
     } catch (const GpHttpException& e)
     {
-        res = GpHttpResponse::SFromException(e, aRequest->iRequestNoBody);
+        res = GpHttpResponse::SFromException(e, aRequest->iRequestNoBody.http_version);
     } catch (const std::exception& e)
     {
-        res = GpHttpResponse::SFromException(e, aRequest->iRequestNoBody);
+        res = GpHttpResponse::SFromException(e, aRequest->iRequestNoBody.http_version);
     }
 
     return res;
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

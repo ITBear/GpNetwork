@@ -11,8 +11,8 @@ GpIOEventPollerCfgDesc::~GpIOEventPollerCfgDesc (void) noexcept
 {
 }
 
-void    GpIOEventPollerCfgDesc::_SReflectCollectProps (GpReflectProp::C::Vec::Val& /*aPropsOut*/)
+void    GpIOEventPollerCfgDesc::_SReflectCollectProps (GpReflectProp::SmallVecVal& /*aPropsOut*/)
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

@@ -14,39 +14,35 @@ void    GpSocketsTask::OnStart (void)
 
 GpTaskRunRes::EnumT GpSocketsTask::OnStep (void)
 {
-    GpTaskPayloadStorage::AnyOptT payloadOpt = PopPayload();
+    GpAny::C::Opt::Val messageOpt = PopMessage();
 
-    while (payloadOpt.has_value())
+    while (   (!IsStopCalled())
+           && (messageOpt.has_value()))
     {
-        auto& payload = payloadOpt.value();
-        if (payload.IsContatinType<GpIOEventPoller::SubsriberResValT>()) [[likely]]
+        auto& message = messageOpt.value();
+        if (message.IsContatinType<GpIOEventPoller::SubsriberResValT>()) [[likely]]
         {
-            const GpIOEventPoller::SubsriberResValT& pollerEvents = payload.ValueNoCheck<GpIOEventPoller::SubsriberResValT>();
+            const GpIOEventPoller::SubsriberResValT& pollerEvents = message.ValueNoCheck<GpIOEventPoller::SubsriberResValT>();
             ProcessSocketEvents(std::get<0>(pollerEvents), std::get<1>(pollerEvents));
         } else
         {
-            ProcessOtherEvents(payload);
+            ProcessOtherMessages(message);
         }
 
-        payloadOpt = PopPayload();
+        messageOpt = PopMessage();
     }
 
     return GpTaskRunRes::WAIT;
 }
 
-std::optional<GpException>  GpSocketsTask::OnStop (void) noexcept
+GpException::C::Opt GpSocketsTask::OnStop (void) noexcept
 {
     return std::nullopt;
 }
 
-void    GpSocketsTask::ProcessOtherEvents (GpAny& /*aEvent*/)
-{
-    // NOP
-}
-
 void    GpSocketsTask::ProcessSocketEvents
 (
-    const GpIOObjectId      aSocketId,
+    const GpSocketId        aSocketId,
     const GpIOEventsTypes   aIoEvents
 )
 {
@@ -72,7 +68,7 @@ void    GpSocketsTask::ProcessSocketEvents
     if (aIoEvents.Test(GpIOEventType::CLOSED)) [[unlikely]]
     {
         OnClosed(socket);
-    } else if (aIoEvents.Test(GpIOEventType::ERROR)) [[unlikely]]
+    } else if (aIoEvents.Test(GpIOEventType::ERROR_OCCURRED)) [[unlikely]]
     {
         OnError(socket);
     }

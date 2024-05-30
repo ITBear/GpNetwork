@@ -16,33 +16,31 @@ public:
     CLASS_DD(GpSocketsTask)
 
 protected:
-    inline                              GpSocketsTask       (void) noexcept = default;
-    inline                              GpSocketsTask       (std::u8string  aName) noexcept;
+                                GpSocketsTask           (void) noexcept = default;
+    inline                      GpSocketsTask           (std::string aTaskName) noexcept;
 
 public:
-    virtual                             ~GpSocketsTask      (void) noexcept override;
+    virtual                     ~GpSocketsTask          (void) noexcept override;
 
 protected:
-    virtual void                        OnStart             (void) override;
-    virtual GpTaskRunRes::EnumT         OnStep              (void) override final;
-    virtual std::optional<GpException>  OnStop              (void) noexcept override;
+    virtual void                OnStart                 (void) override;
+    virtual GpTaskRunRes::EnumT OnStep                  (void) override final;
+    virtual GpException::C::Opt OnStop                  (void) noexcept override;
 
-    virtual void                        OnReadyToRead       (GpSocket& aSocket) = 0;
-    virtual void                        OnReadyToWrite      (GpSocket& aSocket) = 0;
-    virtual void                        OnClosed            (GpSocket& aSocket) = 0;
-    virtual void                        OnError             (GpSocket& aSocket) = 0;
-    virtual GpSocket::SP                FindSocket          (const GpIOObjectId aSocketId) = 0;
-
-protected:
-    virtual void                        ProcessOtherEvents  (GpAny& aEvent);
+    virtual void                OnReadyToRead           (GpSocket& aSocket) = 0;
+    virtual void                OnReadyToWrite          (GpSocket& aSocket) = 0;
+    virtual void                OnClosed                (GpSocket& aSocket) = 0;
+    virtual void                OnError                 (GpSocket& aSocket) = 0;
+    virtual void                ProcessOtherMessages    (GpAny& aMessage) = 0;
+    virtual GpSocket::SP        FindSocket              (GpSocketId aSocketId) = 0;
 
 private:
-    void                                ProcessSocketEvents (const GpIOObjectId     aSocketId,
-                                                             const GpIOEventsTypes  aIoEvents);
+    void                        ProcessSocketEvents     (GpSocketId         aSocketId,
+                                                         GpIOEventsTypes    aIoEvents);
 };
 
-GpSocketsTask::GpSocketsTask (std::u8string aName) noexcept:
-GpTaskFiber(std::move(aName))
+GpSocketsTask::GpSocketsTask (std::string aTaskName) noexcept:
+GpTaskFiber{std::move(aTaskName)}
 {
 }
 

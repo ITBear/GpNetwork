@@ -1,6 +1,7 @@
 #include "GpHttpServerCfgDesc.hpp"
 
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
 
 namespace GPlatform {
 
@@ -10,7 +11,7 @@ GpHttpServerCfgDesc::~GpHttpServerCfgDesc (void) noexcept
 {
 }
 
-void    GpHttpServerCfgDesc::_SReflectCollectProps (GpReflectProp::C::Vec::Val& aPropsOut)
+void    GpHttpServerCfgDesc::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
 {
     PROP(listen_ip);
     PROP(listen_port);
@@ -20,4 +21,4 @@ void    GpHttpServerCfgDesc::_SReflectCollectProps (GpReflectProp::C::Vec::Val& 
     PROP(listen_socket_flags);
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

@@ -11,4 +11,4 @@ GpHttpRequestHandler::SP    GpHttpTableRouter::FindHandler (const GpHttpRequestN
     return iRouteTable->FindHandler(aHttpRqNoBody);
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

@@ -1,8 +1,6 @@
 #pragma once
 
-#include "GpSocketIPv.hpp"
-#include "../GpIOObjectId.hpp"
-
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketIPv.hpp>
 #include <GpCore2/GpUtils/Types/Bits/GpBitOps.hpp>
 #include <GpCore2/GpUtils/Other/GpErrno.hpp>
 
@@ -11,30 +9,46 @@ namespace GPlatform {
 class GP_NETWORK_CORE_API GpSocketAddr
 {
 public:
-    using IPvT      = GpSocketIPv;
-    using IPvTE     = IPvT::EnumT;
+    CLASS_DD(GpSocketAddr)
+
+    using IPvT  = GpSocketIPv;
+    using IPvTE = IPvT::EnumT;
 
 public:
     inline                      GpSocketAddr        (void) noexcept;
     inline                      GpSocketAddr        (const GpSocketAddr& aAddr) noexcept;
     inline                      GpSocketAddr        (GpSocketAddr&& aAddr) noexcept;
+    inline                      GpSocketAddr        (IPvTE              aIPv,
+                                                     std::string_view   aIP,
+                                                     u_int_16           aPort);
+    inline                      GpSocketAddr        (std::string_view   aIP,
+                                                     u_int_16           aPort);
+    inline                      GpSocketAddr        (const sockaddr_in& aSockaddrIn) noexcept;
+    inline                      GpSocketAddr        (const sockaddr_in6& aSockaddrIn6) noexcept;
     inline                      ~GpSocketAddr       (void) noexcept;
 
     inline void                 Clear               (void) noexcept;
-    inline void                 SetAutoIPv          (std::u8string_view aIP,
-                                                     const u_int_16     aPort);
-    inline void                 Set                 (const IPvTE        aIPv,
-                                                     std::u8string_view aIP,
-                                                     const u_int_16     aPort);
+    inline bool                 IsEmpty             (void) const noexcept;
+    inline void                 SetAutoIPv          (std::string_view   aIP,
+                                                     u_int_16           aPort);
+    void                        Set                 (IPvTE              aIPv,
+                                                     std::string_view   aIP,
+                                                     u_int_16           aPort);
     inline void                 Set                 (const GpSocketAddr& aAddr) noexcept;
+    inline void                 Set                 (const sockaddr_in& aSockaddrIn) noexcept;
+    inline void                 Set                 (const sockaddr_in6& aSockaddrIn6) noexcept;
+
+
     inline GpSocketAddr&        operator=           (const GpSocketAddr& aAddr) noexcept;
     inline GpSocketAddr&        operator=           (GpSocketAddr&& aAddr) noexcept;
 
-    inline static GpSocketAddr  SLocalFromSocketId  (const GpIOObjectId aSocketId);
-    inline static GpSocketAddr  SRemoteFromSocketId (const GpIOObjectId aSocketId);
+    inline bool                 operator==          (const GpSocketAddr& aAddr) const noexcept;
+
+    static GpSocketAddr         SLocalFromSocketId  (const GpSocketId aSocketId);
+    static GpSocketAddr         SRemoteFromSocketId (const GpSocketId aSocketId);
 
     inline IPvTE                IPv                 (void) const noexcept;
-    inline void                 SetIPv              (const IPvTE aIPv) noexcept;
+    inline void                 SetIPv              (IPvTE aIPv) noexcept;
     inline u_int_16             Port                (void) const noexcept;
 
     inline const sockaddr*      Raw                 (void) const noexcept;
@@ -45,10 +59,10 @@ public:
     inline sockaddr_in6*        Raw_v6              (void) noexcept;
     inline socklen_t            RawSize             (void) const noexcept;
 
-    inline std::u8string        ToString            (void) const;
-    inline std::u8string        ToStringIP          (void) const;
+    std::string                 ToString            (void) const;
+    std::string                 ToStringIP          (void) const;
 
-    static IPvTE                SDetectIPv          (std::u8string_view aIP);
+    static IPvTE                SDetectIPv          (std::string_view aIP);
 
 public:
     IPvTE                       iIPv    = IPvTE::IPv4;
@@ -61,15 +75,44 @@ GpSocketAddr::GpSocketAddr (void) noexcept
 }
 
 GpSocketAddr::GpSocketAddr (const GpSocketAddr& aAddr) noexcept:
-iIPv(aAddr.iIPv)
+iIPv{aAddr.iIPv}
 {
     Set(aAddr);
 }
 
 GpSocketAddr::GpSocketAddr (GpSocketAddr&& aAddr) noexcept:
-iIPv(aAddr.iIPv)
+iIPv{aAddr.iIPv}
 {
     Set(aAddr);
+}
+
+GpSocketAddr::GpSocketAddr
+(
+    const IPvTE         aIPv,
+    std::string_view    aIP,
+    const u_int_16      aPort
+)
+{
+    Set(aIPv, aIP, aPort);
+}
+
+GpSocketAddr::GpSocketAddr
+(
+    std::string_view    aIP,
+    const u_int_16      aPort
+)
+{
+    SetAutoIPv(aIP, aPort);
+}
+
+GpSocketAddr::GpSocketAddr (const sockaddr_in& aSockaddrIn) noexcept
+{
+    Set(aSockaddrIn);
+}
+
+GpSocketAddr::GpSocketAddr (const sockaddr_in6& aSockaddrIn6) noexcept
+{
+    Set(aSockaddrIn6);
 }
 
 GpSocketAddr::~GpSocketAddr (void) noexcept
@@ -83,9 +126,15 @@ void    GpSocketAddr::Clear (void) noexcept
     iAddr.ss_family = GpSocketIPv_SSFamily(IPvTE::IPv4);
 }
 
+bool    GpSocketAddr::IsEmpty (void) const noexcept
+{
+    constexpr const std::array<u_int_8, sizeof(decltype(iAddr))> zeros = {u_int_8{0}};
+    return std::memcmp(&iAddr, zeros.data(), sizeof(decltype(iAddr)));
+}
+
 void    GpSocketAddr::SetAutoIPv
 (
-    std::u8string_view  aIP,
+    std::string_view    aIP,
     const u_int_16      aPort
 )
 {
@@ -97,119 +146,52 @@ void    GpSocketAddr::SetAutoIPv
     );
 }
 
-void    GpSocketAddr::Set
-(
-    const IPvTE         aIPv,
-    std::u8string_view  aIP,
-    const u_int_16      aPort
-)
-{
-    //For windows https://docs.microsoft.com/en-us/windows/desktop/api/ws2tcpip/nf-ws2tcpip-inetptonw
-
-    const std::u8string ipStr(aIP);
-    size_t              maxLength   = 0;
-    void*               sinAddrPtr  = nullptr;
-
-    if (aIPv == IPvTE::IPv4)
-    {
-        maxLength           = INET_ADDRSTRLEN - 1;
-        Raw_v4()->sin_port  = BitOps::H2N(aPort);
-        sinAddrPtr          = &(Raw_v4()->sin_addr);
-    } else//IPvTE::IPv6
-    {
-        maxLength           = INET6_ADDRSTRLEN - 1;
-        Raw_v6()->sin6_port = BitOps::H2N(aPort);
-        sinAddrPtr          = &(Raw_v6()->sin6_addr);
-    }
-
-    if (   (aIP.length() == 0)
-        || (aIP.length() > maxLength)
-        || (inet_pton(GpSocketIPv_SSFamily(aIPv), GpUTF::S_As_STR(ipStr).data(), sinAddrPtr) != 1))
-    {
-        THROW_GP(u8"'"_sv + aIP + u8"' is not valid IP address"_sv);
-    }
-}
-
 void    GpSocketAddr::Set (const GpSocketAddr& aAddr) noexcept
 {
     iIPv = aAddr.iIPv;
     std::memcpy(&iAddr, &aAddr.iAddr, sizeof(decltype(iAddr)));
 }
 
+void    GpSocketAddr::Set (const sockaddr_in& aSockaddrIn) noexcept
+{
+    iIPv = IPvT::IPv4;
+    std::memcpy(&iAddr, &aSockaddrIn, sizeof(sockaddr_in));
+}
+
+void    GpSocketAddr::Set (const sockaddr_in6& aSockaddrIn6) noexcept
+{
+    iIPv = IPvT::IPv6;
+    std::memcpy(&iAddr, &aSockaddrIn6, sizeof(sockaddr_in6));
+}
+
 GpSocketAddr&   GpSocketAddr::operator= (const GpSocketAddr& aAddr) noexcept
 {
-    iIPv = aAddr.iIPv;
-    std::memcpy(&iAddr, &aAddr.iAddr, sizeof(decltype(iAddr)));
+    Set(aAddr);
 
     return *this;
 }
 
 GpSocketAddr&   GpSocketAddr::operator= (GpSocketAddr&& aAddr) noexcept
 {
-    iIPv = aAddr.iIPv;
-    std::memcpy(&iAddr, &aAddr.iAddr, sizeof(decltype(iAddr)));
+    Set(aAddr);
 
     return *this;
 }
 
-GpSocketAddr    GpSocketAddr::SLocalFromSocketId (const GpIOObjectId aSocketId)
+bool    GpSocketAddr::operator== (const GpSocketAddr& aAddr) const noexcept
 {
-    GpSocketAddr addr;
-
-    socklen_t sockLen = sizeof(decltype(iAddr));
-
-    const int res = getsockname
-    (
-        aSocketId,
-        addr.Raw(),
-        &sockLen
-    );
-
-    THROW_COND_GP
-    (
-        res == 0,
-        [](){return std::u8string(GpErrno::SGetAndClear());}
-    );
-
-    if (sockLen == sizeof(sockaddr_in))
+    if (iIPv != aAddr.iIPv)
     {
-        addr.iIPv = IPvTE::IPv4;
-    } else//sockLen == sizeof(sockaddr_in6)
-    {
-        addr.iIPv = IPvTE::IPv6;
+        return false;
     }
 
-    return addr;
-}
-
-GpSocketAddr    GpSocketAddr::SRemoteFromSocketId (const GpIOObjectId aSocketId)
-{
-    GpSocketAddr addr;
-
-    socklen_t sockLen = sizeof(decltype(iAddr));
-
-    const int res = getpeername
-    (
-        aSocketId,
-        addr.Raw(),
-        &sockLen
-    );
-
-    THROW_COND_GP
-    (
-        res == 0,
-        [](){return std::u8string(GpErrno::SGetAndClear());}
-    );
-
-    if (sockLen == sizeof(sockaddr_in))
+    if (iIPv == IPvT::IPv4)
     {
-        addr.iIPv = IPvTE::IPv4;
-    } else//sockLen == sizeof(sockaddr_in6)
+        return std::memcmp(&iAddr, &aAddr.iAddr, sizeof(sockaddr_in)) == 0;
+    } else
     {
-        addr.iIPv = IPvTE::IPv6;
+        return std::memcmp(&iAddr, &aAddr.iAddr, sizeof(sockaddr_in6)) == 0;
     }
-
-    return addr;
 }
 
 GpSocketAddr::IPvTE GpSocketAddr::IPv (void) const noexcept
@@ -272,41 +254,6 @@ socklen_t   GpSocketAddr::RawSize   (void) const noexcept
     return socklen_t((iIPv == IPvTE::IPv4)
         ? sizeof(sockaddr_in)
         : sizeof(sockaddr_in6));
-}
-
-std::u8string   GpSocketAddr::ToString (void) const
-{
-    std::u8string res;
-    res.reserve(128);
-    res.append(IPvT::SToString(IPv()))
-       .append(u8", "_sv)
-       .append(ToStringIP())
-       .append(u8":"_sv)
-       .append(StrOps::SFromUI64(Port()));
-
-    return res;
-}
-
-std::u8string   GpSocketAddr::ToStringIP (void) const
-{
-    const void* addrPtr = nullptr;
-    std::array<char, INET6_ADDRSTRLEN>  buff;
-    std::memset(buff.data(), 0, buff.size());
-
-    if (IPv() == IPvTE::IPv4)
-    {
-        addrPtr = &(Raw_v4()->sin_addr);
-    } else//IPvTE::IPv6
-    {
-        addrPtr = &(Raw_v6()->sin6_addr);
-    }
-
-    if (inet_ntop(GpSocketIPv_SSFamily(IPv()), addrPtr, buff.data(), buff.size()) == nullptr)
-    {
-        THROW_GP(GpErrno::SGetAndClear());
-    }
-
-    return std::u8string(reinterpret_cast<const char8_t*>(buff.data()));
 }
 
 }// namespace GPlatform

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GpSocket.hpp"
+#include <GpCore2/GpTasks/GpTaskEnums.hpp>
 
 namespace GPlatform {
 
@@ -17,7 +18,8 @@ public:
     virtual                 ~GpSocketFactory    (void) noexcept = default;
 
     virtual GpSocket::SP    NewInstance         (void) const = 0;
-    virtual void            DestroyInstance     (GpSocket& aSocket) const = 0;
+    virtual void            OnStart             (GpSocket::SP aSocket) const = 0;
+    virtual void            OnStop              (GpSocket::SP aSocket) const = 0;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

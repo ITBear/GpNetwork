@@ -10,7 +10,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpResponseNoBodyDesc final: public GpReflectO
 {
 public:
     CLASS_DD(GpHttpResponseNoBodyDesc)
-    REFLECT_DECLARE(u8"1c48e524-5261-4250-aa72-76d3401cc607"_uuid)
+    REFLECT_DECLARE("1c48e524-5261-4250-aa72-76d3401cc607"_uuid)
 
     using HttpVersionT  = GpHttpVersion;
     using HttpVersionTE = HttpVersionT::EnumT;
@@ -19,20 +19,20 @@ public:
     using CodeTE        = CodeT::EnumT;
 
 public:
-                        GpHttpResponseNoBodyDesc    (void) noexcept = default;
-    inline              GpHttpResponseNoBodyDesc    (const GpHttpResponseNoBodyDesc& aResponse);
-    inline              GpHttpResponseNoBodyDesc    (GpHttpResponseNoBodyDesc&& aResponse) noexcept;
-    inline              GpHttpResponseNoBodyDesc    (const CodeTE           aCode) noexcept;
-    inline              GpHttpResponseNoBodyDesc    (const CodeTE           aCode,
-                                                     const GpHttpHeaders&   aHeaders);
-    inline              GpHttpResponseNoBodyDesc    (const CodeTE           aCode,
-                                                     GpHttpHeaders&&        aHeaders) noexcept;
-    virtual             ~GpHttpResponseNoBodyDesc   (void) noexcept override final;
+                    GpHttpResponseNoBodyDesc    (void) noexcept = default;
+    inline          GpHttpResponseNoBodyDesc    (const GpHttpResponseNoBodyDesc& aResponse);
+    inline          GpHttpResponseNoBodyDesc    (GpHttpResponseNoBodyDesc&& aResponse) noexcept;
+    inline          GpHttpResponseNoBodyDesc    (const CodeTE           aCode) noexcept;
+    inline          GpHttpResponseNoBodyDesc    (const CodeTE           aCode,
+                                                 const GpHttpHeaders&   aHeaders);
+    inline          GpHttpResponseNoBodyDesc    (const CodeTE           aCode,
+                                                 GpHttpHeaders&&        aHeaders) noexcept;
+    virtual         ~GpHttpResponseNoBodyDesc   (void) noexcept override final;
 
 public:
-    HttpVersionT        http_version    = HttpVersionT::HTTP_1_1;
-    CodeT               code            = CodeT::INTERNAL_SERVER_ERROR_500;
-    GpHttpHeaders       headers;
+    HttpVersionT    http_version    = HttpVersionT::HTTP_1_1;
+    CodeT           code            = CodeT::INTERNAL_SERVER_ERROR_500;
+    GpHttpHeaders   headers;
 };
 
 GpHttpResponseNoBodyDesc::GpHttpResponseNoBodyDesc (const GpHttpResponseNoBodyDesc& aResponse):
@@ -79,4 +79,4 @@ headers(std::move(aHeaders))
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

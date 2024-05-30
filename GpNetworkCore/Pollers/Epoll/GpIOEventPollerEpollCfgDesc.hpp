@@ -8,11 +8,13 @@
 
 namespace GPlatform {
 
+#if defined(GP_OS_LINUX)
+
 class GP_NETWORK_CORE_API GpIOEventPollerEpollCfgDesc final: public GpIOEventPollerCfgDesc
 {
 public:
     CLASS_DD(GpIOEventPollerEpollCfgDesc)
-    REFLECT_DECLARE(u8"72d4fb29-caa0-484f-9700-fcee4971e3c2"_uuid)
+    REFLECT_DECLARE("72d4fb29-caa0-484f-9700-fcee4971e3c2"_uuid)
 
 public:
                             GpIOEventPollerEpollCfgDesc     (void) noexcept = default;
@@ -51,4 +53,6 @@ max_events_cnt(std::move(aMaxEventsCnt))
 {
 }
 
-}//namespace GPlatform
+#endif// #if defined(GP_OS_LINUX)
+
+}// namespace GPlatform

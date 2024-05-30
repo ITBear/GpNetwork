@@ -1,6 +1,6 @@
-#include "GpNetworkHttpCore.hpp"
+#include "GpNetworkHttpCoreLib.hpp"
 
-namespace GPlatform{
+namespace GPlatform {
 
 GP_IMPLEMENT_LIB(GpNetworkHttpCoreLib)
 

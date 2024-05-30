@@ -16,4 +16,4 @@ public:
     static GpUrl    SReflectToUrl   (const GpReflectObject& aObj);
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

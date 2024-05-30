@@ -1,6 +1,51 @@
-#include "GpSingleSocketTask.hpp"
+#include <GpNetwork/GpNetworkCore/Tasks/GpSingleSocketTask.hpp>
+#include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPollerCatalog.hpp>
 
 namespace GPlatform {
+
+GpSingleSocketTask::GpSingleSocketTask
+(
+    GpSocketFactory::SP         aSocketFactory,
+    const GpIOEventPollerIdx    aIOEventPollerIdx
+) noexcept:
+iSocketFactory   {std::move(aSocketFactory)},
+iIOEventPollerIdx{std::move(aIOEventPollerIdx)}
+{
+}
+
+GpSingleSocketTask::GpSingleSocketTask
+(
+    GpSocketFactory::SP         aSocketFactory,
+    const GpIOEventPollerIdx    aIOEventPollerIdx,
+    std::string                 aTaskName
+) noexcept:
+GpSocketsTask{std::move(aTaskName)},
+iSocketFactory   {std::move(aSocketFactory)},
+iIOEventPollerIdx{std::move(aIOEventPollerIdx)}
+{
+}
+
+GpSingleSocketTask::GpSingleSocketTask
+(
+    GpSocket::SP                aSocket,    
+    const GpIOEventPollerIdx    aIOEventPollerIdx,
+    std::string                 aTaskName
+) noexcept:
+GpSocketsTask{std::move(aTaskName)},
+iSocket          {std::move(aSocket)},
+iIOEventPollerIdx{std::move(aIOEventPollerIdx)}
+{
+}
+
+GpSingleSocketTask::GpSingleSocketTask
+(
+    GpSocket::SP                aSocket,
+    const GpIOEventPollerIdx    aIOEventPollerIdx
+) noexcept:
+iSocket          {std::move(aSocket)},
+iIOEventPollerIdx{std::move(aIOEventPollerIdx)}
+{
+}
 
 GpSingleSocketTask::~GpSingleSocketTask (void) noexcept
 {
@@ -12,36 +57,40 @@ void    GpSingleSocketTask::OnStart (void)
 
     if (iSocket.IsNULL())
     {
-        if (iSocketFactory.IsNULL())
-        {
-            THROW_GP(u8"Socket is null and socker factory is null"_sv);
-        }
+        THROW_COND_GP
+        (
+            iSocketFactory.IsNotNULL(),
+            "Socket is null and socket factory is null"
+        );
 
         iSocket = iSocketFactory->NewInstance();
+        iSocketFactory->OnStart(iSocket);
     }
 
     if (!iSocket->IsValidId())
     {
-        THROW_GP(u8"Socket is invalid"_sv);
+        THROW_GP("Socket is invalid");
     }
 }
 
-std::optional<GpException>  GpSingleSocketTask::OnStop (void) noexcept
+GpException::C::Opt GpSingleSocketTask::OnStop (void) noexcept
 {
-    std::optional<GpException> ex;
+    GpException::C::Opt ex;
 
     try
     {
         if (iSocket.IsNotNULL())
         {
+            GpSocket& socket = iSocket.Vn();
+
             if (iSocketFactory.IsNotNULL())
             {
-                iSocketFactory.Vn().DestroyInstance(iSocket.Vn());
+                iSocketFactory->OnStop(iSocket);
             }
 
-            iSocket->Close();
-            OnClosed(iSocket.Vn());
-            iSocket.Clear();
+            socket.Close();
+            OnClosed(socket);
+            iSocket.Clear();            
         }
     } catch (const GpException& e)
     {
@@ -51,23 +100,17 @@ std::optional<GpException>  GpSingleSocketTask::OnStop (void) noexcept
         ex = GpException(e.what());
     } catch (...)
     {
-        ex = GpException(u8"[GpSingleSocketTask::OnStop]: unknown exception"_sv);
+        ex = GpException("[GpSingleSocketTask::OnStop]: unknown exception"_sv);
     }
 
-    std::optional<GpException> inhEx = GpSocketsTask::OnStop();
+    GpException::C::Opt inhEx = GpSocketsTask::OnStop();
 
     return ex.has_value() ? ex : inhEx;
 }
 
-GpSocket::SP    GpSingleSocketTask::FindSocket ([[maybe_unused]] const GpIOObjectId aSocketId)
+GpSocket::SP    GpSingleSocketTask::FindSocket ([[maybe_unused]] const GpSocketId aSocketId)
 {
-    if (iSocket.IsNotNULL()) [[likely]]
-    {
-        return iSocket;
-    } else
-    {
-        return GpSocket::SP::SNull();
-    }
+    return iSocket;
 }
 
 }// namespace GPlatform

@@ -11,7 +11,7 @@ GpSocketTCP::~GpSocketTCP (void) noexcept
 
 GpSocketTCP::SP GpSocketTCP::SFromID
 (
-    GpIOObjectId        aId,
+    GpSocketId          aId,
     const CloseModeT    aCloseMode,
     const StateT        aState
 )
@@ -35,15 +35,13 @@ void    GpSocketTCP::Listen
         THROW_COND_GP
         (
             iState == StateT::NOT_CONNECTED,
-            u8"TCP socket state must be NOT_CONNECTED"_sv
+            "TCP socket state must be NOT_CONNECTED"_sv
         );
 
         Bind(aAddr);
 
-        if (listen(Id(), NumOps::SConvert<int>(aMaxQueueSize)) != 0)
-        {
-            THROW_GP(GpErrno::SGetAndClear());
-        }
+        const int listenRes = listen(Id(), NumOps::SConvert<int>(aMaxQueueSize));
+        SCheckResOrThrow(listenRes, {});
 
         iState = StateT::LISTEN;
     } catch (...)
@@ -65,7 +63,7 @@ void    GpSocketTCP::Connect
         THROW_COND_GP
         (
             iState == StateT::NOT_CONNECTED,
-            u8"TCP socket state must be NOT_CONNECTED"_sv
+            "TCP socket state must be NOT_CONNECTED"_sv
         );
 
         Create(aAddr.IPv());
@@ -102,19 +100,19 @@ GpSocketTCP::C::Opt::Val    GpSocketTCP::Accept (const GpSocketFlags& aFlags)
         THROW_COND_GP
         (
             iState == StateT::LISTEN,
-            u8"TCP socket state must be LISTEN"_sv
+            "TCP socket state must be LISTEN"_sv
         );
 
-        const GpIOObjectId incomingSocketId = accept(Id(), nullptr, nullptr);
+        GpSocketId incomingSocketId = accept(Id(), nullptr, nullptr);
 
-        if (incomingSocketId == GpIOObjectId_Default())
+        if (incomingSocketId == GpSocketId_Default())
         {
             if (errno == EAGAIN)
             {
                 return std::nullopt;
             }
 
-            THROW_GP(GpErrno::SGetAndClear());
+            SCheckResOrThrow(-1, {});
         }
 
         GpSocketTCP connectedSocket(aFlags, CloseModeT::CLOSE_ON_DESTRUCT);
@@ -124,7 +122,7 @@ GpSocketTCP::C::Opt::Val    GpSocketTCP::Accept (const GpSocketFlags& aFlags)
             connectedSocket.SetFromRawTCP(incomingSocketId, StateT::INCOMING);
         } catch (...)
         {
-            close(incomingSocketId);
+            SClose(incomingSocketId);
             throw;
         }
 
@@ -143,22 +141,24 @@ size_t  GpSocketTCP::Read (GpByteWriter& aWriter)
 
     do
     {
-        aWriter.ReserveNext(4096);//TODO: move to socket settings
-        GpSpanPtrByteRW writerStoragePtr = aWriter.StoragePtr();
+        aWriter.ReserveNext(4096);// TODO: move to socket settings
+        GpSpanByteRW writerStoragePtr = aWriter.StoragePtr();
 
         const ssize_t rcvSize = recv
         (
             Id(),
-            writerStoragePtr.Ptr(),
-            writerStoragePtr.Count(),
+            reinterpret_cast<char*>(writerStoragePtr.Ptr()),
+            NumOps::SConvert<recv_size_t>(writerStoragePtr.Count()),
             0
         );
 
         if (rcvSize < 0) [[unlikely]]
         {
 GP_WARNING_PUSH()
-GP_WARNING_DISABLE(unknown-warning-option)
-GP_WARNING_DISABLE(logical-op)
+#if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
+    GP_WARNING_DISABLE(unknown-warning-option)
+    GP_WARNING_DISABLE(logical-op)
+#endif// #if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
             if (   (errno == EAGAIN)
                 || (errno == EWOULDBLOCK))
 GP_WARNING_POP()
@@ -166,7 +166,7 @@ GP_WARNING_POP()
                 return totalRcvSize;
             } else
             {
-                THROW_GP(GpErrno::SGetAndClear());
+                SCheckResOrThrow(-1, {});
             }
         } else if (rcvSize == 0)
         {
@@ -174,7 +174,7 @@ GP_WARNING_POP()
         }
 
         totalRcvSize = NumOps::SAdd(totalRcvSize, size_t(rcvSize));
-        aWriter.Offset(size_t(rcvSize));
+        aWriter.OffsetAdd(size_t(rcvSize));
 
         if (size_t(rcvSize) < writerStoragePtr.Count()) [[likely]]
         {
@@ -194,32 +194,40 @@ size_t  GpSocketTCP::Write (GpByteReader& aReader)
         return 0;
     }
 
-    GpSpanPtrByteR  tryToSendDataPtr    = aReader.StoragePtr();
-    ssize_t         sendSize            = send(Id(), tryToSendDataPtr.Ptr(), tryToSendDataPtr.Count(), 0);
+    GpSpanByteR tryToSendDataPtr    = aReader.StoragePtr();
+    ssize_t     sendSize            = send
+    (
+        Id(),
+        reinterpret_cast<const char*>(tryToSendDataPtr.Ptr()),
+        NumOps::SConvert<send_size_t>(tryToSendDataPtr.Count()),
+        0
+    );
 
     if (sendSize < 0)
     {
 GP_WARNING_PUSH()
-GP_WARNING_DISABLE(unknown-warning-option)
-GP_WARNING_DISABLE(logical-op)
+#if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
+    GP_WARNING_DISABLE(unknown-warning-option)
+    GP_WARNING_DISABLE(logical-op)
+#endif// #if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
         if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
 GP_WARNING_POP()
         {
             return 0;
         } else
         {
-            THROW_GP(GpErrno::SGetAndClear());
+            SCheckResOrThrow(-1, {});
         }
     }
 
-    aReader.Offset(size_t(sendSize));
+    aReader.OffsetAdd(size_t(sendSize));
 
     return size_t(sendSize);
 }
 
 void    GpSocketTCP::SetFromRawTCP
 (
-    const GpIOObjectId  aId,
+    const GpSocketId    aId,
     const StateT        aState
 )
 {
@@ -239,12 +247,7 @@ void    GpSocketTCP::SetFromRawTCP
 void    GpSocketTCP::ConnectSync (const GpSocketAddr& aAddr)
 {
     const int res = connect(Id(), aAddr.Raw(), aAddr.RawSize());
-
-    THROW_COND_GP
-    (
-        res == 0,
-        [](){return std::u8string(GpErrno::SGetAndClear());}
-    );
+    SCheckResOrThrow(res, {});
 }
 
 void    GpSocketTCP::ConnectAsync (const GpSocketAddr& aAddr)
@@ -292,14 +295,14 @@ void    GpSocketTCP::ConnectAsync (const GpSocketAddr& aAddr)
     }
 }
 
-void    GpSocketTCP::SetUserTimeout (const milliseconds_t aTimeout)
+void    GpSocketTCP::SetUserTimeout ([[maybe_unused]] const milliseconds_t aTimeout)
 {
+#if defined(GP_POSIX)
     int tcp_timeout = aTimeout.As<int>();
+    const int res = setsockopt(Id(), IPPROTO_TCP, TCP_USER_TIMEOUT, reinterpret_cast<const char*>(&tcp_timeout), sizeof(tcp_timeout));
 
-    if (setsockopt(Id(), IPPROTO_TCP, TCP_USER_TIMEOUT, &tcp_timeout, sizeof(tcp_timeout)) != 0)
-    {
-        THROW_GP(GpErrno::SGetAndClear());
-    }
+    SCheckResOrThrow(res, {});
+#endif
 }
 
 }// namespace GPlatform

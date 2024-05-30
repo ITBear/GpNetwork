@@ -20,7 +20,7 @@ public:
     GpHttpResponse::SP          ProcessRequest          (GpHttpRequest::SP aRequest);
 
 protected:
-    virtual GpHttpResponse::SP  OnRequest               (GpHttpRequest::SP aRequest) = 0;
+    virtual GpHttpResponse::SP  OnRequest               (GpHttpRequest& aRequest) = 0;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

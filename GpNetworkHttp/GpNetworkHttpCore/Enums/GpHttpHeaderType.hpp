@@ -12,9 +12,10 @@ GP_ENUM(GP_NETWORK_HTTP_CORE_API, GpHttpHeaderType,
     CONTENT_LENGTH,
     CONNECTION,
     CACHE_CONTROL,
-    AUTHORIZATION
+    AUTHORIZATION,
+    HOST
 );
 
-std::u8string_view GpProtoHeader_EnumToStr(GpHttpHeaderType::EnumT aValue);
+std::string_view GP_NETWORK_HTTP_CORE_API GpProtoHeader_EnumToStr(GpHttpHeaderType::EnumT aValue);
 
-}//namespace GPlatform
+}// namespace GPlatform

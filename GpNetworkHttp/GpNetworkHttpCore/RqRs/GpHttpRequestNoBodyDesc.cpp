@@ -1,7 +1,8 @@
-#include "GpHttpRequestNoBodyDesc.hpp"
-#include "../Exceptions/GpHttpException.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RqRs/GpHttpRequestNoBodyDesc.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Exceptions/GpHttpException.hpp>
 
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
 
 namespace GPlatform {
 
@@ -9,6 +10,15 @@ REFLECT_IMPLEMENT(GpHttpRequestNoBodyDesc, GP_MODULE_UUID)
 
 GpHttpRequestNoBodyDesc::~GpHttpRequestNoBodyDesc (void) noexcept
 {
+}
+
+void    GpHttpRequestNoBodyDesc::Clear (void)
+{
+    http_version = HttpVersionT::HTTP_1_1;
+    request_type = HttpRequestTypeT::GET;
+
+    url.Clear();
+    headers.Clear();
 }
 
 void    GpHttpRequestNoBodyDesc::SetHttpVersion
@@ -29,7 +39,7 @@ void    GpHttpRequestNoBodyDesc::SetHttpVersion
     }
 }
 
-void    GpHttpRequestNoBodyDesc::_SReflectCollectProps (GpReflectProp::C::Vec::Val& aPropsOut)
+void    GpHttpRequestNoBodyDesc::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
 {
     PROP(http_version);
     PROP(request_type);
@@ -37,4 +47,4 @@ void    GpHttpRequestNoBodyDesc::_SReflectCollectProps (GpReflectProp::C::Vec::V
     PROP(headers);
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

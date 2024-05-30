@@ -1,33 +1,39 @@
+# ----------- Config -----------
 TEMPLATE        = lib
-#CONFIG         += staticlib
-VER_MAJ		    = 2
-VER_MIN		    = 1
-VER_PAT		    = 4
-QMAKE_CXXFLAGS += -DGP_MODULE_UUID=17cab5e2-7e0b-4d44-8b69-deb8c902ffd8
+#CONFIG        += staticlib
 QMAKE_CXXFLAGS += -DGP_REFLECTION_STATIC_ADD_TO_MANAGER
+QMAKE_CXXFLAGS += -DGP_MODULE_UUID=17cab5e2-7e0b-4d44-8b69-deb8c902ffd8
 PACKET_NAME     = GpNetworkHttpCore
+DEFINES        += GP_NETWORK_HTTP_CORE_LIBRARY
+_VER_MAJ        = 2
+_VER_MIN        = 1
+_VER_PAT        = 5
 DIR_LEVEL       = ./../../../
 
-DEFINES		   += GP_NETWORK_HTTP_CORE_LIBRARY
-DEFINES        += "GP_CURRENT_LIB_VER_MAJ=\\\"$$VER_MAJ\\\""
-DEFINES        += "GP_CURRENT_LIB_VER_MIN=\\\"$$VER_MIN\\\""
-DEFINES        += "GP_CURRENT_LIB_VER_PAT=\\\"$$VER_PAT\\\""
-DEFINES        += "GP_CURRENT_LIB_PACKET_NAME=\\\"$$PACKET_NAME\\\""
+include($$DIR_LEVEL/../QtGlobalPro.pri)
 
-include(../../../../QtGlobalPro.pri)
-
-#------------------------------ LIBS BEGIN ---------------------------------
+# ----------- Libraries -----------
 os_windows{
+	LIBS += -lGpNetworkCore$$TARGET_POSTFIX
+	LIBS += -lGpTasks$$TARGET_POSTFIX
+	LIBS += -lGpReflection$$TARGET_POSTFIX
+	LIBS += -lGpUtils$$TARGET_POSTFIX
+
+	LIBS += -lws2_32
 }
 
 os_linux{
 }
-#------------------------------- LIBS END ----------------------------------
 
+# ----------- Sources and headers -----------
 SOURCES += \
     Body/GpHttpBodyPayload.cpp \
     Body/GpHttpBodyPayloadFixed.cpp \
     Body/GpHttpBodyPayloadType.cpp \
+    Client/GpHttpClient.cpp \
+    Client/GpHttpClientGuard.cpp \
+    Client/GpHttpClientPool.cpp \
+    Client/GpHttpClientPoolCatalog.cpp \
     Enums/GpHttpCacheControl.cpp \
     Enums/GpHttpCharset.cpp \
     Enums/GpHttpConnectionFlag.cpp \
@@ -37,7 +43,7 @@ SOURCES += \
     Enums/GpHttpResponseCode.cpp \
     Enums/GpHttpVersion.cpp \
     Exceptions/GpHttpException.cpp \
-    GpNetworkHttpCore.cpp \
+    GpNetworkHttpCoreLib.cpp \
     Headers/GpHttpHeaders.cpp \
     Headers/GpProtoHeaderValue.cpp \
     Headers/GpProtoHeadersMap.cpp \
@@ -51,7 +57,6 @@ SOURCES += \
     RqRs/GpHttpResponseNoBodyDesc.cpp \
     Server/GpHttpRequestSocketTask.cpp \
     Server/GpHttpRequestSocketTaskFactory.cpp \
-    Server/GpHttpResponseSerializer.cpp \
     Server/GpHttpServer.cpp \
     Server/GpHttpServerCfgDesc.cpp \
     Url/GpUrl.cpp \
@@ -64,6 +69,11 @@ HEADERS += \
     Body/GpHttpBodyPayload.hpp \
     Body/GpHttpBodyPayloadFixed.hpp \
     Body/GpHttpBodyPayloadType.hpp \
+    Client/GpHttpClient.hpp \
+    Client/GpHttpClientFactory.hpp \
+    Client/GpHttpClientGuard.hpp \
+    Client/GpHttpClientPool.hpp \
+    Client/GpHttpClientPoolCatalog.hpp \
     Enums/GpHttpCacheControl.hpp \
     Enums/GpHttpCharset.hpp \
     Enums/GpHttpConnectionFlag.hpp \
@@ -73,7 +83,7 @@ HEADERS += \
     Enums/GpHttpResponseCode.hpp \
     Enums/GpHttpVersion.hpp \
     Exceptions/GpHttpException.hpp \
-    GpNetworkHttpCore.hpp \
+    GpNetworkHttpCoreLib.hpp \
     GpNetworkHttpCore_global.hpp \
     Headers/GpHttpHeaders.hpp \
     Headers/GpProtoHeaderValue.hpp \
@@ -91,7 +101,6 @@ HEADERS += \
     RqRs/GpHttpResponseNoBodyDesc.hpp \
     Server/GpHttpRequestSocketTask.hpp \
     Server/GpHttpRequestSocketTaskFactory.hpp \
-    Server/GpHttpResponseSerializer.hpp \
     Server/GpHttpServer.hpp \
     Server/GpHttpServerCfgDesc.hpp \
     Url/GpUrl.hpp \

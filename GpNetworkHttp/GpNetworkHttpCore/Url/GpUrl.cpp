@@ -1,6 +1,7 @@
 #include "GpUrl.hpp"
 
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
 
 namespace GPlatform {
 
@@ -8,11 +9,102 @@ GP_ENUM_IMPL(GpUrlPart)
 
 REFLECT_IMPLEMENT(GpUrl, GP_MODULE_UUID)
 
+GpUrl::GpUrl (const GpUrl& aUrl):
+GpReflectObject(aUrl),
+scheme   (GpReflectUtils::SCopyValue(aUrl.scheme)),
+authority(GpReflectUtils::SCopyValue(aUrl.authority)),
+path     (GpReflectUtils::SCopyValue(aUrl.path)),
+query    (GpReflectUtils::SCopyValue(aUrl.query)),
+fragment (GpReflectUtils::SCopyValue(aUrl.fragment))
+{
+}
+
+GpUrl::GpUrl (GpUrl&& aUrl) noexcept:
+scheme   (std::move(aUrl.scheme)),
+authority(std::move(aUrl.authority)),
+path     (std::move(aUrl.path)),
+query    (std::move(aUrl.query)),
+fragment (std::move(aUrl.fragment))
+{
+}
+
+GpUrl::GpUrl
+(
+    std::string     aScheme,
+    GpUrlAuthority  aAuthority,
+    std::string     aPath,
+    GpUrlQuery      aQuery,
+    std::string     aFragment
+) noexcept:
+scheme   (std::move(aScheme)),
+authority(std::move(aAuthority)),
+path     (std::move(aPath)),
+query    (std::move(aQuery)),
+fragment (std::move(aFragment))
+{
+}
+
+void    GpUrl::Clear (void)
+{
+    scheme.clear();
+    authority.Clear();
+    path.clear();
+    query.Clear();
+    fragment.clear();
+}
+
+std::string GpUrl::SchemeHostPortPath (void) const
+{
+    const std::string port = std::to_string(authority.Port());
+
+    std::string res;
+    res.reserve
+    (
+        scheme.length()
+        + 3/*://*/
+        + authority.Host().length()
+        + 1/*:*/
+        + std::size(port)
+        + (path.length() > 0 ? (1 + path.length()) : 0)
+    );
+
+    res.append(scheme).append("://"_sv).append(authority.Host()).append(":"_sv).append(port);
+
+    if (path.length() > 0)
+    {
+        res.append("/"_sv).append(path);
+    }
+
+    return res;
+}
+
 GpUrl::~GpUrl (void) noexcept
 {
 }
 
-void    GpUrl::_SReflectCollectProps (GpReflectProp::C::Vec::Val& aPropsOut)
+GpUrl&  GpUrl::operator= (const GpUrl& aUrl)
+{
+    scheme      = aUrl.scheme;
+    authority   = aUrl.authority;
+    path        = aUrl.path;
+    query       = aUrl.query;
+    fragment    = aUrl.fragment;
+
+    return *this;
+}
+
+GpUrl&  GpUrl::operator= (GpUrl&& aUrl) noexcept
+{
+    scheme      = std::move(aUrl.scheme);
+    authority   = std::move(aUrl.authority);
+    path        = std::move(aUrl.path);
+    query       = std::move(aUrl.query);
+    fragment    = std::move(aUrl.fragment);
+
+    return *this;
+}
+
+void    GpUrl::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
 {
     PROP(scheme);
     PROP(authority);
@@ -21,71 +113,125 @@ void    GpUrl::_SReflectCollectProps (GpReflectProp::C::Vec::Val& aPropsOut)
     PROP(fragment);
 }
 
-GpUrl   GpUrl::SFromString (std::u8string_view /*aUrl*/)
+std::string GpUrl::SToString (const GpUrl& aUrl)
 {
-    // scheme:[//authority]/path[?query][#fragment]
-    // scheme - http:, https:, ftp:, ...
-    // authority - //user_name:password@host:port
-    // query - ?param1=value1&param2=value2&...
-    // fragment - #value
+    std::string url;
+    url.reserve(512);
 
-    GpUrl url;
-
-    //TODO: implement
-    THROW_GP_NOT_IMPLEMENTED();
-
-    /*//Split scheme '://'
-    const auto schemeEnd = aUrl.find(u8"://"_sv);
-    if (schemeEnd != std::string::npos)
+    // scheme
     {
-        url.scheme  = aUrl.substr(0, schemeEnd);
-        aUrl        = aUrl.substr(schemeEnd, );
+        url.append(aUrl.Scheme()).append("://");
     }
 
-    // Split authority and path '/'
-    const auto authorityStart = schemeEnd == std::string::npos ? 0 : schemeEnd + 3;
-    const auto authorityEnd = aUrl.find(u8'/', authorityStart);
-    if (authorityEnd != std::string::npos)
+    // authority
     {
-        url.authority   = GpUrlAuthority::SFromString(aUrl.substr(authorityStart, authorityEnd - authorityStart));
-        url.path        = aUrl.substr(authorityEnd, url.find(u8'?', authorityEnd) - authorityEnd);
-    } else
-    {
-        url.authority   = GpUrlAuthority::SFromString(aUrl.substr(authorityStart));
+        url.append(GpUrlAuthority::SToString(aUrl.Authority()));
     }
 
-    // Split query
-    auto queryStart = url.find("?");
-    if (queryStart != std::string::npos) {
-        auto queryEnd = url.find("#", queryStart);
-        auto queryString = url.substr(queryStart + 1, queryEnd - queryStart - 1);
+    // path
+    {
+        url.append("/").append(aUrl.Path());
+    }
 
-        std::vector<std::string> params;
-        boost::split(params, queryString, boost::is_any_of("&"));
+    // query
+    {
+        const GpUrlQuery& query     = aUrl.Query();
+        const std::string queryStr  = GpUrlQuery::SToString(query);
 
-        for (const auto& param : params) {
-            std::vector<std::string> key_value;
-            boost::split(key_value, param, boost::is_any_of("="));
-            if (key_value.size() == 2) {
-                result.query[key_value[0]] = key_value[1];
-            }
+        if (!queryStr.empty())
+        {
+            url.append("?").append(queryStr);
         }
     }
 
-    // Split fragment
-    auto fragmentStart = url.find("#");
-    if (fragmentStart != std::string::npos) {
-        result.fragment = url.substr(fragmentStart + 1);
-    }*/
+    // fragment
+    {
+        std::string_view fragment = aUrl.Fragment();
+        if (!fragment.empty())
+        {
+            url.append("#").append(StrOps::SPercentEncode(fragment));
+        }
+    }
 
     return url;
 }
 
-
-std::u8string   GpUrl::ToString (void) const
+GpUrl   GpUrl::SFromString (std::string_view aUrl)
 {
-    //TODO: implement
-    THROW_GP_NOT_IMPLEMENTED();
+    // [scheme]://[authority]/[path]?[query][#fragment]
+    // scheme - http, https, ftp, ...
+    // authority - user_name:password@host:port
+    // query - ?param1=value1&param2=value2&...
+    // fragment - #value
+
+    // Split scheme and other parts by '://'
+    std::string_view schemeStr;
+    if (const auto pos = aUrl.find("://"_sv); pos != std::string::npos)
+    {
+        schemeStr   = aUrl.substr(0, pos);
+        aUrl        = aUrl.substr(pos + 3);
+    } else
+    {
+        schemeStr   = "http";
+    }
+
+    // Split by '?'
+    std::string_view authorityAndPathStr;
+    std::string_view queryAndFragmentStr;
+    if (const auto pos = aUrl.find("?"_sv); pos != std::string::npos)
+    {
+        authorityAndPathStr = aUrl.substr(0, pos);
+        queryAndFragmentStr = aUrl.substr(pos + 1);
+    } else
+    {
+        authorityAndPathStr = aUrl;
+    }
+
+    THROW_COND_GP
+    (
+        !authorityAndPathStr.empty(),
+        "Authority and path parts are empty"
+    );
+
+    // Split authorityAndPathStr by '/'
+    std::string_view authorityStr;
+    std::string_view pathStr;
+    if (const auto pos = aUrl.find("/"_sv); pos != std::string::npos)
+    {
+        authorityStr    = aUrl.substr(0, pos);
+        pathStr         = aUrl.substr(pos + 1);
+    } else
+    {
+        authorityStr    = aUrl;
+        pathStr         = "/";
+    }
+
+    std::string_view queryStr;
+    std::string_view fragmentStr;
+    if (!queryAndFragmentStr.empty())
+    {
+        if (const auto pos = queryAndFragmentStr.find("#"_sv); pos != std::string::npos)
+        {
+            queryStr    = queryAndFragmentStr.substr(0, pos);
+            fragmentStr = queryAndFragmentStr.substr(pos + 1);
+        } else
+        {
+            queryStr    = aUrl;
+            fragmentStr = "";
+        }
+    }
+
+    GpUrlQuery      query       = GpUrlQuery::SFromString(queryStr);
+    GpUrlAuthority  authority   = GpUrlAuthority::SFromString(authorityStr);
+
+    return GpUrl
+    {
+        std::string{schemeStr},
+        std::move(authority),
+        std::string{pathStr},
+        std::move(query),
+        std::string{fragmentStr}
+    };
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

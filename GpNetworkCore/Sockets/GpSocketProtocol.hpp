@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GpSockets_global.hpp"
+#include "../GpNetworkCore_global.hpp"
 
 #include <GpCore2/GpUtils/Types/Enums/GpEnum.hpp>
 #include <GpCore2/GpUtils/Types/Strings/GpStringOps.hpp>
@@ -37,4 +37,4 @@ constexpr size_t GpSocketProtocol_Type (const GpSocketProtocol::EnumT aValue)
     return s.at(size_t(aValue));
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

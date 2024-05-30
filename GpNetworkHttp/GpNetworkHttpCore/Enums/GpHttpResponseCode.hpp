@@ -55,4 +55,6 @@ GP_ENUM(GP_NETWORK_HTTP_CORE_API, GpHttpResponseCode,
     VARIANT_ALSO_NEGOTIATES_506         = 506
 );
 
-}//namespace GPlatform
+std::string_view    SGpHttpResponseCode_ToStr (GpHttpResponseCode::EnumT aCode);
+
+}// namespace GPlatform

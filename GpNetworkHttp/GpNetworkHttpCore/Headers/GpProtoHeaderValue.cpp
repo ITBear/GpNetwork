@@ -1,6 +1,7 @@
 #include "GpProtoHeaderValue.hpp"
 
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
 
 namespace GPlatform {
 
@@ -10,9 +11,9 @@ GpProtoHeaderValue::~GpProtoHeaderValue (void) noexcept
 {
 }
 
-void    GpProtoHeaderValue::_SReflectCollectProps (GpReflectProp::C::Vec::Val& aPropsOut)
+void    GpProtoHeaderValue::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
 {
     PROP(elements);
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

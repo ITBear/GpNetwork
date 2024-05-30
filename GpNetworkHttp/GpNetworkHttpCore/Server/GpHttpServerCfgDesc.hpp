@@ -12,7 +12,7 @@ class GP_NETWORK_HTTP_CORE_API GpHttpServerCfgDesc final: public GpReflectObject
 {
 public:
     CLASS_DD(GpHttpServerCfgDesc)
-    REFLECT_DECLARE(u8"082d98c8-f18f-4c33-b9c0-07f33a5acad9"_uuid)
+    REFLECT_DECLARE("082d98c8-f18f-4c33-b9c0-07f33a5acad9"_uuid)
 
 public:
                                 GpHttpServerCfgDesc     (void) noexcept = default;
@@ -24,10 +24,10 @@ public:
     inline GpHttpServerCfgDesc& operator=               (GpHttpServerCfgDesc&& aDesc) noexcept;
 
 public:
-    std::u8string               listen_ip               = u8"127.0.0.1";
+    std::string                 listen_ip               = "127.0.0.1";
     u_int_16                    listen_port             = 80;
     u_int_16                    listen_max_queue_size   = 100;
-    std::u8string               event_poller_name;
+    std::string                 event_poller_name;
     GpSocketFlags               accept_socket_flags;
     GpSocketFlags               listen_socket_flags;
 };
@@ -78,4 +78,4 @@ GpHttpServerCfgDesc&    GpHttpServerCfgDesc::operator= (GpHttpServerCfgDesc&& aD
     return *this;
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

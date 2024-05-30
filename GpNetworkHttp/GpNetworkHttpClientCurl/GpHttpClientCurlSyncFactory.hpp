@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 #include "GpNetworkHttpClientCurl_global.hpp"
 #include "../GpNetworkHttpCore/Client/GpHttpClientFactory.hpp"
 
@@ -18,4 +19,5 @@ public:
     virtual GpHttpClient::SP    NewInstance                 (void) const override final;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform
+*/

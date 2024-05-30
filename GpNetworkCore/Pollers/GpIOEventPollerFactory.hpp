@@ -16,7 +16,7 @@ protected:
 public:
     virtual                         ~GpIOEventPollerFactory (void) noexcept = default;
 
-    virtual GpIOEventPoller::SP     NewInstance             (std::u8string aName) const = 0;
+    virtual GpIOEventPoller::SP     NewInstance             (std::string aName) const = 0;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

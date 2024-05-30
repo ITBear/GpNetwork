@@ -1,6 +1,6 @@
-#include "GpNetworkCore.hpp"
+#include "GpNetworkCoreLib.hpp"
 
-namespace GPlatform{
+namespace GPlatform {
 
 GP_IMPLEMENT_LIB(GpNetworkCoreLib)
 

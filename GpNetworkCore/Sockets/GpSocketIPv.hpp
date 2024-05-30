@@ -1,7 +1,6 @@
 #pragma once
 
-#include "GpSockets_global.hpp"
-
+#include <GpNetwork/GpNetworkCore/GpNetworkCore_global.hpp>
 #include <GpCore2/GpUtils/Types/Enums/GpEnum.hpp>
 #include <GpCore2/GpUtils/Types/Strings/GpStringOps.hpp>
 
@@ -23,4 +22,4 @@ constexpr sa_family_t GpSocketIPv_SSFamily (const GpSocketIPv::EnumT aValue)
     return s.at(size_t(aValue));
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

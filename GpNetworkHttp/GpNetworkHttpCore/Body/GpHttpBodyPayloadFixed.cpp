@@ -6,4 +6,4 @@ GpHttpBodyPayloadFixed::~GpHttpBodyPayloadFixed (void) noexcept
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

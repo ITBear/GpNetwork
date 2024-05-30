@@ -1,7 +1,7 @@
-#include "GpSocketIPv.hpp"
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketIPv.hpp>
 
 namespace GPlatform {
 
 GP_ENUM_IMPL(GpSocketIPv)
 
-}//namespace GPlatform
+}// namespace GPlatform

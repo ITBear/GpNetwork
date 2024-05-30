@@ -13,19 +13,27 @@ class GP_NETWORK_HTTP_CORE_API GpUrlQuery final: public GpReflectObject
 {
 public:
     CLASS_DD(GpUrlQuery)
-    REFLECT_DECLARE(u8"a00e65f0-924b-4567-42bd-581da6b103d1"_uuid)
+    REFLECT_DECLARE("a00e65f0-924b-4567-42bd-581da6b103d1"_uuid)
 
-    using ParamsMapT = std::map<std::u8string, std::u8string, std::less<>>;
-
-public:
-                        GpUrlQuery      (void) noexcept = default;
-    inline              GpUrlQuery      (const GpUrlQuery& aAuthority);
-    inline              GpUrlQuery      (GpUrlQuery&& aAuthority) noexcept;
-    inline              GpUrlQuery      (ParamsMapT aParams) noexcept;
-    virtual             ~GpUrlQuery     (void) noexcept override final;
+    using ParamsMapT = std::map<std::string, std::string, std::less<>>;
 
 public:
-    ParamsMapT          params;
+                            GpUrlQuery  (void) noexcept = default;
+    inline                  GpUrlQuery  (const GpUrlQuery& aAuthority);
+    inline                  GpUrlQuery  (GpUrlQuery&& aAuthority) noexcept;
+    inline                  GpUrlQuery  (ParamsMapT aParams) noexcept;
+    virtual                 ~GpUrlQuery (void) noexcept override final;
+
+    static  std::string     SToString   (const GpUrlQuery& aQuery);
+    static  GpUrlQuery      SFromString (std::string_view aQuery);
+
+    void                    Clear       (void);
+
+    GpUrlQuery&             operator=   (const GpUrlQuery& aUrl);
+    GpUrlQuery&             operator=   (GpUrlQuery&& aUrl) noexcept;
+
+private:
+    ParamsMapT              params;
 };
 
 GpUrlQuery::GpUrlQuery (const GpUrlQuery& aAuthority):
@@ -45,4 +53,4 @@ params(std::move(aParams))
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

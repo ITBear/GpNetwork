@@ -1,8 +1,8 @@
-#include "GpIOEventPollerEpollFactory.hpp"
+#include <GpNetwork/GpNetworkCore/Pollers/Epoll/GpIOEventPollerEpollFactory.hpp>
 
 #if defined(GP_OS_LINUX)
 
-#include "GpIOEventPollerEpoll.hpp"
+#include <GpNetwork/GpNetworkCore/Pollers/Epoll/GpIOEventPollerEpoll.hpp>
 
 namespace GPlatform {
 
@@ -10,7 +10,7 @@ GpIOEventPollerEpollFactory::~GpIOEventPollerEpollFactory (void) noexcept
 {
 }
 
-GpIOEventPoller::SP GpIOEventPollerEpollFactory::NewInstance (std::u8string aName) const
+GpIOEventPoller::SP GpIOEventPollerEpollFactory::NewInstance (std::string aName) const
 {
     GpIOEventPollerEpoll::SP epollSP = MakeSP<GpIOEventPollerEpoll>(std::move(aName));
 
@@ -19,6 +19,6 @@ GpIOEventPoller::SP GpIOEventPollerEpollFactory::NewInstance (std::u8string aNam
     return epollSP;
 }
 
-}//namespace GPlatform
+}// namespace GPlatform
 
-#endif//#if defined(GP_OS_LINUX)
+#endif// #if defined(GP_OS_LINUX)

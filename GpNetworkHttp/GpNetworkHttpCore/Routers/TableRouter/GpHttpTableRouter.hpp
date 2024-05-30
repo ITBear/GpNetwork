@@ -27,4 +27,4 @@ iRouteTable(std::move(aRouteTable))
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

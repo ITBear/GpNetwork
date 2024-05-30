@@ -24,4 +24,4 @@ public:
     virtual GpHttpRequestHandler::SP    NewInstance                     (void) const = 0;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

@@ -1,8 +1,9 @@
 #pragma once
 
+#include <GpCore2/GpUtils/Streams/GpByteWriter.hpp>
+
 #include "../Body/GpHttpBodyPayload.hpp"
 #include "../Exceptions/GpHttpException.hpp"
-#include "GpHttpRequestNoBodyDesc.hpp"
 #include "GpHttpResponseNoBodyDesc.hpp"
 
 namespace GPlatform {
@@ -12,21 +13,32 @@ class GP_NETWORK_HTTP_CORE_API GpHttpResponse
 public:
     CLASS_DD(GpHttpResponse)
 
-public:
-                                GpHttpResponse      (void) noexcept = default;
-                                GpHttpResponse      (const GpHttpResponse& aResponse) = delete;
-    inline                      GpHttpResponse      (GpHttpResponse&& aResponse) noexcept;
-    inline                      GpHttpResponse      (GpHttpResponseNoBodyDesc   aResponseNoBodyDesc) noexcept;
-    inline                      GpHttpResponse      (GpHttpResponseNoBodyDesc   aResponseNoBodyDesc,
-                                                     GpHttpBodyPayload::SP      aBody) noexcept;
-                                ~GpHttpResponse     (void) noexcept;
+    enum class SerializeRes
+    {
+        WRITE_HEADERS_ONLY,
+        WRITE_HEADERS_AND_BODY
+    };
 
-    static GpHttpResponse::SP   SFromException      (const GpHttpException&         aHttpEx,
-                                                     const GpHttpRequestNoBodyDesc& aRqDesc);
-    static GpHttpResponse::SP   SFromException      (const GpException&             aEx,
-                                                     const GpHttpRequestNoBodyDesc& aRqDesc);
-    static GpHttpResponse::SP   SFromException      (const std::exception&          aEx,
-                                                     const GpHttpRequestNoBodyDesc& aRqDesc);
+public:
+                                GpHttpResponse  (void) noexcept = default;
+                                GpHttpResponse  (const GpHttpResponse& aResponse) = delete;
+    inline                      GpHttpResponse  (GpHttpResponse&& aResponse) noexcept;
+    inline                      GpHttpResponse  (GpHttpResponseNoBodyDesc   aResponseNoBodyDesc) noexcept;
+    inline                      GpHttpResponse  (GpHttpResponseNoBodyDesc   aResponseNoBodyDesc,
+                                                 GpHttpBodyPayload::SP      aBody) noexcept;
+                                ~GpHttpResponse (void) noexcept;
+
+
+
+    static GpHttpResponse::SP   SFromException  (const GpHttpException& aHttpEx,
+                                                 GpHttpVersion::EnumT   aHttpVersion);
+    static GpHttpResponse::SP   SFromException  (const GpException&     aEx,
+                                                 GpHttpVersion::EnumT   aHttpVersion);
+    static GpHttpResponse::SP   SFromException  (const std::exception&  aEx,
+                                                 GpHttpVersion::EnumT   aHttpVersion);
+
+    static SerializeRes         SSerialize      (const GpHttpResponse&  aHttpResponse,
+                                                 GpByteWriter&          aWriter);
 
 public:
     GpHttpResponseNoBodyDesc    iResponseNoBody;
@@ -54,4 +66,4 @@ iBody          (std::move(aBody))
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

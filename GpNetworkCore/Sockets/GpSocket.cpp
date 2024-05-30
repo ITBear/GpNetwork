@@ -1,6 +1,6 @@
 #include "GpSocket.hpp"
 
-#include <GPlatform/GpCore2/GpUtils/Types/Strings/GpStringUtils.hpp>
+#include <GpCore2/GpUtils/Types/Strings/GpStringUtils.hpp>
 
 namespace GPlatform {
 
@@ -11,13 +11,13 @@ GpSocket::~GpSocket (void) noexcept
         Close();
     } catch (const GpException& e)
     {
-        GpStringUtils::SCerr(u8"[GpSocket::~GpSocket]: exception: "_sv + e.what());
+        GpStringUtils::SCerr("[GpSocket::~GpSocket]: exception: "_sv + e.what());
     } catch (const std::exception& e)
     {
-        GpStringUtils::SCerr(u8"[GpSocket::~GpSocket]: exception: "_sv + e.what());
+        GpStringUtils::SCerr("[GpSocket::~GpSocket]: exception: "_sv + e.what());
     } catch (...)
     {
-        GpStringUtils::SCerr(u8"[GpSocket::~GpSocket]: unknown exception"_sv);
+        GpStringUtils::SCerr("[GpSocket::~GpSocket]: unknown exception"_sv);
     }
 }
 

@@ -1,7 +1,8 @@
 #include "GpHttpRouteTableStatic.hpp"
 #include "../../Exceptions/GpHttpException.hpp"
-#include <mutex>
-#include <shared_mutex>
+
+#include <GpCore2/GpUtils/SyncPrimitives/GpMutex.hpp>
+#include <GpCore2/GpUtils/SyncPrimitives/GpSharedMutex.hpp>
 
 namespace GPlatform {
 
@@ -15,19 +16,26 @@ GpHttpRouteTableStatic::~GpHttpRouteTableStatic (void) noexcept
 
 GpHttpRequestHandler::SP    GpHttpRouteTableStatic::FindHandler (const GpHttpRequestNoBodyDesc& aHttpRqNoBody) const
 {
-    std::shared_lock lock(iLock);
+    GpSharedLock<GpSpinLockRW> sharedLock(iSpinLockRW);
 
-    std::u8string_view urlHost  = aHttpRqNoBody.url.Authority().Host();
-    std::u8string_view urlPath  = aHttpRqNoBody.url.Path();
+    std::string_view urlHost = aHttpRqNoBody.url.Authority().Host();
+    std::string_view urlPath = aHttpRqNoBody.url.Path();
 
     // Try to find host
     const auto hostIter = iRouteRable.find(urlHost);
 
     THROW_COND_HTTP
     (
-        hostIter != iRouteRable.end(),
+        hostIter != std::end(iRouteRable),
         GpHttpResponseCode::NOT_FOUND_404,
-        [urlHost](){return u8"Handler not found for URL host '"_sv + urlHost + u8"'"_sv;}
+        [urlHost]()
+        {
+            return fmt::format
+            (
+                "Handler not found for host '{}'",
+                urlHost
+            );
+        }
     );
 
     // Try to find path
@@ -36,9 +44,16 @@ GpHttpRequestHandler::SP    GpHttpRouteTableStatic::FindHandler (const GpHttpReq
 
     THROW_COND_HTTP
     (
-        pathIter != pathMap.end(),
+        pathIter != std::end(pathMap),
         GpHttpResponseCode::NOT_FOUND_404,
-        [aHttpRqNoBody](){return u8"Handler not found for URL '"_sv + aHttpRqNoBody.url.SchemeHostPortPath() + u8"'"_sv;}
+        [aHttpRqNoBody]()
+        {
+            return fmt::format
+            (
+                "Handler not found for URL '{}'",
+                aHttpRqNoBody.url.SchemeHostPortPath()
+            );
+        }
     );
 
     return pathIter->second->NewInstance();
@@ -46,30 +61,21 @@ GpHttpRequestHandler::SP    GpHttpRouteTableStatic::FindHandler (const GpHttpReq
 
 void    GpHttpRouteTableStatic::RegisterDefaultHandler (GpHttpRequestHandlerFactory::SP aHandlerFactory)
 {
-    std::scoped_lock lock(iLock);
+    GpUniqueLock<GpSpinLockRW> uniqueLock{iSpinLockRW};
 
     iDefaultHandlerFactory = std::move(aHandlerFactory);
 }
 
 void    GpHttpRouteTableStatic::RegisterPathHandler
 (
-    std::u8string_view              aHost,
-    std::u8string_view              aPath,
+    std::string                     aHost,
+    std::string                     aPath,
     GpHttpRequestHandlerFactory::SP aHandlerFactory
 )
 {
-    std::scoped_lock lock(iLock);
+    GpUniqueLock<GpSpinLockRW> uniqueLock{iSpinLockRW};
 
-    iRouteRable[std::u8string(aHost)][std::u8string(aPath)] = std::move(aHandlerFactory);
+    iRouteRable[std::move(aHost)][std::move(aPath)] = std::move(aHandlerFactory);
 }
 
-/*void  GpHttpRouteTableStatic::RegisterPath
-(
-    std::u8string_view              aPath,
-    GpHttpRequestHandlerFactory::SP aHandlerFactory
-)
-{
-    iHandlersCatalog.Set(aPath, std::move(aHandlerFactory));
-}*/
-
-}//namespace GPlatform
+}// namespace GPlatform

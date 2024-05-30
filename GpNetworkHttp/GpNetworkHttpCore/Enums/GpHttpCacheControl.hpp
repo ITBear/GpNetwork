@@ -12,7 +12,7 @@ GP_ENUM(GP_NETWORK_HTTP_CORE_API, GpHttpCacheControl,
     NO_STORE
 );
 
-std::u8string_view          GpProtoHeader_EnumToStr (GpHttpCacheControl::EnumT aValue);
-GpHttpCacheControl::EnumT   GpProtoHeader_StrToEnum (std::u8string_view aStr, GpHttpCacheControl::EnumT);
+std::string_view            GP_NETWORK_HTTP_CORE_API GpProtoHeader_EnumToStr    (GpHttpCacheControl::EnumT aValue);
+GpHttpCacheControl::EnumT   GP_NETWORK_HTTP_CORE_API GpProtoHeader_StrToEnum    (std::string_view aStr, GpHttpCacheControl::EnumT);
 
-}//namespace GPlatform
+}// namespace GPlatform

@@ -18,4 +18,4 @@ public:
     virtual GpHttpRequestHandler::SP    FindHandler         (const GpHttpRequestNoBodyDesc& aHttpRqNoBody) const = 0;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

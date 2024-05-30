@@ -13,4 +13,4 @@ GP_ENUM(GP_NETWORK_HTTP_CORE_API, GpHttpBodyPayloadType,
     STREAM
 );
 
-}//namespace GPlatform
+}// namespace GPlatform

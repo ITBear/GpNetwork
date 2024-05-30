@@ -1,8 +1,14 @@
-#include "GpHttpClientCurl.hpp"
-#include "../../../GpLog/GpLogCore/GpLog.hpp"
-#include "../../../GpCore2/GpUtils/Streams/GpByteReader.hpp"
-#include "../../../GpCore2/GpUtils/Streams/GpByteWriterStorageByteArray.hpp"
-#include "../../../GpCore2/GpUtils/Other/GpRAIIonDestruct.hpp"
+/*#include "GpHttpClientCurl.hpp"
+
+#include <GpLog/GpLogCore/GpLog.hpp>
+#include <GpCore2/GpUtils/Streams/GpByteReader.hpp>
+#include <GpCore2/GpUtils/Streams/GpByteWriterStorageByteArray.hpp>
+#include <GpCore2/GpUtils/Other/GpRAIIonDestruct.hpp>
+#include <GpCore2/GpUtils/Debugging/GpDebugging.hpp>
+#include <GpCore2/GpTasks/GpTask.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Enums/GpHttpResponseCode.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Exceptions/GpHttpException.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Body/GpHttpBodyPayloadFixed.hpp>
 
 #define CURL_STATICLIB
 #include <curl/curl.h>
@@ -29,7 +35,7 @@ size_t GpHttpClientCurl_S_RQ_Data_reader
         return 0;
     }
 
-    GpSpanPtrByteR dataPartPtr = aReader->Bytes(batchSize);
+    GpSpanByteR dataPartPtr = aReader->Bytes(batchSize);
     std::memcpy(aOutBuffer, dataPartPtr.Ptr(), batchSize);
 
     return batchSize;
@@ -51,10 +57,10 @@ size_t GpHttpClientCurl_S_RS_Data_writer
 
 size_t GpHttpClientCurl_S_RS_Headers_writer
 (
-    void*           aPtr,
-    size_t          aSize,
-    size_t          aNMemb,
-    GpHttpHeaders*  aHeaders
+    void*                           aPtr,
+    size_t                          aSize,
+    size_t                          aNMemb,
+    [[maybe_unused]] GpHttpHeaders* aHeaders
 )
 {
     const size_t size = NumOps::SMul(aSize, aNMemb);
@@ -66,16 +72,21 @@ size_t GpHttpClientCurl_S_RS_Headers_writer
 
     const size_t strSize = size - 2; //\r\n
 
-    std::u8string_view headersStr(static_cast<const char8_t*>(aPtr), strSize);
-    std::vector<std::u8string_view> parts = StrOps::SSplit(headersStr, ':', 2, 0, Algo::SplitMode::COUNT_ZERO_LENGTH_PARTS);
+    std::string_view headersStr(static_cast<const char*>(aPtr), strSize);
+    std::vector<std::string_view> parts = StrOps::SSplit(headersStr, ':', 2, 0, Algo::SplitMode::COUNT_ZERO_LENGTH_PARTS);
 
-    if (parts.size() >= 2)
+    if (std::size(parts) >= 2)
     {
-        aHeaders->GpHttpProtoHeaders::Replace
-        (
-            std::u8string(parts.at(0)),
-            parts.at(1)
-        );
+        GpDebugging::SBreakpoint();
+
+        // TODO: implement
+        THROW_GP_NOT_IMPLEMENTED();
+
+        //aHeaders->GpHttpProtoHeaders::Replace
+        //(
+        //  std::string(parts.at(0)),
+        //  parts.at(1)
+        //);
     }
 
     return size;
@@ -96,31 +107,23 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
     const ErorrMode     aErorrMode
 )
 {
-    const GpUUID taskGuid = GpTask::SCurrentUID();
+    const GpUUID taskGuid = GpTask::SCurrentTask().value().get().IdAsUUID();
 
     CurlInit();
 
-    const GpHttpRequest&            request         = aRequest.V();
-    const GpHttpHeaders&            requestHeaders  = request.headers;
-    const GpBytesArray&             requestBody     = request.body;
-    const size_t                    requestBodySize = requestBody.size();
-    GpByteReaderStorage             requestBodyStorage(GpSpanPtrByteR(requestBody.data(), requestBody.size()));
-    GpByteReader                    requestBodyReader(requestBodyStorage);
+    const GpHttpRequest& request        = aRequest.V();
+    const GpHttpHeaders& requestHeaders = request.iRequestNoBody.headers;
 
-    GpBytesArray                    responseBody;
-    responseBody.resize(4096);
-    GpByteWriterStorageByteArray    responseBodyStorage(responseBody);
-    GpByteWriter                    responseBodyWriter(responseBodyStorage);
-
-    LOG_INFO(u8"CURL HTTP request to '"_sv + request.url + u8"'", taskGuid);
-    LOG_INFO(request.ToString(), taskGuid);
-
+    // TODO: implement GpHttpRequest and GpHttpResponse ToString method;
+    const std::string urlStr = GpUrl::SToString(request.iRequestNoBody.url);
+    LOG_INFO(fmt::format("CURL HTTP request to '{}'", urlStr), taskGuid);
+    //LOG_INFO(request.iBody., taskGuid);
     //curl_easy_setopt(iCurl, CURLOPT_NOPROGRESS, 1L);
 
-    if (request.http_version == GpHttpVersion::HTTP_1_0)
+    if (request.iRequestNoBody.http_version == GpHttpVersion::HTTP_1_0)
     {
         curl_easy_setopt(iCurl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
-    } else if (request.http_version == GpHttpVersion::HTTP_1_1)
+    } else if (request.iRequestNoBody.http_version == GpHttpVersion::HTTP_1_1)
     {
         curl_easy_setopt(iCurl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
     }
@@ -131,12 +134,12 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
     curl_easy_setopt(iCurl, CURLOPT_TCP_KEEPIDLE, 120L);
     curl_easy_setopt(iCurl, CURLOPT_TCP_KEEPINTVL, 60L);
 
-    curl_easy_setopt(iCurl, CURLOPT_URL, request.url.data());
+    curl_easy_setopt(iCurl, CURLOPT_URL, std::data(urlStr));
     curl_easy_setopt(iCurl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(iCurl, CURLOPT_FAILONERROR, 0L);
     curl_easy_setopt(iCurl, CURLOPT_VERBOSE, 1);
 
-    //RQ headers
+    // RQ headers
     struct curl_slist* curlHeadersList = nullptr;
 
     GpRAIIonDestruct listDestructor
@@ -154,8 +157,8 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
 
     for (const auto&[name, header]: requestHeaders.Headers())
     {
-        std::u8string headerStr = name + u8": "_sv + StrOps::SJoin<std::u8string_view>(header.V().elements, u8";"_sv);
-        curlHeadersList = curl_slist_append(curlHeadersList, GpUTF::S_UTF8_To_STR(headerStr).data());
+        const std::string headerStr = name + ": " + StrOps::SJoin<std::string_view>(header.V().elements, ";"_sv);
+        curlHeadersList = curl_slist_append(curlHeadersList, std::data(headerStr));
     }
 
     if (curlHeadersList != nullptr)
@@ -163,17 +166,40 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
         curl_easy_setopt(iCurl, CURLOPT_HTTPHEADER, curlHeadersList);
     }
 
-    if (request.request_type == GpHttpRequestType::POST)
+    if (request.iRequestNoBody.request_type == GpHttpRequestType::POST)
     {
         curl_easy_setopt(iCurl, CURLOPT_POST, 1L);
     }
 
-    //RQ data reader
-    if (requestBodySize > 0)
+    // RQ data reader
+    GpSpanByteR requestBody;
+
+    if (request.iBody.IsNotNULL())
+    {
+        const GpHttpBodyPayload& rqBodyPayload = request.iBody.Vn();
+
+        // TODO: implement multipart
+        THROW_COND_GP
+        (
+            rqBodyPayload.Type() == GpHttpBodyPayloadType::FIXED_SIZE,
+            "For now only FIXED_SIZE supported"
+        );
+
+        // GpHttpBodyPayloadType::FIXED_SIZE
+        {
+            const GpHttpBodyPayloadFixed& rqBodyPayloadFixed = static_cast<const GpHttpBodyPayloadFixed&>(rqBodyPayload);
+            requestBody = rqBodyPayloadFixed.Data();
+        }
+    }
+
+    GpByteReaderStorage requestBodyStorage(requestBody);
+    GpByteReader        requestBodyReader(requestBodyStorage);
+
+    if (!requestBody.Empty())
     {
         curl_easy_setopt(iCurl, CURLOPT_READFUNCTION, GpHttpClientCurl_S_RQ_Data_reader);
         curl_easy_setopt(iCurl, CURLOPT_READDATA, &requestBodyReader);
-        curl_easy_setopt(iCurl, CURLOPT_POSTFIELDSIZE, NumOps::SConvert<curl_off_t>(requestBodySize));
+        curl_easy_setopt(iCurl, CURLOPT_POSTFIELDSIZE, NumOps::SConvert<curl_off_t>(requestBody.Count()));
     } else
     {
         curl_easy_setopt(iCurl, CURLOPT_READFUNCTION, nullptr);
@@ -181,48 +207,72 @@ GpHttpResponse::SP  GpHttpClientCurl::Do
         curl_easy_setopt(iCurl, CURLOPT_POSTFIELDSIZE, curl_off_t(0));
     }
 
-    //RS data writer
+    // RS data writer
+    GpBytesArray                    responseBody;
+    responseBody.resize(4096);
+    GpByteWriterStorageByteArray    responseBodyStorage(responseBody);
+    GpByteWriter                    responseBodyWriter(responseBodyStorage);
+
     curl_easy_setopt(iCurl, CURLOPT_WRITEFUNCTION, GpHttpClientCurl_S_RS_Data_writer);
     curl_easy_setopt(iCurl, CURLOPT_WRITEDATA, &responseBodyWriter);
 
-    //RS headers writer
+    // RS headers writer
     GpHttpHeaders responseHeaders;
     curl_easy_setopt(iCurl, CURLOPT_HEADERFUNCTION, GpHttpClientCurl_S_RS_Headers_writer);
     curl_easy_setopt(iCurl, CURLOPT_HEADERDATA, &responseHeaders);
 
-    //Do request
+    // Do request
     CURLcode res_code = curl_easy_perform(iCurl);
 
     //Check curl res
     THROW_COND_GP
     (
         res_code == CURLE_OK,
-        [&](){return u8"curl_easy_perform failed: "_sv + curl_easy_strerror(res_code);}
+        [&]()
+        {
+            return fmt::format
+            (
+                "curl_easy_perform failed: {}",
+                curl_easy_strerror(res_code)
+            );
+        }
     );
 
     long httpResponseCode = 0;
     curl_easy_getinfo(iCurl, CURLINFO_RESPONSE_CODE, &httpResponseCode);
 
-    responseBodyWriter.ShrinkToFit();
-    GpSpanPtrByteR responseBodyPtr(responseBody);
+    responseBodyWriter.OnEnd();
 
-    LOG_INFO(responseBodyPtr.AsStringViewU8(), taskGuid);
+    GpSpanByteR responseBodyPtr(responseBody);
+
+    LOG_INFO(responseBodyPtr.AsStringView(), taskGuid);
 
     if (aErorrMode == ErorrMode::THROW_ON_NOT_200)
     {
         THROW_COND_HTTP
-        (
+        (                   
             httpResponseCode == 200,
-            GpHttpResponseCodeUtils::SFromId(NumOps::SConvert<size_t>(httpResponseCode)),
-            [&](){return u8"HTTP request failed (code "_sv + httpResponseCode + u8"): "_sv + responseBodyPtr.AsStringViewU8();}
+            GpHttpResponseCode::SFromID(NumOps::SConvert<GpEnum::value_type>(httpResponseCode)),
+            [&]()
+            {
+                return fmt::format
+                (
+                    "HTTP request failed (code {}): {}",
+                    httpResponseCode,
+                    responseBodyPtr.AsStringView()
+                );
+            }
         );
     }
 
     return MakeSP<GpHttpResponse>
     (
-        GpHttpResponseCodeUtils::SFromId(NumOps::SConvert<size_t>(httpResponseCode)),
-        std::move(responseHeaders),
-        std::move(responseBody)
+        GpHttpResponseNoBodyDesc
+        {
+            GpHttpResponseCode::SFromID(NumOps::SConvert<GpEnum::value_type>(httpResponseCode)),
+            std::move(responseHeaders)
+        },
+        MakeSP<GpHttpBodyPayloadFixed>(std::move(responseBody))
     );
 }
 
@@ -248,7 +298,7 @@ void    GpHttpClientCurl::CurlInit (void)
     THROW_COND_GP
     (
         iCurl != nullptr,
-        "Failed to create curl instance"_sv
+        "Failed to create CURL instance. curl_easy_init() returns NULL"
     );
 
     curl_easy_setopt(iCurl, CURLOPT_PROTOCOLS,       CURLPROTO_HTTP | CURLPROTO_HTTPS);
@@ -264,4 +314,5 @@ void    GpHttpClientCurl::CurlClear (void) noexcept
     }
 }
 
-}//namespace GPlatform
+}// namespace GPlatform
+*/

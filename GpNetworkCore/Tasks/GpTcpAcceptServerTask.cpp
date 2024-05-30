@@ -7,84 +7,121 @@
 
 namespace GPlatform {
 
+// --------------------------------------------- GpTcpAcceptServerTaskSocketFactory --------------------------------------------------
+
 class GpTcpAcceptServerTaskSocketFactory final: public GpSocketFactory
 {
 public:
     CLASS_DD(GpTcpAcceptServerTaskSocketFactory)
 
 public:
-                            GpTcpAcceptServerTaskSocketFactory  (GpSocketAddr           aAddr,
-                                                                 const GpSocketFlags    aSocketFlags,
-                                                                 const size_t           aMaxQueueSize,
-                                                                 std::u8string          aEventPollerName) noexcept:
-                                                                iAddr           (std::move(aAddr)),
-                                                                iSocketFlags    (std::move(aSocketFlags)),
-                                                                iMaxQueueSize   (aMaxQueueSize),
-                                                                iEventPollerName(std::move(aEventPollerName)) {}
-    virtual                 ~GpTcpAcceptServerTaskSocketFactory (void) noexcept override final = default;
+                                GpTcpAcceptServerTaskSocketFactory  (const GpSocketAddr         aAddr,
+                                                                     const GpSocketFlags        aSocketFlags,
+                                                                     const size_t               aMaxQueueSize,
+                                                                     const GpIOEventPollerIdx   aIOEventPollerIdx) noexcept;
+    virtual                     ~GpTcpAcceptServerTaskSocketFactory (void) noexcept override final;
 
-    virtual GpSocket::SP    NewInstance                         (void) const override final
-    {
-        // Get event poller
-        GpIOEventPoller::SP eventPoller = GpIOEventPollerCatalog::S().Get(iEventPollerName);
-
-        // Create socket
-        GpSocketTCP::SP socket = MakeSP<GpSocketTCP>
-        (
-            iSocketFlags | GpSocketFlag::NO_BLOCK,
-            GpSocket::CloseModeT::CLOSE_ON_DESTRUCT
-        );
-
-        socket->Listen(iAddr, iMaxQueueSize);
-
-        // Add soket to event poller
-        const GpTaskId socketTaskId = GpTask::SCurrentTask().value().get().Id();
-        eventPoller->AddSubscription
-        (
-            socket->Id(),
-            socketTaskId,
-            [](const GpTaskId aTaskId, const GpIOEventPoller::SubsriberResValT aIOEventsTypes)
-            {
-                GpTaskScheduler::S().MakeTaskReady(aTaskId, aIOEventsTypes);
-            }
-        );
-
-        return socket;
-    }
-
-    virtual void            DestroyInstance     (GpSocket& aSocket) const override final
-    {
-        // Get event poller
-        GpIOEventPoller::SP eventPoller = GpIOEventPollerCatalog::S().Get(iEventPollerName);
-
-        // Remove socket from event poller
-        const GpTaskId socketTaskId = GpTask::SCurrentTask().value().get().Id();
-        eventPoller->RemoveSubscription(aSocket.Id(), socketTaskId);
-    }
+    virtual GpSocket::SP        NewInstance                         (void) const override final;
+    virtual void                OnStart                             (GpSocket::SP aSocket) const override final;
+    virtual void                OnStop                              (GpSocket::SP aSocket) const override final;
 
 private:
-    const GpSocketAddr  iAddr;
-    const GpSocketFlags iSocketFlags;
-    const size_t        iMaxQueueSize = 0;
-    const std::u8string iEventPollerName;
+    const GpSocketAddr          iAddr;
+    const GpSocketFlags         iSocketFlags;
+    const size_t                iMaxQueueSize = 0;
+    const GpIOEventPollerIdx    iIOEventPollerIdx;
 };
+
+GpTcpAcceptServerTaskSocketFactory::GpTcpAcceptServerTaskSocketFactory
+(
+    const GpSocketAddr          aAddr,
+    const GpSocketFlags         aSocketFlags,
+    const size_t                aMaxQueueSize,
+    const GpIOEventPollerIdx    aIOEventPollerIdx
+) noexcept:
+iAddr            (aAddr),
+iSocketFlags     (aSocketFlags),
+iMaxQueueSize    (aMaxQueueSize),
+iIOEventPollerIdx(aIOEventPollerIdx)
+{
+}
+
+GpTcpAcceptServerTaskSocketFactory::~GpTcpAcceptServerTaskSocketFactory (void) noexcept
+{
+}
+
+
+GpSocket::SP    GpTcpAcceptServerTaskSocketFactory::NewInstance (void) const
+{
+    // Create socket
+    GpSocketTCP::SP socket = MakeSP<GpSocketTCP>
+    (
+        iSocketFlags | GpSocketFlag::NO_BLOCK,
+        GpSocket::CloseModeT::CLOSE_ON_DESTRUCT
+    );
+
+    return socket;
+}
+
+void    GpTcpAcceptServerTaskSocketFactory::OnStart (GpSocket::SP aSocket) const
+{
+    GpSocketTCP& socketTcp = static_cast<GpSocketTCP&>(aSocket.Vn());
+
+    // Listen socket
+    socketTcp.Listen(iAddr, iMaxQueueSize);
+
+    // Add socket to io poller subscription
+    const bool isAdded = GpIOEventPollerCatalog::SAddSubscriptionSafe
+    (
+        socketTcp.Id(),
+        GpTask::SCurrentTask().value().get().TaskId(),
+        iIOEventPollerIdx
+    );
+
+    THROW_COND_GP
+    (
+        isAdded == true,
+        "Failed to add subscription"
+    );
+}
+
+void    GpTcpAcceptServerTaskSocketFactory::OnStop (GpSocket::SP aSocket) const
+{
+    GpSocketTCP& socketTcp = static_cast<GpSocketTCP&>(aSocket.Vn());
+
+    // Remove socket from io poller subscription
+    const bool isRemoved = GpIOEventPollerCatalog::SRemoveSubscriptionSafe
+    (
+        socketTcp.Id(),
+        GpTask::SCurrentTask().value().get().TaskId(),
+        iIOEventPollerIdx
+    );
+
+    THROW_COND_GP
+    (
+        isRemoved == true,
+        "Failed to remove subscription"
+    );
+}
+
+// --------------------------------------------- GpTcpAcceptServerTask --------------------------------------------------
 
 GpTcpAcceptServerTask::GpTcpAcceptServerTask
 (
-    GpSocketAddr                    aSocketAddr,
+    const GpSocketAddr              aSocketAddr,
     const size_t                    aSocketMaxQueueSize,
     const GpSocketFlags             aListenSocketFlags,
     const GpSocketFlags             aAcceptSocketFlags,
-    std::u8string                   aEventPollerName,
+    const GpIOEventPollerIdx        aIOEventPollerIdx,
     GpSingleSocketTaskFactory::SP   aTaskFactory
 ) noexcept:
 GpSingleSocketTask
 (
-    MakeSP<GpTcpAcceptServerTaskSocketFactory>(aSocketAddr, aListenSocketFlags, aSocketMaxQueueSize, aEventPollerName)
+    MakeSP<GpTcpAcceptServerTaskSocketFactory>(aSocketAddr, aListenSocketFlags, aSocketMaxQueueSize, aIOEventPollerIdx),
+    aIOEventPollerIdx
 ),
-iAcceptSocketFlags(aAcceptSocketFlags),
-iTaskFactory      (std::move(aTaskFactory)),
-iEventPollerName  (aEventPollerName)
+iAcceptSocketFlags{aAcceptSocketFlags},
+iTaskFactory      {std::move(aTaskFactory)}
 {
 }
 
@@ -96,14 +133,8 @@ void    GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
 {
     GpSocketTCP& serverSocket = static_cast<GpSocketTCP&>(aSocket);
 
-    if (iEventPoller == nullptr) [[unlikely]]
-    {
-        // Get event poller
-        iEventPoller = GpIOEventPollerCatalog::S().Get(iEventPollerName).P();
-    }
-
     // Accept
-    size_t maxCount = 100;// max accepted sockets without YELD
+    size_t maxCount = 100;// TODO: move to config. Max accepted sockets without YELD
 
     while (maxCount > 0)
     {
@@ -113,51 +144,59 @@ void    GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
 
         if (!acceptedSocketOpt.has_value())
         {
-            return;
+            break;
         }
 
         GpSocketTCP&        acceptedSocket      = acceptedSocketOpt.value();
-        const GpIOObjectId  acceptedSocketId    = acceptedSocket.Id();
+        const GpSocketId    acceptedSocketId    = acceptedSocket.Id();
 
         // Create socket task from factory
-        GpSingleSocketTask::SP acceptedSocketTaskSP = iTaskFactory->NewInstance
+        GpSingleSocketTask::SP socketTaskSP = iTaskFactory.Vn().NewInstance
         (
-            MakeSP<GpSocketTCP>(std::move(acceptedSocket))
+            MakeSP<GpSocketTCP>(std::move(acceptedSocket)),
+            IOEventPollerIdx()
         );
 
         // Subscribe task to IO events
-        const GpTaskId acceptedSocketTaskId = acceptedSocketTaskSP->Id();
+        const GpTaskId              acceptedSocketTaskId    = socketTaskSP.Vn().TaskId();
+        const GpIOEventPollerIdx    ioEventPollerIdx        = IOEventPollerIdx();
 
-        iEventPoller->AddSubscription
+        const bool isAdded = GpIOEventPollerCatalog::SAddSubscriptionSafe
         (
             acceptedSocketId,
             acceptedSocketTaskId,
-            [](const GpTaskId aTaskId, const GpIOEventPoller::SubsriberResValT aIOEventsTypes)
-            {
-                GpTaskScheduler::S().MakeTaskReady(aTaskId, aIOEventsTypes);
-            }
+            ioEventPollerIdx
+        );
+
+        THROW_COND_GP
+        (
+            isAdded == true,
+            "Failed to add subscription"
         );
 
         // Add to scheduler
-        GpTaskScheduler::S().NewToReady(std::move(acceptedSocketTaskSP));
+        GpTaskScheduler::S().NewToReady(std::move(socketTaskSP));
     }
-
-    return;
 }
 
 void    GpTcpAcceptServerTask::OnReadyToWrite (GpSocket& /*aSocket*/)
 {
-    //TODO: add message to log
+    // TODO: add message to log
 }
 
 void    GpTcpAcceptServerTask::OnClosed (GpSocket& /*aSocket*/)
 {
-    //TODO: add message to log
+    // TODO: add message to log
 }
 
 void    GpTcpAcceptServerTask::OnError (GpSocket& /*aSocket*/)
 {
-    //TODO: add message to log
+    // TODO: add message to log
 }
 
-}//namespace GPlatform
+void    GpTcpAcceptServerTask::ProcessOtherMessages ([[maybe_unused]] GpAny& aMessage)
+{
+    // TODO: add message to log
+}
+
+}// namespace GPlatform

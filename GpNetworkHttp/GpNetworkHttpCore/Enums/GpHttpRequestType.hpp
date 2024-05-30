@@ -19,4 +19,4 @@ GP_ENUM(GP_NETWORK_HTTP_CORE_API, GpHttpRequestType,
     PATCH
 );
 
-}//namespace GPlatform
+}// namespace GPlatform

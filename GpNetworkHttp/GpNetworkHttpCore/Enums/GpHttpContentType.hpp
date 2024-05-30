@@ -14,6 +14,6 @@ GP_ENUM(GP_NETWORK_HTTP_CORE_API, GpHttpContentType,
     APPLICATION_XML
 );
 
-std::u8string_view GpProtoHeader_EnumToStr (GpHttpContentType::EnumT aValue);
+std::string_view GP_NETWORK_HTTP_CORE_API GpProtoHeader_EnumToStr (GpHttpContentType::EnumT aValue);
 
-}//namespace GPlatform
+}// namespace GPlatform

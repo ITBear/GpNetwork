@@ -11,18 +11,18 @@ class GP_NETWORK_HTTP_CORE_API GpProtoHeaderValue final: public GpReflectObject
 {
 public:
     CLASS_DD(GpProtoHeaderValue)
-    REFLECT_DECLARE(u8"3dacda2f-90ec-4305-80d3-729f955a4946"_uuid)
+    REFLECT_DECLARE("3dacda2f-90ec-4305-80d3-729f955a4946"_uuid)
 
 public:
                                 GpProtoHeaderValue  (void) noexcept = default;
     inline                      GpProtoHeaderValue  (const GpProtoHeaderValue& aValue);
     inline                      GpProtoHeaderValue  (GpProtoHeaderValue&& aValue) noexcept;
-    inline                      GpProtoHeaderValue  (std::u8string_view aElement);
-    inline                      GpProtoHeaderValue  (std::u8string aElement);
+    inline                      GpProtoHeaderValue  (std::string_view aElement);
+    inline                      GpProtoHeaderValue  (std::string aElement);
     virtual                     ~GpProtoHeaderValue (void) noexcept override final;
 
 public:
-    std::vector<std::u8string>  elements;
+    std::vector<std::string>    elements;
 };
 
 GpProtoHeaderValue::GpProtoHeaderValue (const GpProtoHeaderValue& aValue):
@@ -37,14 +37,14 @@ elements(std::move(aValue.elements))
 {
 }
 
-GpProtoHeaderValue::GpProtoHeaderValue (std::u8string_view aElement)
+GpProtoHeaderValue::GpProtoHeaderValue (std::string_view aElement)
 {
     elements.emplace_back(std::move(aElement));
 }
 
-GpProtoHeaderValue::GpProtoHeaderValue (std::u8string aElement):
+GpProtoHeaderValue::GpProtoHeaderValue (std::string aElement):
 elements({std::move(aElement)})
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

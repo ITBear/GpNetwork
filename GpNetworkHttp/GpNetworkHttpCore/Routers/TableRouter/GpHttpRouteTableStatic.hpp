@@ -3,7 +3,8 @@
 #include "GpHttpRouteTable.hpp"
 #include "../../RequestHandlers/GpHttpRequestHandlerFactory.hpp"
 
-#include <GpCore2/GpUtils/SyncPrimitives/GpRWSpinLock.hpp>
+#include <GpCore2/Config/IncludeExt/boost_flat_map.hpp>
+#include <GpCore2/GpUtils/SyncPrimitives/GpSpinLockRW.hpp>
 
 namespace GPlatform {
 
@@ -14,7 +15,17 @@ public:
     CLASS_DD(GpHttpRouteTableStatic)
     TAG_SET(THREAD_SAFE)
 
-    using HandlerFactoryCatalogT = std::map<std::u8string/*host*/, std::map<std::u8string/*path*/, GpHttpRequestHandlerFactory::SP, std::less<>>, std::less<>>;
+    using HandlerFactoryCatalogT = boost::container::flat_map
+    <
+        std::string/*host*/,
+        boost::container::flat_map
+        <
+            std::string/*path*/,
+            GpHttpRequestHandlerFactory::SP,
+            std::less<>
+        >,
+        std::less<>
+    >;
 
 public:
                                         GpHttpRouteTableStatic  (void) noexcept;
@@ -23,15 +34,14 @@ public:
     virtual GpHttpRequestHandler::SP    FindHandler             (const GpHttpRequestNoBodyDesc& aHttpRqNoBody) const override final;
 
     void                                RegisterDefaultHandler  (GpHttpRequestHandlerFactory::SP    aHandlerFactory);
-
-    void                                RegisterPathHandler     (std::u8string_view                 aHost,
-                                                                 std::u8string_view                 aPath,
+    void                                RegisterPathHandler     (std::string                        aHost,
+                                                                 std::string                        aPath,
                                                                  GpHttpRequestHandlerFactory::SP    aHandlerFactory);
 
 private:
-    mutable GpRWSpinLock                iLock;
-    HandlerFactoryCatalogT              iRouteRable;
-    GpHttpRequestHandlerFactory::SP     iDefaultHandlerFactory;
+    mutable GpSpinLockRW                iSpinLockRW;
+    HandlerFactoryCatalogT              iRouteRable             GUARDED_BY(iSpinLockRW);
+    GpHttpRequestHandlerFactory::SP     iDefaultHandlerFactory  GUARDED_BY(iSpinLockRW);
 };
 
-}//namespace GPlatform
+}// namespace GPlatform
