@@ -8,15 +8,15 @@
 namespace GPlatform {
 
 GP_ENUM(GP_NETWORK_HTTP_CORE_API, GpHttpRequestType,
-    GET,
-    HEAD,
-    POST,
-    PUT,
-    DELETE,
-    CONNECT,
-    OPTIONS,
-    TRACE,
-    PATCH
+    HTTP_GET,
+    HTTP_HEAD,
+    HTTP_POST,
+    HTTP_PUT,
+    HTTP_DELETE,
+    HTTP_CONNECT,
+    HTTP_OPTIONS,
+    HTTP_TRACE,
+    HTTP_PATCH
 );
 
 }// namespace GPlatform

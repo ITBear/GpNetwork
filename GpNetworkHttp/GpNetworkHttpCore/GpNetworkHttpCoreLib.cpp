@@ -1,4 +1,4 @@
-#include "GpNetworkHttpCoreLib.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCoreLib.hpp>
 
 namespace GPlatform {
 

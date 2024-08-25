@@ -1,6 +1,6 @@
 #include "GpHttpClientPool.hpp"
 
-//namespace GPlatform {
+// namespace GPlatform {
 //
 //GpHttpClientPool::GpHttpClientPool (GpHttpClientFactory::SP aFactory) noexcept:
 //iFactory(std::move(aFactory))

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GpHttpBodyPayload.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Body/GpHttpBodyPayload.hpp>
 
 namespace GPlatform {
 
@@ -34,7 +34,7 @@ GpHttpBodyPayload
     GpHttpBodyPayloadType::FIXED_SIZE,
     std::size(aData)
 ),
-iData(std::move(aData))
+iData{std::move(aData)}
 {
 }
 

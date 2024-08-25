@@ -13,7 +13,8 @@ GP_ENUM(GP_NETWORK_HTTP_CORE_API, GpHttpHeaderType,
     CONNECTION,
     CACHE_CONTROL,
     AUTHORIZATION,
-    HOST
+    HOST,
+    USER_AGENT
 );
 
 std::string_view GP_NETWORK_HTTP_CORE_API GpProtoHeader_EnumToStr(GpHttpHeaderType::EnumT aValue);

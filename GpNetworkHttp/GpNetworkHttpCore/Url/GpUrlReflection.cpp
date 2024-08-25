@@ -1,5 +1,6 @@
 #include "GpUrlReflection.hpp"
 
+/*
 //#include <GpCore2/GpReflection/GpReflectType.hpp>
 //#include <GpCore2/GpReflection/GpReflectContainerType.hpp>
 //#include <GpCore2/GpReflection/GpReflectModel.hpp>
@@ -7,12 +8,11 @@
 
 namespace GPlatform {
 
-GpUrl   GpUrlReflection::SReflectToUrl (const GpReflectObject& /*aObj*/)
+GpUrl   GpUrlReflection::SReflectToUrl (const GpReflectObject& aObj)
 {
     //TODO: implement
-    THROW_GP_NOT_IMPLEMENTED();
 
-    /*std::string strRes;
+    std::string strRes;
     strRes.reserve(1024);
 
     const GpReflectModel&   model   = aObj.ReflectModel();
@@ -111,7 +111,9 @@ GpUrl   GpUrlReflection::SReflectToUrl (const GpReflectObject& /*aObj*/)
         }//switch (propType)
     }
 
-    return strRes;*/
+    return strRes;
 }
 
 }// namespace GPlatform
+
+*/

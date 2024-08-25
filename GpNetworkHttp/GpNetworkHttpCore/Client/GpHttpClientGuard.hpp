@@ -2,7 +2,7 @@
 
 //#include "GpHttpClientPool.hpp"
 //
-//namespace GPlatform {
+// namespace GPlatform {
 //
 //class GP_NETWORK_HTTP_CORE_API GpHttpClientGuard
 //{

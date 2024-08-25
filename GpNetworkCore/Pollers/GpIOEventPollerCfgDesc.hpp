@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../GpNetworkCore_global.hpp"
-
+#include <GpNetwork/GpNetworkCore/GpNetworkCore_global.hpp>
 #include <GpCore2/GpReflection/GpReflectObject.hpp>
 
 namespace GPlatform {
@@ -14,19 +13,9 @@ public:
 
 public:
                     GpIOEventPollerCfgDesc  (void) noexcept = default;
-    inline          GpIOEventPollerCfgDesc  (const GpIOEventPollerCfgDesc& aDesc);
-    inline          GpIOEventPollerCfgDesc  (GpIOEventPollerCfgDesc&& aDesc) noexcept;
+                    GpIOEventPollerCfgDesc  (const GpIOEventPollerCfgDesc& aDesc);
+                    GpIOEventPollerCfgDesc  (GpIOEventPollerCfgDesc&& aDesc) noexcept;
     virtual         ~GpIOEventPollerCfgDesc (void) noexcept override;
 };
-
-GpIOEventPollerCfgDesc::GpIOEventPollerCfgDesc (const GpIOEventPollerCfgDesc& aDesc):
-GpReflectObject(aDesc)
-{
-}
-
-GpIOEventPollerCfgDesc::GpIOEventPollerCfgDesc (GpIOEventPollerCfgDesc&& aDesc) noexcept:
-GpReflectObject(std::move(aDesc))
-{
-}
 
 }// namespace GPlatform

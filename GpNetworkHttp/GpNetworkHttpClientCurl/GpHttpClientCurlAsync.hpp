@@ -48,7 +48,6 @@ protected:
     virtual void                ProcessOtherMessages    (GpAny& aMessage) override final;
 
 private:
-    void                        CheckConnection         (const GpHttpRequest& aRequest);
     GpHttpResponse::SP          DoCurlRequestAndWait    (GpHttpRequest& aRequest,
                                                          ErorrMode      aErorrMode);
 

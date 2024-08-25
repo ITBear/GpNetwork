@@ -1,7 +1,6 @@
 #pragma once
 
-#include "GpIOEventType.hpp"
-
+#include <GpNetwork/GpNetworkCore/Pollers/GpIOEventType.hpp>
 #include <GpCore2/GpUtils/Types/Enums/GpEnum.hpp>
 #include <GpCore2/GpTasks/Fibers/GpTaskFiber.hpp>
 #include <GpCore2/GpUtils/EventBus/GpEventChannel.hpp>
@@ -27,19 +26,22 @@ public:
 
     void                        AddSubscription     (GpSocketId                             aSocketId,
                                                      GpTaskId                               aTaskId,
+                                                     GpIOEventsTypes                        aEventTypes,
                                                      SubsribersEventChannelT::CallbackFnT&& aFn);
-    void                        RemoveSubscription  (GpSocketId aSocketId,
+    bool                        RemoveSubscription  (GpSocketId aSocketId,
                                                      GpTaskId   aTaskId);
 
 protected:
     void                        ProcessEvents       (GpSocketId         aSocketId,
                                                      GpIOEventsTypes    aEvents) REQUIRES(iSpinLock);
 
-    virtual void                OnStart             (void) override = 0;
+    virtual void                OnStart             (void) override;
     virtual GpTaskRunRes::EnumT OnStep              (void) override = 0;
-    virtual GpException::C::Opt OnStop              (void) noexcept override = 0;
+    virtual void                OnStop              (StopExceptionsT& aStopExceptionsOut) noexcept override;
+    virtual void                OnStopException     (const GpException& aException) noexcept override = 0;
 
-    virtual void                OnAddObject         (GpSocketId aSocketId) REQUIRES(iSpinLock) = 0;
+    virtual void                OnAddObject         (GpSocketId         aSocketId,
+                                                     GpIOEventsTypes    aEventTypes) REQUIRES(iSpinLock) = 0;
     virtual void                OnRemoveObject      (GpSocketId aSocketId) REQUIRES(iSpinLock) = 0;
 
 protected:

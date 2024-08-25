@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../GpNetworkHttpCore_global.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCore_global.hpp>
 
 #include <GpCore2/GpUtils/Types/Enums/GpEnum.hpp>
 #include <GpCore2/GpUtils/Types/Strings/GpStringOps.hpp>

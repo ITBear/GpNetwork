@@ -3,28 +3,23 @@ TEMPLATE = subdirs
 os_linux {
 	SUBDIRS += \
 		./llhttp \
-		./GpNetworkHttpCore \
-		./GpNetworkHttpClientCurl
+		./GpNetworkHttpCore
 } else:os_android {
 	SUBDIRS += \
 		./llhttp \
-		./GpNetworkHttpCore \
-		./GpNetworkHttpClientCurl
+		./GpNetworkHttpCore
 } else:os_ios {
 	SUBDIRS += \
 		./llhttp \
-		./GpNetworkHttpCore \
-		./GpNetworkHttpClientCurl
+		./GpNetworkHttpCore
 } else:os_windows {
 	SUBDIRS += \
 		./llhttp \
-		./GpNetworkHttpCore \
-		./GpNetworkHttpClientCurl
+		./GpNetworkHttpCore
 } else:os_macx {
 	SUBDIRS += \
 		./llhttp \
-		./GpNetworkHttpCore \
-		./GpNetworkHttpClientCurl
+		./GpNetworkHttpCore
 } else:os_browser {
 	SUBDIRS +=
 } else {

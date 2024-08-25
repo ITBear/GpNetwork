@@ -1,8 +1,8 @@
 #pragma once
 
-#include "GpSocketAddr.hpp"
-
 #include <GpCore2/Config/IncludeExt/fmt.hpp>
+
+#include "GpSocketAddr.hpp"
 
 namespace GPlatform {
 

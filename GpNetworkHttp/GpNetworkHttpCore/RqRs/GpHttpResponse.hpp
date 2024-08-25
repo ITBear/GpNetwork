@@ -2,9 +2,9 @@
 
 #include <GpCore2/GpUtils/Streams/GpByteWriter.hpp>
 
-#include "../Body/GpHttpBodyPayload.hpp"
-#include "../Exceptions/GpHttpException.hpp"
-#include "GpHttpResponseNoBodyDesc.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Body/GpHttpBodyPayload.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Exceptions/GpHttpException.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RqRs/GpHttpResponseNoBodyDesc.hpp>
 
 namespace GPlatform {
 
@@ -46,13 +46,13 @@ public:
 };
 
 GpHttpResponse::GpHttpResponse (GpHttpResponse&& aResponse) noexcept:
-iResponseNoBody(std::move(aResponse.iResponseNoBody)),
-iBody          (std::move(aResponse.iBody))
+iResponseNoBody{std::move(aResponse.iResponseNoBody)},
+iBody          {std::move(aResponse.iBody)}
 {
 }
 
 GpHttpResponse::GpHttpResponse (GpHttpResponseNoBodyDesc aResponseNoBodyDesc) noexcept:
-iResponseNoBody(std::move(aResponseNoBodyDesc))
+iResponseNoBody{std::move(aResponseNoBodyDesc)}
 {
 }
 
@@ -61,8 +61,8 @@ GpHttpResponse::GpHttpResponse
     GpHttpResponseNoBodyDesc    aResponseNoBodyDesc,
     GpHttpBodyPayload::SP       aBody
 ) noexcept:
-iResponseNoBody(std::move(aResponseNoBodyDesc)),
-iBody          (std::move(aBody))
+iResponseNoBody{std::move(aResponseNoBodyDesc)},
+iBody          {std::move(aBody)}
 {
 }
 

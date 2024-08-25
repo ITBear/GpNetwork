@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GpHttpBodyPayloadType.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Body/GpHttpBodyPayloadType.hpp>
 
 namespace GPlatform {
 
@@ -13,7 +13,7 @@ protected:
                                     GpHttpBodyPayload   (void) = default;
     inline                          GpHttpBodyPayload   (GpHttpBodyPayloadType::EnumT aType) noexcept;
     inline                          GpHttpBodyPayload   (GpHttpBodyPayloadType::EnumT   aType,
-                                                         const size_t                   aSize) noexcept;
+                                                         size_t                         aSize) noexcept;
 
 public:
     virtual                         ~GpHttpBodyPayload  (void) noexcept;
@@ -27,7 +27,7 @@ private:
 };
 
 GpHttpBodyPayload::GpHttpBodyPayload (GpHttpBodyPayloadType::EnumT aType) noexcept:
-iType(aType)
+iType{aType}
 {
 }
 
@@ -36,8 +36,8 @@ GpHttpBodyPayload::GpHttpBodyPayload
     GpHttpBodyPayloadType::EnumT    aType,
     const size_t                    aSize
 ) noexcept:
-iType(aType),
-iSize(aSize)
+iType{aType},
+iSize{aSize}
 {
 }
 

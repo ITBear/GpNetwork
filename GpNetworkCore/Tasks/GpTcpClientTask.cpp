@@ -1,76 +1,21 @@
 #include <GpNetwork/GpNetworkCore/Tasks/GpTcpClientTask.hpp>
+
+#include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
 #include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPollerCatalog.hpp>
 #include <GpNetwork/GpNetworkCore/Sockets/GpSocketTCP.hpp>
-#include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
+#include <GpNetwork/GpNetworkCore/GpNetworkUtilsDns.hpp>
 
 namespace GPlatform {
 
 GP_ENUM_IMPL(GpTcpClientConnectionState)
 
-// --------------------------------------------- GpTcpClientTaskFactory --------------------------------------------------
-
-class GpTcpClientSocketFactory final: public GpSocketFactory
-{
-public:
-    CLASS_DD(GpTcpClientSocketFactory)
-
-public:
-                            GpTcpClientSocketFactory    (GpSocketFlags aSocketFlags) noexcept;
-    virtual                 ~GpTcpClientSocketFactory   (void) noexcept override final;
-
-    virtual GpSocket::SP    NewInstance                 (void) const override final;
-    virtual void            OnStart                     (GpSocket::SP aSocket) const override final;
-    virtual void            OnStop                      (GpSocket::SP aSocket) const override final;
-
-private:
-    const GpSocketFlags     iSocketFlags;
-};
-
-GpTcpClientSocketFactory::GpTcpClientSocketFactory (const GpSocketFlags aSocketFlags) noexcept:
-iSocketFlags{std::move(aSocketFlags)}
-{
-}
-
-GpTcpClientSocketFactory::~GpTcpClientSocketFactory (void) noexcept
-{
-}
-
-GpSocket::SP    GpTcpClientSocketFactory::NewInstance (void) const
-{
-    // Create socket
-    GpSocketTCP::SP socket = MakeSP<GpSocketTCP>
-    (
-        iSocketFlags | GpSocketFlag::NO_BLOCK,
-        GpSocket::CloseModeT::CLOSE_ON_DESTRUCT
-    );
-
-    return socket;
-}
-
-void    GpTcpClientSocketFactory::OnStart ([[maybe_unused]] GpSocket::SP aSocket) const
-{
-    // NOP
-}
-
-void    GpTcpClientSocketFactory::OnStop ([[maybe_unused]] GpSocket::SP aSocket) const
-{
-    // NOP
-}
-
-// --------------------------------------------- GpTcpClientTask --------------------------------------------------
-
 GpTcpClientTask::GpTcpClientTask
 (
     const GpSocketFlags         aSocketFlags,
-    const GpIOEventPollerIdx    aIOEventPollerIdx,
-    const milliseconds_t        aConnectTimeout
+    const GpIOEventPollerIdx    aIOEventPollerIdx
 ):
-GpSingleSocketTask
-{
-    MakeSP<GpTcpClientSocketFactory>(aSocketFlags),
-    aIOEventPollerIdx
-},
-iConnectTimeout{aConnectTimeout}
+iSocketFlags     {aSocketFlags},
+iIOEventPollerIdx{aIOEventPollerIdx}
 {
 }
 
@@ -78,58 +23,130 @@ GpTcpClientTask::GpTcpClientTask
 (
     const GpSocketFlags         aSocketFlags,
     const GpIOEventPollerIdx    aIOEventPollerIdx,
-    const milliseconds_t        aConnectTimeout,
     std::string                 aTaskName
 ):
-GpSingleSocketTask
-{
-    MakeSP<GpTcpClientSocketFactory>(aSocketFlags),
-    aIOEventPollerIdx,
-    std::move(aTaskName)
-},
-iConnectTimeout{aConnectTimeout}
+GpSocketsTask{std::move(aTaskName)},
+iSocketFlags     {aSocketFlags},
+iIOEventPollerIdx{aIOEventPollerIdx}
 {
 }
 
 GpTcpClientTask::~GpTcpClientTask (void) noexcept
 {
+    GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
+
+    _CloseConnection();
 }
 
-void    GpTcpClientTask::CloseConnection (void)
+void    GpTcpClientTask::CloseTcpConnection (void)
 {
-    //?
-    // TODO: implement
-    THROW_GP_NOT_IMPLEMENTED();
+    GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
+
+    _CloseConnection();
 }
 
-void    GpTcpClientTask::ConnectToAndWait ([[maybe_unused]] const GpSocketAddr& aServerAddr)
+void    GpTcpClientTask::ConnectTcpAndWait
+(
+    std::string_view        aDomainName,
+    const u_int_16          aPort,
+    const GpSocketIPv       aIPv,
+    const milliseconds_t    aConnectTimeout
+)
 {
-    // TODO: implement
-    THROW_GP_NOT_IMPLEMENTED();
+    // Get server ip from domain name
+    GpSocketAddr serverAddr;
+    {
+        GpSocketAddr connectedToAddr;
+        {
+            GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
+            connectedToAddr = iConnectedToAddr;
+        }
+
+        serverAddr = GpNetworkUtilsDns::S().Resolve(aDomainName, aIPv, connectedToAddr);
+        serverAddr.SetPort(aPort);
+    }
+
+    // Connect
+    ConnectTcpAndWait(serverAddr, aConnectTimeout);
 }
 
-void    GpTcpClientTask::OnReadyToRead ([[maybe_unused]] GpSocket& aSocket)
+void    GpTcpClientTask::ConnectTcpAndWait
+(
+    const GpSocketAddr&     aServerAddr,
+    const milliseconds_t    aConnectTimeout
+)
 {
-    // TODO: implement
-    THROW_GP_NOT_IMPLEMENTED();
+    // Check and start connection
+    GpSocketTCP::SP     localSocketTcpSP;
+    GpIOEventPollerIdx  localIOEventPollerIdx;
+    GpTaskId            localIOEventPollerSubscribeTaskId;
+
+    {
+        GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
+
+        CheckBeforeNewTcpConnection(aServerAddr);
+
+        // Check if connected
+        if (iConnectionState == ConnectionStateT::CONNECTED)
+        {
+            return;
+        }
+
+        // Create socket
+        iSocketTCP = MakeSP<GpSocketTCP>
+        (
+            iSocketFlags | GpSocketFlag::NO_BLOCK,
+            GpSocket::CloseModeT::CLOSE_ON_DESTRUCT
+        );
+
+        GpSocketTCP& socketTCP = iSocketTCP.Vn();
+
+        // Init socket
+        socketTCP.Create(aServerAddr.IPv());
+
+        iIOEventPollerSubscribeTaskId       = GpTask::SCurrentTask().value().get().TaskId();
+        iConnectionState                    = ConnectionStateT::CONNECTION_IN_PROGRESS;
+        iConnectedToAddr                    = aServerAddr;
+
+        localSocketTcpSP                    = iSocketTCP;
+        localIOEventPollerIdx               = iIOEventPollerIdx;
+        localIOEventPollerSubscribeTaskId   = iIOEventPollerSubscribeTaskId;
+    }
+
+    // Wait for connection  
+    localSocketTcpSP->ConnectAndWait(aServerAddr, aConnectTimeout, localIOEventPollerIdx, localIOEventPollerSubscribeTaskId);
+
+    // Pop event
+    GpAny::C::Opt::Val msg = PopMessage();
+
+    //
+    OnConnected(localSocketTcpSP.Vn());
 }
 
-void    GpTcpClientTask::OnReadyToWrite ([[maybe_unused]] GpSocket& aSocket)
+void    GpTcpClientTask::OnStart (void)
 {
-    // TODO: implement
-    THROW_GP_NOT_IMPLEMENTED();
+    GpSocketsTask::OnStart();
 }
 
-void    GpTcpClientTask::OnClosed ([[maybe_unused]] GpSocket& aSocket)
+void    GpTcpClientTask::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
 {
-    // TODO: implement
-    THROW_GP_NOT_IMPLEMENTED();
-}
+    try
+    {
+        GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
 
-void    GpTcpClientTask::OnError ([[maybe_unused]] GpSocket& aSocket)
-{
-    // TODO: implement
-    THROW_GP_NOT_IMPLEMENTED();
+        _CloseConnection();
+    } catch (const GpException& ex)
+    {
+        aStopExceptionsOut.emplace_back(ex);
+    } catch (const std::exception& ex)
+    {
+        aStopExceptionsOut.emplace_back(GpException{ex.what()});
+    } catch (...)
+    {
+        aStopExceptionsOut.emplace_back(GpException{"[GpTcpClientTask::OnStop]: unknown exception"_sv});
+    }
+
+    GpSocketsTask::OnStop(aStopExceptionsOut);
 }
 
 void    GpTcpClientTask::ProcessOtherMessages (GpAny& aMessage)
@@ -142,6 +159,57 @@ void    GpTcpClientTask::ProcessOtherMessages (GpAny& aMessage)
             aMessage.TypeInfo().name()
         )
     );
+}
+
+GpSocket::SP    GpTcpClientTask::FindSocket ([[maybe_unused]] GpSocketId aSocketId)
+{
+    GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
+
+    return iSocketTCP;
+}
+
+void    GpTcpClientTask::CheckBeforeNewTcpConnection (const GpSocketAddr& aServerAddr)
+{
+    if (iConnectionState == ConnectionStateT::NOT_CONNECTED)
+    {
+        return;
+    }
+
+    THROW_COND_GP
+    (
+        iConnectionState == ConnectionStateT::CONNECTED,
+        "Other connection in progress"
+    );
+
+    // Check to what ip connected
+    if (iConnectedToAddr != aServerAddr)
+    {
+        _CloseConnection();
+        iConnectedToAddr = aServerAddr;
+    } else
+    {
+        // OK, connected to correct ip
+        return;
+    }
+}
+
+void    GpTcpClientTask::_CloseConnection (void)
+{
+    if (iSocketTCP.IsNotNULL())
+    {
+        std::ignore = GpIOEventPollerCatalog::SRemoveSubscriptionSafe
+        (
+            iSocketTCP.Vn().Id(),
+            iIOEventPollerSubscribeTaskId,
+            iIOEventPollerIdx
+        );
+
+        iSocketTCP.Vn().Close();
+        iSocketTCP.Clear();
+    }
+
+    iConnectionState = ConnectionStateT::NOT_CONNECTED;
+    iConnectedToAddr.Clear();   
 }
 
 }// namespace GPlatform

@@ -1,36 +1,29 @@
 #pragma once
 
-#include "../RqRs/GpHttpRequest.hpp"
-#include "../RqRs/GpHttpResponse.hpp"
-
-#include <GpNetwork/GpNetworkCore/Tasks/GpTcpClientTask.hpp>
+#include <GpNetwork/GpNetworkCore/Tasks/GpTcpAcceptServerTask.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Client/GpHttpClientRequestTask.hpp>
 
 namespace GPlatform {
 
-class GP_NETWORK_HTTP_CORE_API GpHttpClient: public GpTcpClientTask
+class GP_NETWORK_HTTP_CORE_API GpHttpClient
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpHttpClient)
     CLASS_DD(GpHttpClient)
-
-    enum class ErorrMode
-    {
-        THROW_ON_NOT_200,
-        RETURN_RS
-    };
+    TAG_SET(THREAD_SAFE)
 
 public:
-                                GpHttpClient        (GpSocketFlags      aSocketFlags,
-                                                     GpIOEventPollerIdx aIOEventPollerIdx,
-                                                     milliseconds_t     aConnectTimeout);
-                                GpHttpClient        (GpSocketFlags      aSocketFlags,
-                                                     GpIOEventPollerIdx aIOEventPollerIdx,
-                                                     milliseconds_t     aConnectTimeout,
-                                                     std::string        aTaskName);
-    virtual                     ~GpHttpClient       (void) noexcept;
+                                GpHttpClient    (GpSocketFlags      aSocketFlags,
+                                                 GpIOEventPollerIdx aIOEventPollerIdx) noexcept;
+                                ~GpHttpClient   (void) noexcept;
 
-    virtual GpHttpResponse::SP  DoRqAndWaitForRs    (GpHttpRequest::SP  aRequestSP,
-                                                     ErorrMode          aErorrMode) = 0;
+    GpHttpResponse::SP          DoAndWait       (GpHttpRequest::SP  aRequestSP,
+                                                 milliseconds_t     aConnectTimeout,
+                                                 milliseconds_t     aRequestTimeout);
+
+private:
+    const GpSocketFlags         iSocketFlags;
+    const GpIOEventPollerIdx    iIOEventPollerIdx;
 };
 
 }// namespace GPlatform

@@ -1,8 +1,17 @@
-#include "GpSocketsTask.hpp"
-
-#include "../Pollers/GpIOEventPoller.hpp"
+#include <GpNetwork/GpNetworkCore/Tasks/GpSocketsTask.hpp>
+#include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPoller.hpp>
+#include <GpLog/GpLogCore/GpLog.hpp>
 
 namespace GPlatform {
+
+GpSocketsTask::GpSocketsTask (void) noexcept
+{
+}
+
+GpSocketsTask::GpSocketsTask (std::string aTaskName) noexcept:
+GpTaskFiber{std::move(aTaskName)}
+{
+}
 
 GpSocketsTask::~GpSocketsTask (void) noexcept
 {
@@ -10,6 +19,7 @@ GpSocketsTask::~GpSocketsTask (void) noexcept
 
 void    GpSocketsTask::OnStart (void)
 {
+    // NOP
 }
 
 GpTaskRunRes::EnumT GpSocketsTask::OnStep (void)
@@ -26,7 +36,10 @@ GpTaskRunRes::EnumT GpSocketsTask::OnStep (void)
             ProcessSocketEvents(std::get<0>(pollerEvents), std::get<1>(pollerEvents));
         } else
         {
-            ProcessOtherMessages(message);
+            if (!message.Empty())
+            {
+                ProcessOtherMessages(message);
+            }
         }
 
         messageOpt = PopMessage();
@@ -35,9 +48,21 @@ GpTaskRunRes::EnumT GpSocketsTask::OnStep (void)
     return GpTaskRunRes::WAIT;
 }
 
-GpException::C::Opt GpSocketsTask::OnStop (void) noexcept
+void    GpSocketsTask::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
 {
-    return std::nullopt;
+    try
+    {
+        LOG_INFO("[GpSocketsTask::OnStop]: ..."_sv);
+    } catch (const GpException& ex)
+    {
+        aStopExceptionsOut.emplace_back(ex);
+    } catch (const std::exception& ex)
+    {
+        aStopExceptionsOut.emplace_back(GpException{ex.what()});
+    } catch (...)
+    {
+        aStopExceptionsOut.emplace_back(GpException{"[GpSocketsTask::OnStop]: unknown exception"_sv});
+    }
 }
 
 void    GpSocketsTask::ProcessSocketEvents

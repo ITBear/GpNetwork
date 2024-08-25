@@ -1,10 +1,9 @@
-#include "GpHttpServer.hpp"
-#include "GpHttpRequestSocketTaskFactory.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Server/GpHttpServer.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Server/GpHttpServerRequestTaskFactory.hpp>
+#include <GpCore2/GpTasks/ITC/GpItcSharedFutureUtils.hpp>
 
 #include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
 #include <GpLog/GpLogCore/GpLog.hpp>
-
-#include <iostream>
 
 namespace GPlatform {
 
@@ -17,8 +16,8 @@ GpHttpServer::GpHttpServer
     GpHttpServerCfgDesc aServerCfgDesc,
     GpHttpRouter::SP    aRouter
 ):
-iServerCfgDesc(std::move(aServerCfgDesc)),
-iRouter       (std::move(aRouter))
+iServerCfgDesc{std::move(aServerCfgDesc)},
+iRouter       {std::move(aRouter)}
 {
 }
 
@@ -37,19 +36,19 @@ void    GpHttpServer::Start (void)
     );
 
     // Create accept sockets task
-    GpSocketAddr sockAddr;
-    sockAddr.SetAutoIPv(iServerCfgDesc.listen_ip, iServerCfgDesc.listen_port);
+    GpSocketAddr listenAddr;
+    listenAddr.SetAutoIPv(iServerCfgDesc.listen_ip, iServerCfgDesc.listen_port);
 
     const GpIOEventPollerIdx ioEventPollerIdx = GpIOEventPollerCatalog::S().IdxByName(iServerCfgDesc.event_poller_name);
 
     iAcceptSocketTask = MakeSP<GpTcpAcceptServerTask>
     (
-        sockAddr,
-        iServerCfgDesc.listen_max_queue_size,
+        listenAddr,
         iServerCfgDesc.listen_socket_flags,
+        iServerCfgDesc.listen_max_queue_size,       
         iServerCfgDesc.accept_socket_flags,
         ioEventPollerIdx,
-        MakeSP<GpHttpRequestSocketTaskFactory>(iRouter)
+        MakeSP<GpHttpServerRequestTaskFactory>(iRouter)
     );
 
     // Add to scheduler and start
@@ -58,13 +57,7 @@ void    GpHttpServer::Start (void)
     // Wait for start
     GpTask::StartFutureT::SP startFuture = iAcceptSocketTask->GetStartFuture();
 
-    while (!startFuture.Vn().WaitFor(100.0_si_ms))
-    {
-        // NOP
-    }
-
-    // Check start result
-    GpTask::StartFutureT::SCheckIfReady
+    GpItcSharedFutureUtils::SWaitForInf
     (
         startFuture.V(),
         [&](typename GpTaskFiber::StartFutureT::value_type&)// OnSuccessFnT
@@ -74,7 +67,8 @@ void    GpHttpServer::Start (void)
         [&](const GpException& aEx)// OnExceptionFnT
         {
             throw aEx;
-        }
+        },
+        100.0_si_ms
     );
 }
 
@@ -115,17 +109,11 @@ void    GpHttpServer::RequestAndWaitForStop (void)
     GpTask::DoneFutureT::SP acceptSocketTaskDoneFuture;
     {
         GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
-        acceptSocketTaskDoneFuture = iAcceptSocketTask.Vn().RequestStop();
+        acceptSocketTaskDoneFuture = iAcceptSocketTask.Vn().RequestTaskStop();
     }
 
     // Wait for stop
-    while (!acceptSocketTaskDoneFuture.Vn().WaitFor(100.0_si_ms))
-    {
-        // NOP
-    }
-
-    // Check stop result
-    GpTask::DoneFutureT::SCheckIfReady
+    GpItcSharedFutureUtils::SWaitForInf
     (
         acceptSocketTaskDoneFuture.V(),
         [&](typename GpTaskFiber::DoneFutureT::value_type&)// OnSuccessFnT
@@ -135,7 +123,8 @@ void    GpHttpServer::RequestAndWaitForStop (void)
         [&](const GpException& aEx)// OnExceptionFnT
         {
             throw aEx;
-        }
+        },
+        100.0_si_ms
     );
 }
 

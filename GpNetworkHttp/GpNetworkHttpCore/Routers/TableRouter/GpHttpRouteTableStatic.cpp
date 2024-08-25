@@ -18,43 +18,57 @@ GpHttpRequestHandler::SP    GpHttpRouteTableStatic::FindHandler (const GpHttpReq
 {
     GpSharedLock<GpSpinLockRW> sharedLock(iSpinLockRW);
 
-    std::string_view urlHost = aHttpRqNoBody.url.Authority().Host();
-    std::string_view urlPath = aHttpRqNoBody.url.Path();
+    const GpUrlAuthority&   urlAuthority        = aHttpRqNoBody.url.Authority();
+    const std::string_view  urlPath             = aHttpRqNoBody.url.Path();
+    const std::string_view  urlHost             = urlAuthority.Host();
+    const u_int_16          urlPort             = urlAuthority.Port();
+    const std::string       routePathHostPort   = fmt::format("{}:{}", urlHost, urlPort);
 
     // Try to find host
-    const auto hostIter = iRouteRable.find(urlHost);
+    const auto hostIter = iRouteRable.find(routePathHostPort);
 
-    THROW_COND_HTTP
-    (
-        hostIter != std::end(iRouteRable),
-        GpHttpResponseCode::NOT_FOUND_404,
-        [urlHost]()
+    // Check if default handler set
+    if (hostIter == std::end(iRouteRable)) [[unlikely]]
+    {
+        if (iDefaultHandlerFactory.IsNotNULL()) [[likely]]
         {
-            return fmt::format
+            return iDefaultHandlerFactory.Vn().NewInstance();
+        } else
+        {
+            THROW_HTTP
             (
-                "Handler not found for host '{}'",
-                urlHost
+                GpHttpResponseCode::NOT_FOUND_404,
+                fmt::format
+                (
+                    "Handler not found for host '{}'",
+                    routePathHostPort
+                )
             );
         }
-    );
+    }
 
     // Try to find path
-    const auto& pathMap = hostIter->second;
-    const auto pathIter = pathMap.find(urlPath);
+    const auto& pathMap     = hostIter->second;
+    const auto  pathIter    = pathMap.find(urlPath);
 
-    THROW_COND_HTTP
-    (
-        pathIter != std::end(pathMap),
-        GpHttpResponseCode::NOT_FOUND_404,
-        [aHttpRqNoBody]()
+    if (pathIter == std::end(pathMap)) [[unlikely]]
+    {
+        if (iDefaultHandlerFactory.IsNotNULL()) [[likely]]
         {
-            return fmt::format
+            return iDefaultHandlerFactory.Vn().NewInstance();
+        } else
+        {
+            THROW_HTTP
             (
-                "Handler not found for URL '{}'",
-                aHttpRqNoBody.url.SchemeHostPortPath()
+                GpHttpResponseCode::NOT_FOUND_404,
+                fmt::format
+                (
+                    "Handler not found for URL '{}'",
+                    aHttpRqNoBody.url.ToString({GpUrlPartType::SCHEME, GpUrlPartType::AUTHORITY_HOST_AND_PORT, GpUrlPartType::PATH_QUERY_FRAGMENT})
+                )
             );
         }
-    );
+    }
 
     return pathIter->second->NewInstance();
 }

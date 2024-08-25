@@ -1,15 +1,17 @@
-#include "GpIOEventPollerSelect.hpp"
+#include <GpNetwork/GpNetworkCore/Pollers/Select/GpIOEventPollerSelect.hpp>
 
 #include <GpCore2/GpUtils/Exceptions/GpException.hpp>
 #include <GpCore2/GpUtils/Other/GpErrno.hpp>
 #include <GpLog/GpLogCore/GpLog.hpp>
+#include <GpNetwork/GpNetworkCore/GpNetworkErrors.hpp>
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketTCP.hpp>
 
-#include "../../GpNetworkErrors.hpp"
+#include <iostream>
 
 namespace GPlatform {
 
 GpIOEventPollerSelect::GpIOEventPollerSelect (std::string aName) noexcept:
-GpIOEventPoller(std::move(aName))
+GpIOEventPoller{std::move(aName)}
 {
 }
 
@@ -94,14 +96,14 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
 
         if (socketsIsEmpty) [[unlikely]]
         {
-            //select
-            //(
-            //  0,
-            //  nullptr,
-            //  nullptr,
-            //  nullptr,
-            //  &timeout
-            //);
+            select
+            (
+                0,
+                nullptr,
+                nullptr,
+                nullptr,
+                &timeout
+            );
 
             return GpTaskRunRes::READY_TO_RUN;
         }
@@ -138,22 +140,16 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
         return GpTaskRunRes::READY_TO_RUN;
     }
 
-    // Process events
-    SocketsSetT::const_iterator socketsIter;
+    // Copy iSockets
+    SocketsSetT socketsCopy;
     {
         GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
-        socketsIter = std::begin(iSockets);
+        socketsCopy = iSockets;
     }
 
-    while (true)
+    // Process events
+    for (const auto& [socketId, eventTypes]: socketsCopy)
     {
-        GpSocketId socketId;
-        {
-            GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
-            socketId = *socketsIter;
-            socketsIter++;
-        }
-
         GpIOEventsTypes events;
 
         // Check for in ready for read set
@@ -162,8 +158,15 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
             events |= GpIOEventType::READY_TO_READ;
         }
 
+        // Check for closed
+        if (!GpSocketTCP::SIsConnected(socketId))
+        {
+            events |= GpIOEventType::CLOSED;
+        }
+
         // Check for in ready for write set
-        if (FD_ISSET(socketId, &iWriteFdSetWorking))
+        if (   FD_ISSET(socketId, &iWriteFdSetWorking)
+            && (!events.Test(GpIOEventType::CLOSED)))
         {
             // TODO: add flag to socket
             events |= GpIOEventType::READY_TO_WRITE;
@@ -172,72 +175,89 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
         // Check for in error set
         if (FD_ISSET(socketId, &iErrorFdSetWorking))
         {
-            events |= GpIOEventType::CLOSED;
+            events |= GpIOEventType::ERROR_OCCURRED;
         }
+
+        events.ApplyMask(eventTypes);
 
         if (!events.Empty())
         {
             GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
             ProcessEvents(socketId, events);
         }
-
-        {
-            GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
-            if (socketsIter == std::end(iSockets))
-            {
-                break;
-            }
-        }
-    }
+    }// while (testIterFn(socketsIter))
 
     return GpTaskRunRes::READY_TO_RUN;
 }
 
-GpException::C::Opt GpIOEventPollerSelect::OnStop (void) noexcept
+void    GpIOEventPollerSelect::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
 {
-    LOG_INFO
-    (
-        fmt::format
-        (
-            "[GpIOEventPollerSelect::OnStop]: {}",
-            TaskName()
-        )
-    );
-
-    GpException::C::Opt ex;
-
     try
     {
+        LOG_INFO
+        (
+            fmt::format
+            (
+                "[GpIOEventPollerSelect::OnStop]: {}",
+                TaskName()
+            )
+        );
+
         GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+
         iSockets.clear();
     } catch (const GpException& e)
     {
-        ex = e;
+        aStopExceptionsOut.emplace_back(e);
     } catch (const std::exception& e)
     {
-        ex = GpException(e.what());
+        aStopExceptionsOut.emplace_back(GpException{e.what()});
     } catch (...)
     {
-        ex = GpException("[GpIOEventPollerSelect::OnStop]: unknown exception"_sv);
+        aStopExceptionsOut.emplace_back(GpException{"[GpIOEventPollerSelect::OnStop]: unknown exception"_sv});
     }
 
-    return ex;
+    GpIOEventPoller::OnStop(aStopExceptionsOut);
 }
 
-void    GpIOEventPollerSelect::OnAddObject (const GpSocketId aSocketId)
+void    GpIOEventPollerSelect::OnStopException (const GpException& aException) noexcept
 {
+    LOG_EXCEPTION
+    (
+        "[GpIOEventPollerSelect::OnStopException]",
+        aException
+    );
+}
+
+void    GpIOEventPollerSelect::OnAddObject
+(
+    const GpSocketId    aSocketId,
+    GpIOEventsTypes     aEventTypes
+)
+{
+    // Check for max count
+    THROW_COND_GP
+    (
+        aSocketId != GpSocketId_Default(),
+        "Wrong socket ID"
+    );
+
     // Check for max count
     THROW_COND_GP
     (
         std::size(iSockets) < FD_SETSIZE,
         []()
         {
-            return fmt::format("The maximum socket count has been reached (FD_SETSIZE = {})", FD_SETSIZE);
+            return fmt::format
+            (
+                "The maximum socket count has been reached (FD_SETSIZE = {})",
+                FD_SETSIZE
+            );
         }
     );
 
     // Add to iSockets
-    iSockets.insert(aSocketId);
+    iSockets.emplace(aSocketId, aEventTypes.Value());
 
     // Add to iFdSetMaster
     FD_SET(aSocketId, &iFdSetMaster);
@@ -265,7 +285,7 @@ void    GpIOEventPollerSelect::OnRemoveObject (const GpSocketId aSocketId)
     // Update iMaxSocketId
     if (!iSockets.empty())
     {
-        iMaxSocketId = NumOps::SConvert<decltype(iMaxSocketId)>(*(std::end(iSockets)--));
+        iMaxSocketId = NumOps::SConvert<decltype(iMaxSocketId)>((std::end(iSockets)--)->first);
     } else
     {
         iMaxSocketId = 0;

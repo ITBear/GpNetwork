@@ -1,11 +1,7 @@
-#include "GpUrlQuery.hpp"
-
-#include <GpCore2/GpReflection/GpReflectManager.hpp>
-#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Url/GpUrlQuery.hpp>
+#include <GpCore2/GpUtils/Types/Strings/GpStringOps.hpp>
 
 namespace GPlatform {
-
-REFLECT_IMPLEMENT(GpUrlQuery, GP_MODULE_UUID)
 
 GpUrlQuery::~GpUrlQuery (void) noexcept
 {
@@ -13,27 +9,19 @@ GpUrlQuery::~GpUrlQuery (void) noexcept
 
 void    GpUrlQuery::Clear (void)
 {
-    params.clear();
+    iParams.clear();
 }
 
-GpUrlQuery& GpUrlQuery::operator= (const GpUrlQuery& aUrl)
+std::string GpUrlQuery::ToString (void) const
 {
-    params = aUrl.params;
-
-    return *this;
-}
-
-std::string GpUrlQuery::SToString (const GpUrlQuery& aQuery)
-{
-    const ParamsMapT& params = aQuery.params;
-    if (params.empty())
+    if (iParams.empty())
     {
         return {};
     }
 
     return StrOps::SJoin<std::string>
     (
-        params,
+        iParams,
         [](const auto& i) -> std::string
         {
             std::string_view key = i->first;
@@ -51,11 +39,11 @@ std::string GpUrlQuery::SToString (const GpUrlQuery& aQuery)
     );
 }
 
-GpUrlQuery  GpUrlQuery::SFromString (std::string_view aQuery)
+GpUrlQuery  GpUrlQuery::SFromString (std::string_view aUrlQueryStr)
 {
     ParamsMapT paramsMap;
 
-    std::vector<std::string_view> parts = StrOps::SSplit(aQuery, '&', 0, 0, Algo::SplitMode::SKIP_ZERO_LENGTH_PARTS);
+    std::vector<std::string_view> parts = StrOps::SSplit(aUrlQueryStr, '&', 0, 0, Algo::SplitMode::SKIP_ZERO_LENGTH_PARTS);
 
     for (std::string_view part: parts)
     {
@@ -76,16 +64,18 @@ GpUrlQuery  GpUrlQuery::SFromString (std::string_view aQuery)
     return GpUrlQuery{paramsMap};
 }
 
-GpUrlQuery& GpUrlQuery::operator= (GpUrlQuery&& aUrl) noexcept
+GpUrlQuery& GpUrlQuery::operator= (const GpUrlQuery& aUrlQuery)
 {
-    params = std::move(aUrl.params);
+    iParams = aUrlQuery.iParams;
 
     return *this;
 }
 
-void    GpUrlQuery::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
+GpUrlQuery& GpUrlQuery::operator= (GpUrlQuery&& aUrlQuery) noexcept
 {
-    PROP(params);
+    iParams = std::move(aUrlQuery.iParams);
+
+    return *this;
 }
 
 }// namespace GPlatform

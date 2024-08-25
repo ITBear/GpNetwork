@@ -1,7 +1,6 @@
 #pragma once
 
-#include "GpNetworkHttpCore_global.hpp"
-
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCore_global.hpp>
 #include <GpCore2/GpUtils/Other/GpLinkedLibsInfo.hpp>
 
 namespace GPlatform {

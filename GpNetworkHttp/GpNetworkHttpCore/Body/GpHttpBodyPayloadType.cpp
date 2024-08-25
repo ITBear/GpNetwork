@@ -1,4 +1,4 @@
-#include "GpHttpBodyPayloadType.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Body/GpHttpBodyPayloadType.hpp>
 
 namespace GPlatform {
 

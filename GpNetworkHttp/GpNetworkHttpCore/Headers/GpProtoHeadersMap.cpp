@@ -1,36 +1,26 @@
 #include "GpProtoHeadersMap.hpp"
 
-#include <GpCore2/GpReflection/GpReflectManager.hpp>
-#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
-
 namespace GPlatform {
-
-REFLECT_IMPLEMENT(GpProtoHeadersMap, GP_MODULE_UUID)
 
 GpProtoHeadersMap::~GpProtoHeadersMap (void) noexcept
 {
 }
 
-void    GpProtoHeadersMap::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
-{
-    PROP(headers);
-}
-
-std::vector<std::string>&   GpProtoHeadersMap::GetOrCreateHeaders (std::string_view aName)
+GpProtoHeaderValue::ElementsT&  GpProtoHeadersMap::GetOrCreateHeaders (std::string_view aName)
 {
     std::string lowerName = GpUTF::SToLower(aName);
-    auto iter = headers.find(lowerName);
+    auto iter = iHeaders.find(lowerName);
 
-    if (iter == std::end(headers))
+    if (iter == std::end(iHeaders))
     {
-        return headers.emplace
+        return iHeaders.emplace
         (
             std::move(lowerName),
-            MakeSP<GpProtoHeaderValue>()
-        ).first->second->elements;
+            GpProtoHeaderValue{}
+        ).first->second.iElements;
     } else
     {
-        return iter->second->elements;
+        return iter->second.iElements;
     }
 }
 

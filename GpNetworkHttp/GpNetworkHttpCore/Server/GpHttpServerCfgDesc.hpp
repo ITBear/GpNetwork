@@ -33,24 +33,24 @@ public:
 };
 
 GpHttpServerCfgDesc::GpHttpServerCfgDesc (const GpHttpServerCfgDesc& aDesc):
-GpReflectObject(aDesc),
-listen_ip            (GpReflectUtils::SCopyValue(aDesc.listen_ip)),
-listen_port          (GpReflectUtils::SCopyValue(aDesc.listen_port)),
-listen_max_queue_size(GpReflectUtils::SCopyValue(aDesc.listen_max_queue_size)),
-event_poller_name    (GpReflectUtils::SCopyValue(aDesc.event_poller_name)),
-accept_socket_flags  (GpReflectUtils::SCopyValue(aDesc.accept_socket_flags)),
-listen_socket_flags  (GpReflectUtils::SCopyValue(aDesc.listen_socket_flags))
+GpReflectObject{aDesc},
+listen_ip            {GpReflectUtils::SCopyValue(aDesc.listen_ip)},
+listen_port          {GpReflectUtils::SCopyValue(aDesc.listen_port)},
+listen_max_queue_size{GpReflectUtils::SCopyValue(aDesc.listen_max_queue_size)},
+event_poller_name    {GpReflectUtils::SCopyValue(aDesc.event_poller_name)},
+accept_socket_flags  {GpReflectUtils::SCopyValue(aDesc.accept_socket_flags)},
+listen_socket_flags  {GpReflectUtils::SCopyValue(aDesc.listen_socket_flags)}
 {
 }
 
 GpHttpServerCfgDesc::GpHttpServerCfgDesc (GpHttpServerCfgDesc&& aDesc) noexcept:
-GpReflectObject(std::move(aDesc)),
-listen_ip            (std::move(aDesc.listen_ip)),
-listen_port          (std::move(aDesc.listen_port)),
-listen_max_queue_size(std::move(aDesc.listen_max_queue_size)),
-event_poller_name    (std::move(aDesc.event_poller_name)),
-accept_socket_flags  (std::move(aDesc.accept_socket_flags)),
-listen_socket_flags  (std::move(aDesc.listen_socket_flags))
+GpReflectObject{std::move(aDesc)},
+listen_ip            {std::move(aDesc.listen_ip)},
+listen_port          {std::move(aDesc.listen_port)},
+listen_max_queue_size{std::move(aDesc.listen_max_queue_size)},
+event_poller_name    {std::move(aDesc.event_poller_name)},
+accept_socket_flags  {std::move(aDesc.accept_socket_flags)},
+listen_socket_flags  {std::move(aDesc.listen_socket_flags)}
 {
 }
 

@@ -1,24 +1,29 @@
 # ----------- Config -----------
 TEMPLATE        = lib
-#CONFIG        += staticlib
 QMAKE_CXXFLAGS += -DGP_REFLECTION_STATIC_ADD_TO_MANAGER
 QMAKE_CXXFLAGS += -DGP_MODULE_UUID=17cab5e2-7e0b-4d44-8b69-deb8c902ffd8
 PACKET_NAME     = GpNetworkHttpCore
 DEFINES        += GP_NETWORK_HTTP_CORE_LIBRARY
 _VER_MAJ        = 2
 _VER_MIN        = 1
-_VER_PAT        = 5
+_VER_PAT        = 6
 DIR_LEVEL       = ./../../../
 
 include($$DIR_LEVEL/../QtGlobalPro.pri)
 
+release_build_static{
+	CONFIG += staticlib
+}
+
 # ----------- Libraries -----------
 os_windows{
 	LIBS += -lGpNetworkCore$$TARGET_POSTFIX
+	LIBS += -lGpLogCore$$TARGET_POSTFIX
 	LIBS += -lGpTasks$$TARGET_POSTFIX
 	LIBS += -lGpReflection$$TARGET_POSTFIX
 	LIBS += -lGpUtils$$TARGET_POSTFIX
 
+	LIBS += -lllhttp$$TARGET_POSTFIX
 	LIBS += -lws2_32
 }
 
@@ -34,6 +39,7 @@ SOURCES += \
     Client/GpHttpClientGuard.cpp \
     Client/GpHttpClientPool.cpp \
     Client/GpHttpClientPoolCatalog.cpp \
+    Client/GpHttpClientRequestTask.cpp \
     Enums/GpHttpCacheControl.cpp \
     Enums/GpHttpCharset.cpp \
     Enums/GpHttpConnectionFlag.cpp \
@@ -51,14 +57,15 @@ SOURCES += \
     Routers/RulesRouter/GpHttpRouterRule.cpp \
     Routers/TableRouter/GpHttpRouteTableStatic.cpp \
     Routers/TableRouter/GpHttpTableRouter.cpp \
+    RqRs/GpHttpParser.cpp \
     RqRs/GpHttpRequest.cpp \
     RqRs/GpHttpRequestNoBodyDesc.cpp \
     RqRs/GpHttpResponse.cpp \
     RqRs/GpHttpResponseNoBodyDesc.cpp \
-    Server/GpHttpRequestSocketTask.cpp \
-    Server/GpHttpRequestSocketTaskFactory.cpp \
     Server/GpHttpServer.cpp \
     Server/GpHttpServerCfgDesc.cpp \
+    Server/GpHttpServerRequestTask.cpp \
+    Server/GpHttpServerRequestTaskFactory.cpp \
     Url/GpUrl.cpp \
     Url/GpUrlAuthority.cpp \
     Url/GpUrlQuery.cpp \
@@ -70,10 +77,10 @@ HEADERS += \
     Body/GpHttpBodyPayloadFixed.hpp \
     Body/GpHttpBodyPayloadType.hpp \
     Client/GpHttpClient.hpp \
-    Client/GpHttpClientFactory.hpp \
     Client/GpHttpClientGuard.hpp \
     Client/GpHttpClientPool.hpp \
     Client/GpHttpClientPoolCatalog.hpp \
+    Client/GpHttpClientRequestTask.hpp \
     Enums/GpHttpCacheControl.hpp \
     Enums/GpHttpCharset.hpp \
     Enums/GpHttpConnectionFlag.hpp \
@@ -95,14 +102,15 @@ HEADERS += \
     Routers/TableRouter/GpHttpRouteTable.hpp \
     Routers/TableRouter/GpHttpRouteTableStatic.hpp \
     Routers/TableRouter/GpHttpTableRouter.hpp \
+    RqRs/GpHttpParser.hpp \
     RqRs/GpHttpRequest.hpp \
     RqRs/GpHttpRequestNoBodyDesc.hpp \
     RqRs/GpHttpResponse.hpp \
     RqRs/GpHttpResponseNoBodyDesc.hpp \
-    Server/GpHttpRequestSocketTask.hpp \
-    Server/GpHttpRequestSocketTaskFactory.hpp \
     Server/GpHttpServer.hpp \
     Server/GpHttpServerCfgDesc.hpp \
+    Server/GpHttpServerRequestTask.hpp \
+    Server/GpHttpServerRequestTaskFactory.hpp \
     Url/GpUrl.hpp \
     Url/GpUrlAuthority.hpp \
     Url/GpUrlQuery.hpp \

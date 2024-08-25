@@ -1,3 +1,4 @@
+#include <GpCore2/Config/IncludeExt/fmt.hpp>
 #include <GpNetwork/GpNetworkCore/Sockets/GpSocketAddr.hpp>
 
 GP_WARNING_PUSH()
@@ -15,8 +16,6 @@ GP_WARNING_PUSH()
 #include <boost/regex.hpp>
 
 GP_WARNING_POP()
-
-#include <GpCore2/Config/IncludeExt/fmt.hpp>
 
 namespace GPlatform {
 
@@ -36,10 +35,10 @@ void    GpSocketAddr::Set
 
     if (aIPv == IPvTE::IPv4)
     {
-        maxLength           = INET_ADDRSTRLEN - 1;
-        Raw_v4()->sin_port  = BitOps::H2N(aPort);
-        Raw_v4()->sin_family= NumOps::SConvert<decltype(sockaddr_in::sin_family)>(sinFamily);
-        sinAddrPtr          = &(Raw_v4()->sin_addr);
+        maxLength               = INET_ADDRSTRLEN - 1;
+        Raw_v4()->sin_port      = BitOps::H2N(aPort);
+        Raw_v4()->sin_family    = NumOps::SConvert<decltype(sockaddr_in::sin_family)>(sinFamily);
+        sinAddrPtr              = &(Raw_v4()->sin_addr);
     } else//IPvTE::IPv6
     {
         maxLength               = INET6_ADDRSTRLEN - 1;
@@ -48,8 +47,8 @@ void    GpSocketAddr::Set
         sinAddrPtr              = &(Raw_v6()->sin6_addr);
     }
 
-    if (   (aIP.length() == 0)
-        || (aIP.length() > maxLength)
+    if (   (std::size(aIP) == 0)
+        || (std::size(aIP) > maxLength)
         || (inet_pton(sinFamily, std::data(ipStr), sinAddrPtr) != 1))
     {
         THROW_GP
@@ -121,12 +120,23 @@ GpSocketAddr    GpSocketAddr::SRemoteFromSocketId (const GpSocketId aSocketId)
     if (sockLen == sizeof(sockaddr_in))
     {
         addr.iIPv = IPvTE::IPv4;
-    } else//sockLen == sizeof(sockaddr_in6)
+    } else// sockLen == sizeof(sockaddr_in6)
     {
         addr.iIPv = IPvTE::IPv6;
     }
 
     return addr;
+}
+
+void    GpSocketAddr::SetPort (u_int_16 aPort) noexcept
+{
+    if (iIPv == IPvTE::IPv4)
+    {
+        Raw_v4()->sin_port = BitOps::H2N(aPort);
+    } else// IPvTE::IPv6
+    {
+        Raw_v6()->sin6_port = BitOps::H2N(aPort);
+    }
 }
 
 std::string GpSocketAddr::ToString (void) const
@@ -188,7 +198,14 @@ GpSocketAddr::IPvTE GpSocketAddr::SDetectIPv (std::string_view aIP)
         }
     }
 
-    THROW_GP(fmt::format("Unable to detect IP version by IP address '{}'", aIP));
+    THROW_GP
+    (
+        fmt::format
+        (
+            "Unable to detect IP version by IP address '{}'",
+            aIP
+        )
+    );
 }
 
 }// namespace GPlatform

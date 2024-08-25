@@ -209,67 +209,15 @@ void    GpHttpClientCurlAsync::ProcessOtherMessages (GpAny& aMessage)
     GpHttpClient::ProcessOtherMessages(aMessage);
 }
 
-void    GpHttpClientCurlAsync::CheckConnection (const GpHttpRequest& aRequest)
-{
-    // Get server domain name from URL
-    std::string_view serverHostname = aRequest.iRequestNoBody.url.Authority().Host();
-
-    // Copy iConnecedToAddr to connecedToAddr;
-    GpSocketAddr connecedToAddr;
-    {
-        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
-        connecedToAddr = iConnecedToAddr;
-    }
-
-    // Get server ip from domain name
-    const GpSocketAddr serverAddrIPv4 = GpNetworkUtilsDns::S().Resolve(serverHostname, GpSocketIPv::IPv4, connecedToAddr);
-
-    // Check if connected
-    {
-        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
-
-        if (!iConnecedToAddr.IsEmpty())//
-        {
-            // Check to what ip connected
-            if (iConnecedToAddr != serverAddrIPv4)
-            {
-                CloseConnection();
-            } else
-            {
-                // OK, connected to correct ip
-                iState = StateT::CONNECTED_WAIT_FOR_REQUEST;
-                return;
-            }
-        }
-
-        iState = StateT::CONNECTION_IN_PROGRESS;
-    }
-
-    // Not connected
-    ConnectToAndWait(serverAddrIPv4);
-
-    {
-        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
-
-        // Check the connection state; it could change from an external close or other I/O event.
-        //THROW_COND_GP
-        //(
-        //  iState == StateT::CONNECTION_IN_PROGRESS,
-        //  //////////////////// ?
-        //);
-
-        // Update connection state
-        iConnecedToAddr = serverAddrIPv4;
-        iState          = StateT::CONNECTED_WAIT_FOR_REQUEST;
-    }
-}
-
 GpHttpResponse::SP  GpHttpClientCurlAsync::DoCurlRequestAndWait
 (
     [[maybe_unused]] GpHttpRequest& aRequest,
     [[maybe_unused]] const ErorrMode    aErorrMode
 )
 {
+    // Get server domain name from URL
+    std::string_view serverHostname = aRequest.iRequestNoBody.url.Authority().Host();
+
     return {};
 
     // 3. At this point we are connected

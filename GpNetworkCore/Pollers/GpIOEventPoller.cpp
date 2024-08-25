@@ -1,9 +1,9 @@
-#include "GpIOEventPoller.hpp"
+#include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPoller.hpp>
 
 namespace GPlatform {
 
 GpIOEventPoller::GpIOEventPoller (std::string aName) noexcept:
-GpTaskFiber(std::move(aName))
+GpTaskFiber{std::move(aName)}
 {
 }
 
@@ -15,24 +15,30 @@ void    GpIOEventPoller::AddSubscription
 (
     const GpSocketId                        aSocketId,
     const GpTaskId                          aTaskId,
+    const GpIOEventsTypes                   aEventTypes,
     SubsribersEventChannelT::CallbackFnT&&  aFn
 )
 {
     GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
 
-    auto iter = iSubsribersByIOObject.find(aSocketId);
+    THROW_COND_GP
+    (
+        iSubsribersByIOObject.contains(aSocketId) == false,
+        [aSocketId]()
+        {
+            return fmt::format
+            (
+                "Already subscripted for socket {}",
+                aSocketId
+            );
+        }
+    );
 
-    if (iter == std::end(iSubsribersByIOObject))
-    {
-        iSubsribersByIOObject[aSocketId].Subscribe(aTaskId, std::move(aFn));
-        OnAddObject(aSocketId);
-    } else
-    {
-        iter->second.Subscribe(aTaskId, std::move(aFn));
-    }
+    iSubsribersByIOObject[aSocketId].Subscribe(aTaskId, std::move(aFn));
+    OnAddObject(aSocketId, aEventTypes);
 }
 
-void    GpIOEventPoller::RemoveSubscription
+bool    GpIOEventPoller::RemoveSubscription
 (
     const GpSocketId    aSocketId,
     const GpTaskId      aTaskId
@@ -44,7 +50,7 @@ void    GpIOEventPoller::RemoveSubscription
 
     if (iter == std::end(iSubsribersByIOObject)) [[unlikely]]
     {
-        return;
+        return false;
     }
 
     SubsribersEventChannelT& channel = iter->second;
@@ -54,6 +60,8 @@ void    GpIOEventPoller::RemoveSubscription
         iSubsribersByIOObject.erase(aSocketId);
         OnRemoveObject(aSocketId);
     }
+
+    return true;
 }
 
 void    GpIOEventPoller::ProcessEvents
@@ -78,6 +86,16 @@ void    GpIOEventPoller::ProcessEvents
         iSubsribersByIOObject.erase(aSocketId);
         OnRemoveObject(aSocketId);
     }
+}
+
+void    GpIOEventPoller::OnStart (void)
+{
+    // NOP
+}
+
+void    GpIOEventPoller::OnStop ([[maybe_unused]] StopExceptionsT& aStopExceptionsOut) noexcept
+{
+    // NOP
 }
 
 }// namespace GPlatform

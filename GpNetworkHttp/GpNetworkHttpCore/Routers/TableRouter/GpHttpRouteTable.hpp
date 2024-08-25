@@ -11,8 +11,10 @@ public:
     CLASS_DD(GpHttpRouteTable)
     TAG_SET(THREAD_SAFE)
 
-public:
+protected:
                                         GpHttpRouteTable    (void) noexcept = default;
+
+public:
     virtual                             ~GpHttpRouteTable   (void) noexcept = default;
 
     virtual GpHttpRequestHandler::SP    FindHandler         (const GpHttpRequestNoBodyDesc& aHttpRqNoBody) const = 0;

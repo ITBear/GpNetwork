@@ -43,6 +43,7 @@ public:
     inline GpSocketAddr&        operator=           (GpSocketAddr&& aAddr) noexcept;
 
     inline bool                 operator==          (const GpSocketAddr& aAddr) const noexcept;
+    inline bool                 operator!=          (const GpSocketAddr& aAddr) const noexcept;
 
     static GpSocketAddr         SLocalFromSocketId  (const GpSocketId aSocketId);
     static GpSocketAddr         SRemoteFromSocketId (const GpSocketId aSocketId);
@@ -50,6 +51,7 @@ public:
     inline IPvTE                IPv                 (void) const noexcept;
     inline void                 SetIPv              (IPvTE aIPv) noexcept;
     inline u_int_16             Port                (void) const noexcept;
+    void                        SetPort             (u_int_16 aPort) noexcept;
 
     inline const sockaddr*      Raw                 (void) const noexcept;
     inline sockaddr*            Raw                 (void) noexcept;
@@ -129,7 +131,7 @@ void    GpSocketAddr::Clear (void) noexcept
 bool    GpSocketAddr::IsEmpty (void) const noexcept
 {
     constexpr const std::array<u_int_8, sizeof(decltype(iAddr))> zeros = {u_int_8{0}};
-    return std::memcmp(&iAddr, zeros.data(), sizeof(decltype(iAddr)));
+    return std::memcmp(&iAddr, std::data(zeros), sizeof(decltype(iAddr)));
 }
 
 void    GpSocketAddr::SetAutoIPv
@@ -192,6 +194,11 @@ bool    GpSocketAddr::operator== (const GpSocketAddr& aAddr) const noexcept
     {
         return std::memcmp(&iAddr, &aAddr.iAddr, sizeof(sockaddr_in6)) == 0;
     }
+}
+
+bool    GpSocketAddr::operator!= (const GpSocketAddr& aAddr) const noexcept
+{
+    return !(*this == aAddr);
 }
 
 GpSocketAddr::IPvTE GpSocketAddr::IPv (void) const noexcept

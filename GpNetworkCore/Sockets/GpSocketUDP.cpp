@@ -24,8 +24,11 @@ void    GpSocketUDP::Connect (const GpSocketAddr& aAddr)
         SetAddrRemote(GpSocketAddr::SRemoteFromSocketId(Id()));
     } catch (...)
     {
-        Close();
-        throw;
+        std::exception_ptr currentException = std::current_exception();
+        {
+            Close();
+        }
+        std::rethrow_exception(currentException);
     }
 }
 
@@ -55,18 +58,13 @@ std::optional<size_t>   GpSocketUDP::ReadFrom
 
     if (rcvSize > 0) [[likely]]
     {
-        aWriter.OffsetAdd(static_cast<size_t>(rcvSize));
+        aWriter.SubspanThenOffsetAdd(static_cast<size_t>(rcvSize));
         return static_cast<size_t>(rcvSize);
     } else if (rcvSize < 0) [[unlikely]]
     {
-GP_WARNING_PUSH()
-#if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-    GP_WARNING_DISABLE(unknown-warning-option)
-    GP_WARNING_DISABLE(logical-op)
-#endif// #if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-        if (   (errno == EAGAIN)
-            || (errno == EWOULDBLOCK))
-GP_WARNING_POP()
+        const int networkErrCode = GpNetworkErrors::SErrno();
+
+        if (GpNetworkErrors::SIsWouldBlock(networkErrCode))
         {
             return std::nullopt;
         }
@@ -74,7 +72,7 @@ GP_WARNING_POP()
         SCheckResOrThrow(-1, {});
     }
 
-    return 0;
+    return size_t{0};
 }
 
 std::optional<size_t>   GpSocketUDP::Read (GpByteWriter& aWriter)
@@ -96,18 +94,13 @@ std::optional<size_t>   GpSocketUDP::Read (GpByteWriter& aWriter)
 
     if (rcvSize > 0) [[likely]]
     {
-        aWriter.OffsetAdd(static_cast<size_t>(rcvSize));
+        aWriter.SubspanThenOffsetAdd(static_cast<size_t>(rcvSize));
         return static_cast<size_t>(rcvSize);
     } else if (rcvSize < 0) [[unlikely]]
     {
-GP_WARNING_PUSH()
-#if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-    GP_WARNING_DISABLE(unknown-warning-option)
-    GP_WARNING_DISABLE(logical-op)
-#endif// #if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-        if (   (errno == EAGAIN)
-            || (errno == EWOULDBLOCK))
-GP_WARNING_POP()
+        const int networkErrCode = GpNetworkErrors::SErrno();
+
+        if (GpNetworkErrors::SIsWouldBlock(networkErrCode))
         {
             return std::nullopt;
         }
@@ -115,7 +108,7 @@ GP_WARNING_POP()
         SCheckResOrThrow(-1, {});
     }
 
-    return 0;
+    return size_t{0};
 }
 
 std::optional<size_t>   GpSocketUDP::RecvMsg (GpSocketMessageUDP& aMessageOut)
@@ -146,12 +139,9 @@ std::optional<size_t>   GpSocketUDP::RecvMsg (GpSocketMessageUDP& aMessageOut)
         return aMessageOut.DataUseSize();
     } else if (rcvSize < 0) [[unlikely]]
     {
-GP_WARNING_PUSH()
-GP_WARNING_DISABLE(unknown-warning-option)
-GP_WARNING_DISABLE(logical-op)
-        if (   (errno == EAGAIN)
-            || (errno == EWOULDBLOCK))
-GP_WARNING_POP()
+        const int networkErrCode = GpNetworkErrors::SErrno();
+
+        if (GpNetworkErrors::SIsWouldBlock(networkErrCode))
         {
             return std::nullopt;
         }
@@ -159,7 +149,7 @@ GP_WARNING_POP()
         SCheckResOrThrow(-1, {});
     }
 
-    return 0;
+    return size_t{0};
 #elif defined(GP_OS_WINDOWS)// ----------------------------------- #elif defined(GP_OS_WINDOWS) ---------------------------------
     std::array<WSABUF, 1> iov;
     iov[0].buf  = reinterpret_cast<char*>(aMessageOut.Data_().Ptr());
@@ -186,9 +176,9 @@ GP_WARNING_POP()
 
     if (wsaRes < 0) [[unlikely]]
     {
-        if (WSAGetLastError() == WSAEWOULDBLOCK)
+        if (GpNetworkErrors::SErrno() == WSAEWOULDBLOCK)
         {
-            return 0;
+            return size_t{0};
         }
 
         THROW_GP(GpNetworkErrors::SGetLastError());
@@ -196,7 +186,7 @@ GP_WARNING_POP()
 
     if (rcvSize == 0) [[unlikely]]
     {
-        return 0;
+        return size_t{0};
     }
 
     aMessageOut
@@ -227,14 +217,9 @@ bool    GpSocketUDP::WriteTo
 
     if (sendSize < 0) [[unlikely]]
     {
-GP_WARNING_PUSH()
-#if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-    GP_WARNING_DISABLE(unknown-warning-option)
-    GP_WARNING_DISABLE(logical-op)
-#endif// #if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-        if (   (errno == EAGAIN)
-            || (errno == EWOULDBLOCK))
-GP_WARNING_POP()
+        const int networkErrCode = GpNetworkErrors::SErrno();
+
+        if (GpNetworkErrors::SIsWouldBlock(networkErrCode))
         {
             return false;
         }
@@ -265,14 +250,9 @@ bool    GpSocketUDP::Write (GpSpanByteR aData)
 
     if (sendSize < 0) [[unlikely]]
     {
-GP_WARNING_PUSH()
-#if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-    GP_WARNING_DISABLE(unknown-warning-option)
-    GP_WARNING_DISABLE(logical-op)
-#endif// #if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-        if (   (errno == EAGAIN)
-            || (errno == EWOULDBLOCK))
-GP_WARNING_POP()
+        const int networkErrCode = GpNetworkErrors::SErrno();
+
+        if (GpNetworkErrors::SIsWouldBlock(networkErrCode))
         {
             return false;
         }
@@ -316,12 +296,9 @@ bool    GpSocketUDP::SendMsg (const GpSocketMessageUDP& aMessage)
 
     if (sendSize < 0) [[unlikely]]
     {
-GP_WARNING_PUSH()
-GP_WARNING_DISABLE(unknown-warning-option)
-GP_WARNING_DISABLE(logical-op)
-        if (   (errno == EAGAIN)
-            || (errno == EWOULDBLOCK))
-GP_WARNING_POP()
+        const int networkErrCode = GpNetworkErrors::SErrno();
+
+        if (GpNetworkErrors::SIsWouldBlock(networkErrCode))
         {
             return false;
         }
@@ -356,7 +333,7 @@ GP_WARNING_POP()
 
     if (wsaRes < 0) [[unlikely]]
     {
-        if (WSAGetLastError() == WSAEWOULDBLOCK)
+        if (GpNetworkErrors::SErrno() == WSAEWOULDBLOCK)
         {
             return false;
         }

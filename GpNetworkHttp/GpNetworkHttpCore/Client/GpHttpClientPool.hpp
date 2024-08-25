@@ -3,7 +3,7 @@
 //#include "GpHttpClientFactory.hpp"
 //#include "../../../../GpCore2/GpUtils/Types/Containers/GpElementsPool.hpp"
 //
-//namespace GPlatform {
+// namespace GPlatform {
 //
 //class GP_NETWORK_HTTP_CORE_API GpHttpClientPool final: public GpElementsPool<GpHttpClient::SP>
 //{

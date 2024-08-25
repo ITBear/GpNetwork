@@ -11,7 +11,8 @@ static const std::array<std::string_view, GpHttpHeaderType::SCount()>   _gpHttpH
     "connection"_sv,        // CONNECTION
     "cache-control"_sv,     // CACHE_CONTROL
     "authorization"_sv,     // AUTHORIZATION
-    "host"_sv               // HOST
+    "host"_sv,              // HOST
+    "user-agent"_sv         // USER_AGENT
 };
 
 std::string_view GpProtoHeader_EnumToStr(GpHttpHeaderType::EnumT aValue)

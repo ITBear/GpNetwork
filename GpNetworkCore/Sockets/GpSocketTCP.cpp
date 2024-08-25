@@ -1,6 +1,6 @@
-#include "GpSocketTCP.hpp"
-
-#include <GpCore2/GpUtils/Streams/GpByteWriter.cpp>
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketTCP.hpp>
+#include <GpCore2/GpTasks/Fibers/GpTaskFiber.hpp>
+#include <GpCore2/GpUtils/Streams/GpByteWriter.hpp>
 #include <GpCore2/GpUtils/Streams/GpByteReader.hpp>
 
 namespace GPlatform {
@@ -16,10 +16,9 @@ GpSocketTCP::SP GpSocketTCP::SFromID
     const StateT        aState
 )
 {
-    GpSocketTCP::SP socketSP    = MakeSP<GpSocketTCP>(GpSocketFlags{}, aCloseMode);
-    GpSocketTCP&    socket      = socketSP.V();
+    GpSocketTCP::SP socketSP = MakeSP<GpSocketTCP>(GpSocketFlags{}, aCloseMode);
 
-    socket.SetFromRawTCP(aId, aState);
+    socketSP.V().SetFromRawTCP(aId, aState);
 
     return socketSP;
 }
@@ -46,16 +45,22 @@ void    GpSocketTCP::Listen
         iState = StateT::LISTEN;
     } catch (...)
     {
-        Close();
-        iState = StateT::NOT_CONNECTED;
-        throw;
+        std::exception_ptr currentException = std::current_exception();
+        {
+            Close();
+            iState = StateT::NOT_CONNECTED;
+        }
+
+        std::rethrow_exception(currentException);
     }
 }
 
-void    GpSocketTCP::Connect
+void    GpSocketTCP::ConnectAndWait
 (
-    const GpSocketAddr&     aAddr,
-    const milliseconds_t    aTimeout
+    const GpSocketAddr&         aAddr,
+    const milliseconds_t        aTimeout,
+    const GpIOEventPollerIdx    aIOEventPollerIdx,
+    const GpTaskId              aIOEventPollerSubscribeTaskId
 )
 {
     try
@@ -73,7 +78,7 @@ void    GpSocketTCP::Connect
 
         if (Flags().Test(GpSocketFlag::NO_BLOCK))
         {
-            ConnectAsync(aAddr);
+            ConnectAsyncAndWait(aAddr, aIOEventPollerIdx, aIOEventPollerSubscribeTaskId);
         } else
         {
             ConnectSync(aAddr);
@@ -87,9 +92,13 @@ void    GpSocketTCP::Connect
         SetAddrRemote(GpSocketAddr::SRemoteFromSocketId(Id()));
     } catch (...)
     {
-        Close();
-        iState = StateT::NOT_CONNECTED;
-        throw;
+        std::exception_ptr currentException = std::current_exception();
+        {
+            Close();
+            iState = StateT::NOT_CONNECTED;
+        }
+
+        std::rethrow_exception(currentException);
     }
 }
 
@@ -107,7 +116,9 @@ GpSocketTCP::C::Opt::Val    GpSocketTCP::Accept (const GpSocketFlags& aFlags)
 
         if (incomingSocketId == GpSocketId_Default())
         {
-            if (errno == EAGAIN)
+            const int networkErrCode = GpNetworkErrors::SErrno();
+
+            if (GpNetworkErrors::SIsWouldBlock(networkErrCode))
             {
                 return std::nullopt;
             }
@@ -122,22 +133,30 @@ GpSocketTCP::C::Opt::Val    GpSocketTCP::Accept (const GpSocketFlags& aFlags)
             connectedSocket.SetFromRawTCP(incomingSocketId, StateT::INCOMING);
         } catch (...)
         {
-            SClose(incomingSocketId);
-            throw;
+            std::exception_ptr currentException = std::current_exception();
+            {
+                SClose(incomingSocketId);
+            }
+
+            std::rethrow_exception(currentException);
         }
 
         return connectedSocket;
     } catch (...)
     {
-        Close();
-        iState = StateT::NOT_CONNECTED;
-        throw;
+        std::exception_ptr currentException = std::current_exception();
+        {
+            Close();
+            iState = StateT::NOT_CONNECTED;
+        }
+
+        std::rethrow_exception(currentException);
     }
 }
 
 size_t  GpSocketTCP::Read (GpByteWriter& aWriter)
 {
-    size_t  totalRcvSize    = 0;
+    size_t totalRcvSize = 0;
 
     do
     {
@@ -154,14 +173,9 @@ size_t  GpSocketTCP::Read (GpByteWriter& aWriter)
 
         if (rcvSize < 0) [[unlikely]]
         {
-GP_WARNING_PUSH()
-#if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-    GP_WARNING_DISABLE(unknown-warning-option)
-    GP_WARNING_DISABLE(logical-op)
-#endif// #if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-            if (   (errno == EAGAIN)
-                || (errno == EWOULDBLOCK))
-GP_WARNING_POP()
+            const int networkErrCode = GpNetworkErrors::SErrno();
+
+            if (GpNetworkErrors::SIsWouldBlock(networkErrCode))
             {
                 return totalRcvSize;
             } else
@@ -174,7 +188,7 @@ GP_WARNING_POP()
         }
 
         totalRcvSize = NumOps::SAdd(totalRcvSize, size_t(rcvSize));
-        aWriter.OffsetAdd(size_t(rcvSize));
+        aWriter.SubspanThenOffsetAdd(size_t(rcvSize));
 
         if (size_t(rcvSize) < writerStoragePtr.Count()) [[likely]]
         {
@@ -205,13 +219,9 @@ size_t  GpSocketTCP::Write (GpByteReader& aReader)
 
     if (sendSize < 0)
     {
-GP_WARNING_PUSH()
-#if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-    GP_WARNING_DISABLE(unknown-warning-option)
-    GP_WARNING_DISABLE(logical-op)
-#endif// #if defined(GP_COMPILER_CLANG) || defined(GP_COMPILER_GCC)
-        if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
-GP_WARNING_POP()
+        const int networkErrCode = GpNetworkErrors::SErrno();
+
+        if (GpNetworkErrors::SIsWouldBlock(networkErrCode))
         {
             return 0;
         } else
@@ -223,6 +233,44 @@ GP_WARNING_POP()
     aReader.OffsetAdd(size_t(sendSize));
 
     return size_t(sendSize);
+}
+
+bool    GpSocketTCP::IsConnected (void) const noexcept
+{
+    return SIsConnected(Id());
+}
+
+bool    GpSocketTCP::SIsConnected (const GpSocketId aId) noexcept
+{
+    char buf = 0;
+    const ssize_t rcvRes = recv(aId, &buf, 1, MSG_PEEK);
+
+    if (rcvRes > 0) [[unlikely]]
+    {
+        return true;
+    }
+
+#if defined(GP_POSIX)
+    return GpNetworkErrors::SErrno() == EWOULDBLOCK;
+#elif defined(GP_OS_WINDOWS)
+    return GpNetworkErrors::SErrno() == WSAEWOULDBLOCK;
+#else
+#   error Unsupported OS
+#endif
+
+//#if defined(GP_POSIX)
+//  int         error   = 0;
+//  socklen_t   len     = sizeof(error);
+//  const int   retval  = getsockopt(aId, SOL_SOCKET, SO_ERROR, &error, &len);
+//#elif defined(GP_OS_WINDOWS)
+//  int         error   = 0;
+//  socklen_t   len     = sizeof(error);
+//  const int   retval  = getsockopt(aId, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len);
+//#else
+//# error Unsupported OS
+//#endif
+
+//  return (retval == 0) && (error == 0);
 }
 
 void    GpSocketTCP::SetFromRawTCP
@@ -237,20 +285,30 @@ void    GpSocketTCP::SetFromRawTCP
         iState = aState;
     } catch (...)
     {
-//      SetFlag_LingerZero(true);
-        Close();
-        iState = StateT::NOT_CONNECTED;
-        throw;
+        std::exception_ptr currentException = std::current_exception();
+        {
+            //SetFlag_LingerZero(true);
+            Close();
+            iState = StateT::NOT_CONNECTED;
+        }
+
+        std::rethrow_exception(currentException);
     }
 }
 
 void    GpSocketTCP::ConnectSync (const GpSocketAddr& aAddr)
 {
     const int res = connect(Id(), aAddr.Raw(), aAddr.RawSize());
+
     SCheckResOrThrow(res, {});
 }
 
-void    GpSocketTCP::ConnectAsync (const GpSocketAddr& aAddr)
+void    GpSocketTCP::ConnectAsyncAndWait
+(
+    const GpSocketAddr&         aAddr,
+    const GpIOEventPollerIdx    aIOEventPollerIdx,
+    const GpTaskId              aIOEventPollerSubscribeTaskId
+)
 {
     const int res = connect
     (
@@ -261,37 +319,47 @@ void    GpSocketTCP::ConnectAsync (const GpSocketAddr& aAddr)
 
     if (res < 0)
     {
-        //TODO: implement
-        THROW_GP_NOT_IMPLEMENTED();
+        const auto networkErrCode = GpNetworkErrors::SErrno();
 
-        //THROW_GP(GpErrno::SGetAndClear());
-
-        /*if (errno == EINPROGRESS)
+        if (GpNetworkErrors::SConnInProgress(networkErrCode))
         {
-            THROW_COND_GP
-            (
-                GpTaskFiber::SIsIntoFiber(),
-                "NO_BLOCK mode available only from inside fiber task"_sv
-            );
+            // Add to IO event poller
+            {
+                const bool isAdded = GpIOEventPollerCatalog::SAddSubscriptionSafe
+                (
+                    Id(),
+                    aIOEventPollerSubscribeTaskId,
+                    aIOEventPollerIdx,
+                    {GpIOEventType::READY_TO_READ, GpIOEventType::READY_TO_WRITE, GpIOEventType::CLOSED, GpIOEventType::ERROR_OCCURRED}
+                );
 
-            //Wait
-            ?
+                THROW_COND_GP
+                (
+                    isAdded == true,
+                    "Failed to subscribe to IO event poller"
+                );
+            }
+
+            // Wait
             YELD_WAIT();
 
-            //TODO: implement event processing
-            THROW_GP_NOT_IMPLEMENTED();
-            //Check result
-            const GpIODeviceEvents& ioEvents = GpTaskCoroutineCtx::STaskSignal<GpIODeviceSignal>().Vn().Events();
-
-            if (ioEvents.TestFlagE(GpIODeviceEvent::CLOSED) ||
-                ioEvents.TestFlagE(GpIODeviceEvent::ERROR_OCCURRED))
-            {
-                THROW_GP("Failed to connect to "_sv + aAddr.ToString());
-            }
+            // Check result
+            THROW_COND_GP
+            (
+                IsConnected() == true,
+                [aAddr]()
+                {
+                    return fmt::format
+                    (
+                        "Failed to connect to {}",
+                        aAddr.ToString()
+                    );
+                }
+            );
         } else
         {
-
-        }*/
+            SCheckResOrThrow(res, {});
+        }
     }
 }
 
@@ -299,7 +367,15 @@ void    GpSocketTCP::SetUserTimeout ([[maybe_unused]] const milliseconds_t aTime
 {
 #if defined(GP_POSIX)
     int tcp_timeout = aTimeout.As<int>();
-    const int res = setsockopt(Id(), IPPROTO_TCP, TCP_USER_TIMEOUT, reinterpret_cast<const char*>(&tcp_timeout), sizeof(tcp_timeout));
+
+    const int res = setsockopt
+    (
+        Id(),
+        IPPROTO_TCP,
+        TCP_USER_TIMEOUT,
+        reinterpret_cast<const char*>(&tcp_timeout),
+        sizeof(tcp_timeout)
+    );
 
     SCheckResOrThrow(res, {});
 #endif

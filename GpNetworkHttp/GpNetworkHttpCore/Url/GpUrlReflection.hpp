@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 #include "../GpNetworkHttpCore_global.hpp"
 #include "GpUrl.hpp"
 
@@ -17,3 +18,4 @@ public:
 };
 
 }// namespace GPlatform
+*/

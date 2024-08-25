@@ -1,20 +1,16 @@
 #pragma once
 
-#include "../GpNetworkHttpCore_global.hpp"
-#include "../Headers/GpHttpHeaders.hpp"
-
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCore_global.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Headers/GpHttpHeaders.hpp>
 #include <GpCore2/GpUtils/Macro/GpMacroClass.hpp>
 #include <GpCore2/GpUtils/Types/Containers/GpContainersT.hpp>
-#include <GpCore2/GpReflection/GpReflectObject.hpp>
-#include <GpCore2/GpReflection/GpReflectUtils.hpp>
 
 namespace GPlatform {
 
-class GP_NETWORK_HTTP_CORE_API GpUrlAuthority final: public GpReflectObject
+class GP_NETWORK_HTTP_CORE_API GpUrlAuthority
 {
 public:
     CLASS_DD(GpUrlAuthority)
-    REFLECT_DECLARE("e54c96c2-2021-4283-04bd-9b742e90fd36"_uuid)
 
 public:
                             GpUrlAuthority      (void) noexcept = default;
@@ -23,7 +19,7 @@ public:
                             GpUrlAuthority      (std::string    aUserName,
                                                  std::string    aPassword,
                                                  std::string    aHost,
-                                                 const u_int_16 aPort) noexcept;
+                                                 u_int_16       aPort) noexcept;
                             ~GpUrlAuthority     (void) noexcept;
 
     GpUrlAuthority&         operator=           (const GpUrlAuthority& aAuthority);
@@ -32,12 +28,12 @@ public:
     void                    Clear               (void);
     void                    SetFromHeaders      (const GpHttpHeaders& aHeaders);
 
-    std::string_view        UserName            (void) const noexcept {return user_name;}
-    std::string_view        Password            (void) const noexcept {return password;}
-    std::string_view        Host                (void) const noexcept {return host;}
-    u_int_16                Port                (void) const noexcept {return port;}
+    std::string_view        UserName            (void) const noexcept {return iUserName;}
+    std::string_view        Password            (void) const noexcept {return iPassword;}
+    std::string_view        Host                (void) const noexcept {return iHost;}
+    u_int_16                Port                (void) const noexcept {return iPort;}
 
-    static std::string      SToString           (const GpUrlAuthority& aAuthority);
+    std::string             ToString            (void) const;
     static GpUrlAuthority   SFromString         (std::string_view aAuthority);
 
 private:
@@ -49,10 +45,10 @@ private:
                                                  u_int_16&          aPortOut);
 
 private:
-    std::string             user_name;
-    std::string             password;
-    std::string             host;
-    u_int_16                port = 0;
+    std::string             iUserName;
+    std::string             iPassword;
+    std::string             iHost;
+    u_int_16                iPort = 0;
 };
 
 }// namespace GPlatform

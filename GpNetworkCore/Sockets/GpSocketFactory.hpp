@@ -18,8 +18,6 @@ public:
     virtual                 ~GpSocketFactory    (void) noexcept = default;
 
     virtual GpSocket::SP    NewInstance         (void) const = 0;
-    virtual void            OnStart             (GpSocket::SP aSocket) const = 0;
-    virtual void            OnStop              (GpSocket::SP aSocket) const = 0;
 };
 
 }// namespace GPlatform

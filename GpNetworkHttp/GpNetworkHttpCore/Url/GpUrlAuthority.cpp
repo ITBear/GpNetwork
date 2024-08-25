@@ -1,27 +1,20 @@
-#include "GpUrlAuthority.hpp"
-
-#include <GpCore2/GpReflection/GpReflectManager.hpp>
-#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Url/GpUrlAuthority.hpp>
 
 namespace GPlatform {
 
-REFLECT_IMPLEMENT(GpUrlAuthority, GP_MODULE_UUID)
-
 GpUrlAuthority::GpUrlAuthority (const GpUrlAuthority& aAuthority):
-GpReflectObject(aAuthority),
-user_name(GpReflectUtils::SCopyValue(aAuthority.user_name)),
-password (GpReflectUtils::SCopyValue(aAuthority.password)),
-host     (GpReflectUtils::SCopyValue(aAuthority.host)),
-port     (GpReflectUtils::SCopyValue(aAuthority.port))
+iUserName{aAuthority.iUserName},
+iPassword{aAuthority.iPassword},
+iHost    {aAuthority.iHost},
+iPort    {aAuthority.iPort}
 {
 }
 
 GpUrlAuthority::GpUrlAuthority (GpUrlAuthority&& aAuthority) noexcept:
-GpReflectObject(std::move(aAuthority)),
-user_name(std::move(aAuthority.user_name)),
-password (std::move(aAuthority.password)),
-host     (std::move(aAuthority.host)),
-port     (std::move(aAuthority.port))
+iUserName{std::move(aAuthority.iUserName)},
+iPassword{std::move(aAuthority.iPassword)},
+iHost    {std::move(aAuthority.iHost)},
+iPort    {std::move(aAuthority.iPort)}
 {
 }
 
@@ -32,10 +25,10 @@ GpUrlAuthority::GpUrlAuthority
     std::string     aHost,
     const u_int_16  aPort
 ) noexcept:
-user_name(std::move(aUserName)),
-password (std::move(aPassword)),
-host     (std::move(aHost)),
-port     (std::move(aPort))
+iUserName{std::move(aUserName)},
+iPassword{std::move(aPassword)},
+iHost    {std::move(aHost)},
+iPort    {std::move(aPort)}
 {
 }
 
@@ -45,30 +38,30 @@ GpUrlAuthority::~GpUrlAuthority (void) noexcept
 
 GpUrlAuthority& GpUrlAuthority::operator= (const GpUrlAuthority& aAuthority)
 {
-    user_name   = aAuthority.user_name;
-    password    = aAuthority.password;
-    host        = aAuthority.host;
-    port        = aAuthority.port;
+    iUserName   = aAuthority.iUserName;
+    iPassword   = aAuthority.iPassword;
+    iHost       = aAuthority.iHost;
+    iPort       = aAuthority.iPort;
 
     return *this;
 }
 
 GpUrlAuthority& GpUrlAuthority::operator= (GpUrlAuthority&& aAuthority) noexcept
 {
-    user_name   = std::move(aAuthority.user_name);
-    password    = std::move(aAuthority.password);
-    host        = std::move(aAuthority.host);
-    port        = std::move(aAuthority.port);
+    iUserName   = std::move(aAuthority.iUserName);
+    iPassword   = std::move(aAuthority.iPassword);
+    iHost       = std::move(aAuthority.iHost);
+    iPort       = std::move(aAuthority.iPort);
 
     return *this;
 }
 
 void    GpUrlAuthority::Clear (void)
 {
-    user_name.clear();
-    password.clear();
-    host.clear();
-    port = 0;
+    iUserName.clear();
+    iPassword.clear();
+    iHost.clear();
+    iPort = 0;
 }
 
 void    GpUrlAuthority::SetFromHeaders (const GpHttpHeaders& aHeaders)
@@ -78,28 +71,28 @@ void    GpUrlAuthority::SetFromHeaders (const GpHttpHeaders& aHeaders)
 
     if (hostStrOpt.has_value())
     {
-        SHostPortFromStr(hostStrOpt.value(), host, port);
+        SHostPortFromStr(hostStrOpt.value(), iHost, iPort);
     }
 
     if (authStrOpt.has_value())
     {
-        SUserPasswordFromStr(authStrOpt.value(), user_name, password);
+        SUserPasswordFromStr(authStrOpt.value(), iUserName, iPassword);
     }
 }
 
-std::string GpUrlAuthority::SToString (const GpUrlAuthority& aAuthority)
+std::string GpUrlAuthority::ToString (void) const
 {
     std::string str;
     str.reserve(64);
 
-    std::string_view user_name  = aAuthority.UserName();
-    std::string_view password   = aAuthority.Password();
-    std::string_view host       = aAuthority.Host();
+    std::string_view userName   = UserName();
+    std::string_view password   = Password();
+    std::string_view host       = Host();
 
-    // user_name, password
-    if (!user_name.empty())
+    // userName, password
+    if (!userName.empty())
     {
-        str.append(user_name);
+        str.append(userName);
 
         if (!password.empty())
         {
@@ -113,9 +106,9 @@ std::string GpUrlAuthority::SToString (const GpUrlAuthority& aAuthority)
     str.append(host);
 
     // port
-    if (aAuthority.Port() > 0)
+    if (Port() > 0)
     {
-        str.append(":").append(std::to_string(aAuthority.Port()));
+        str.append(":").append(std::to_string(Port()));
     }
 
     return str;
@@ -125,30 +118,30 @@ GpUrlAuthority  GpUrlAuthority::SFromString (std::string_view aAuthority)
 {
     GpUrlAuthority authority;
 
-    std::string_view user_name_and_password;
-    std::string_view host_and_port;
+    std::string_view userNameAndPassword;
+    std::string_view hostAndPort;
     if (const auto pos = aAuthority.find("@"_sv); pos != std::string::npos)
     {
-        user_name_and_password  = aAuthority.substr(0, pos);
-        host_and_port           = aAuthority.substr(pos + 1);
+        userNameAndPassword = aAuthority.substr(0, pos);
+        hostAndPort         = aAuthority.substr(pos + 1);
     } else
     {
-        user_name_and_password  = "";
-        host_and_port           = aAuthority;
+        userNameAndPassword = "";
+        hostAndPort         = aAuthority;
     }
 
     SUserPasswordFromStr
     (
-        user_name_and_password,
-        authority.user_name,
-        authority.password
+        userNameAndPassword,
+        authority.iUserName,
+        authority.iPassword
     );
 
     SHostPortFromStr
     (
-        host_and_port,
-        authority.host,
-        authority.port
+        hostAndPort,
+        authority.iHost,
+        authority.iPort
     );
 
     return authority;
@@ -192,14 +185,6 @@ void    GpUrlAuthority::SHostPortFromStr
     {
         aHostOut = aHostAndPortStr;
     }
-}
-
-void    GpUrlAuthority::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
-{
-    PROP(user_name);
-    PROP(password);
-    PROP(host);
-    PROP(port);
 }
 
 }// namespace GPlatform

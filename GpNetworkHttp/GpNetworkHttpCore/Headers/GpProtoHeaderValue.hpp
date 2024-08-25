@@ -1,17 +1,19 @@
 #pragma once
 
-#include "../GpNetworkHttpCore_global.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCore_global.hpp>
 
-#include <GpCore2/GpReflection/GpReflectObject.hpp>
-#include <GpCore2/GpReflection/GpReflectUtils.hpp>
+#include <GpCore2/Config/IncludeExt/boost_small_vector.hpp>
+#include <GpCore2/GpUtils/Macro/GpMacroClass.hpp>
+#include <GpCore2/GpUtils/Types/Containers/GpContainersT.hpp>
 
 namespace GPlatform {
 
-class GP_NETWORK_HTTP_CORE_API GpProtoHeaderValue final: public GpReflectObject
+class GP_NETWORK_HTTP_CORE_API GpProtoHeaderValue
 {
 public:
     CLASS_DD(GpProtoHeaderValue)
-    REFLECT_DECLARE("3dacda2f-90ec-4305-80d3-729f955a4946"_uuid)
+
+    using ElementsT = boost::container::small_vector<std::string, 2>;
 
 public:
                                 GpProtoHeaderValue  (void) noexcept = default;
@@ -19,32 +21,47 @@ public:
     inline                      GpProtoHeaderValue  (GpProtoHeaderValue&& aValue) noexcept;
     inline                      GpProtoHeaderValue  (std::string_view aElement);
     inline                      GpProtoHeaderValue  (std::string aElement);
-    virtual                     ~GpProtoHeaderValue (void) noexcept override final;
+                                ~GpProtoHeaderValue (void) noexcept;
+
+    inline GpProtoHeaderValue&  operator=           (const GpProtoHeaderValue& aValue);
+    inline GpProtoHeaderValue&  operator=           (GpProtoHeaderValue&& aValue) noexcept;
 
 public:
-    std::vector<std::string>    elements;
+    ElementsT   iElements;
 };
 
 GpProtoHeaderValue::GpProtoHeaderValue (const GpProtoHeaderValue& aValue):
-GpReflectObject(aValue),
-elements(GpReflectUtils::SCopyValue(aValue.elements))
+iElements{aValue.iElements}
 {
 }
 
 GpProtoHeaderValue::GpProtoHeaderValue (GpProtoHeaderValue&& aValue) noexcept:
-GpReflectObject(std::move(aValue)),
-elements(std::move(aValue.elements))
+iElements{std::move(aValue.iElements)}
 {
 }
 
-GpProtoHeaderValue::GpProtoHeaderValue (std::string_view aElement)
+GpProtoHeaderValue::GpProtoHeaderValue (std::string_view aElement):
+iElements{{std::string(aElement)}}
 {
-    elements.emplace_back(std::move(aElement));
 }
 
 GpProtoHeaderValue::GpProtoHeaderValue (std::string aElement):
-elements({std::move(aElement)})
+iElements{{std::move(aElement)}}
 {
+}
+
+GpProtoHeaderValue& GpProtoHeaderValue::operator= (const GpProtoHeaderValue& aValue)
+{
+    iElements = aValue.iElements;
+
+    return *this;
+}
+
+GpProtoHeaderValue& GpProtoHeaderValue::operator= (GpProtoHeaderValue&& aValue) noexcept
+{
+    iElements = std::move(aValue.iElements);
+
+    return *this;
 }
 
 }// namespace GPlatform

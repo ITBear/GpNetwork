@@ -1,6 +1,7 @@
 #include <GpNetwork/GpNetworkCore/GpNetworkUtilsDns.hpp>
 #include <GpCore2/GpUtils/Other/GpRAIIonDestruct.hpp>
 #include <GpCore2/GpUtils/DateTime/GpDateTimeOps.hpp>
+#include <GpNetwork/GpNetworkCore/GpNetworkErrors.hpp>
 
 #if defined(GP_POSIX)
 #   include <netdb.h>
@@ -85,8 +86,8 @@ GpSocketAddr    GpNetworkUtilsDns::Resolve
 
             const auto iter = std::find
             (
-                addresses.begin(),
-                addresses.end(),
+                std::begin(addresses),
+                std::end(addresses),
                 aCurrentResolvedAddrOptCRef.value().get()
             );
 
@@ -118,7 +119,7 @@ GpNetworkUtilsDns::ResolveRes   GpNetworkUtilsDns::SResolveNoCache
     GpSocketIPv         aIPv
 )
 {
-#if defined(GP_POSIX) // -------------------------------------------- GP_POSIX --------------------------------------------
+//#if defined(GP_POSIX) // -------------------------------------------- GP_POSIX --------------------------------------------
     struct addrinfo*    resolvedAddrInfo = nullptr;
     struct addrinfo     addrHints;
 
@@ -153,11 +154,19 @@ GpNetworkUtilsDns::ResolveRes   GpNetworkUtilsDns::SResolveNoCache
         getaddrinfoRes == 0,
         [getaddrinfoRes, aDomainName]()
         {
+#if defined(GP_POSIX)
+            const std::string errorMsg = gai_strerror(getaddrinfoRes);
+#elif defined(GP_OS_WINDOWS)
+            const std::string errorMsg = GpNetworkErrors::SGetLastError();
+#else
+#   error Unsupported OS
+#endif
+
             return fmt::format
-            (
+            (                       
                 "Failed to get ip address for domain '{}': {}",
                 aDomainName,
-                gai_strerror(getaddrinfoRes)
+                errorMsg
             );
         }
     );
@@ -173,7 +182,7 @@ GpNetworkUtilsDns::ResolveRes   GpNetworkUtilsDns::SResolveNoCache
         {
             const struct sockaddr_in& addr = *reinterpret_cast<struct sockaddr_in*>(addrInfo->ai_addr);
             resolvedAddresses.emplace_back(addr);
-        } else// ipv6
+        } else // ipv6
         {
             const struct sockaddr_in6& addr = *reinterpret_cast<struct sockaddr_in6*>(addrInfo->ai_addr);
             resolvedAddresses.emplace_back(addr);
@@ -181,7 +190,7 @@ GpNetworkUtilsDns::ResolveRes   GpNetworkUtilsDns::SResolveNoCache
     }
 
     return resolveRes;
-#endif// #if defined(GP_POSIX)
+//#endif// #if defined(GP_POSIX)
 }
 
 }// namespace GPlatform

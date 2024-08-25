@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Routers/GpHttpRouter.hpp"
-#include "GpHttpServerCfgDesc.hpp"
-#include "../../../GpNetworkCore/Tasks/GpTcpAcceptServerTask.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Routers/GpHttpRouter.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Server/GpHttpServerCfgDesc.hpp>
+#include <GpNetwork/GpNetworkCore/Tasks/GpTcpAcceptServerTask.hpp>
 
 namespace GPlatform {
 

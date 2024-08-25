@@ -27,15 +27,15 @@ public:
 protected:
     inline                  GpSocket            (void) noexcept;
     inline                  GpSocket            (GpSocket&& aSocket) noexcept;
-    inline                  GpSocket            (const ProtocolTE       aProtocol,
-                                                 const GpSocketFlags&   aFlags,
-                                                 const CloseModeT       aCloseMode) noexcept;
+    inline                  GpSocket            (ProtocolTE     aProtocol,
+                                                 GpSocketFlags  aFlags,
+                                                 CloseModeT     aCloseMode) noexcept;
 
-    inline                  GpSocket            (const GpSocketId       aId,
-                                                 const IPvTE            aIpV,
-                                                 const ProtocolTE       aProtocol,
-                                                 const GpSocketFlags&   aFlags,
-                                                 const CloseModeT       aCloseMode) noexcept;
+    inline                  GpSocket            (GpSocketId     aId,
+                                                 IPvTE          aIpV,
+                                                 ProtocolTE     aProtocol,
+                                                 GpSocketFlags  aFlags,
+                                                 CloseModeT     aCloseMode) noexcept;
 
 public:
     virtual                 ~GpSocket           (void) noexcept;
@@ -52,11 +52,11 @@ public:
     inline void             CheckForErrors      (void) const;
     inline void             Close               (void);
     inline void             Bind                (const GpSocketAddr& aAddr);
+    inline void             Create              (IPvTE aIPv);
 
 protected:
     GpSocket&               operator=           (GpSocket&&) noexcept = delete;
     inline void             Set                 (GpSocket&& aSocket);
-    inline void             Create              (IPvTE aIPv);
     inline void             SetAddrLocal        (const GpSocketAddr& aAddr) noexcept {iAddrLocal = aAddr;}
     inline void             SetAddrRemote       (const GpSocketAddr& aAddr) noexcept {iAddrRemote = aAddr;}
 
@@ -93,13 +93,13 @@ GpSocket::GpSocket (void) noexcept
 }
 
 GpSocket::GpSocket (GpSocket&& aSocket) noexcept:
-iId        (std::move(aSocket.iId        )),
-iIPv       (std::move(aSocket.iIPv       )),
-iProtocol  (std::move(aSocket.iProtocol  )),
-iAddrLocal (std::move(aSocket.iAddrLocal )),
-iAddrRemote(std::move(aSocket.iAddrRemote)),
-iFlags     (std::move(aSocket.iFlags     )),
-iCloseMode (std::move(aSocket.iCloseMode ))
+iId        {std::move(aSocket.iId        )},
+iIPv       {std::move(aSocket.iIPv       )},
+iProtocol  {std::move(aSocket.iProtocol  )},
+iAddrLocal {std::move(aSocket.iAddrLocal )},
+iAddrRemote{std::move(aSocket.iAddrRemote)},
+iFlags     {std::move(aSocket.iFlags     )},
+iCloseMode {std::move(aSocket.iCloseMode )}
 {
     aSocket.iId         = GpSocketId_Default();
     aSocket.iCloseMode  = CloseModeT::KEEP_ON_DESTRUCT;
@@ -107,29 +107,29 @@ iCloseMode (std::move(aSocket.iCloseMode ))
 
 GpSocket::GpSocket
 (
-    const ProtocolTE        aProtocol,
-    const GpSocketFlags&    aFlags,
-    const CloseModeT        aCloseMode
+    const ProtocolTE    aProtocol,
+    GpSocketFlags       aFlags,
+    const CloseModeT    aCloseMode
 ) noexcept:
-iProtocol (aProtocol),
-iFlags    (aFlags),
-iCloseMode(aCloseMode)
+iProtocol {aProtocol},
+iFlags    {aFlags},
+iCloseMode{aCloseMode}
 {
 }
 
 GpSocket::GpSocket
 (
-    const GpSocketId        aId,
-    const IPvTE             aIpV,
-    const ProtocolTE        aProtocol,
-    const GpSocketFlags&    aFlags,
-    const CloseModeT        aCloseMode
+    const GpSocketId    aId,
+    const IPvTE         aIpV,
+    const ProtocolTE    aProtocol,
+    GpSocketFlags       aFlags,
+    const CloseModeT    aCloseMode
 ) noexcept:
-iId       (aId),
-iIPv      (aIpV),
-iProtocol (aProtocol),
-iFlags    (aFlags),
-iCloseMode(aCloseMode)
+iId       {aId},
+iIPv      {aIpV},
+iProtocol {aProtocol},
+iFlags    {aFlags},
+iCloseMode{aCloseMode}
 {
 }
 
@@ -186,7 +186,7 @@ void    GpSocket::Bind (const GpSocketAddr& aAddr)
         aAddr.RawSize()
     );
 
-    SCheckResOrThrow(res, [&]{Close();});
+    SCheckResOrThrow(res, {});
 
     iAddrLocal = GpSocketAddr::SLocalFromSocketId(Id());
     iAddrRemote.Clear();
@@ -375,7 +375,7 @@ void    GpSocket::SClose (GpSocketId& aId)
 
 void    GpSocket::SCheckResOrThrow
 (
-    int                     aRes,
+    const int               aRes,
     std::function<void()>   aFnOnThrow
 )
 {

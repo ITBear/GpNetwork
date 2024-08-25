@@ -1,7 +1,10 @@
+#include <GpCore2/Config/IncludeExt/fmt.hpp>
+
 #include "GpSocketIP.hpp"
 
+
 #include <GpCore2/GpUtils/Other/GpErrno.hpp>
-#include <GpCore2/Config/IncludeExt/fmt.hpp>
+
 
 namespace GPlatform {
 

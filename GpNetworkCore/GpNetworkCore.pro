@@ -1,16 +1,19 @@
 # ----------- Config -----------
 TEMPLATE        = lib
-#CONFIG        += staticlib
 QMAKE_CXXFLAGS += -DGP_REFLECTION_STATIC_ADD_TO_MANAGER
 QMAKE_CXXFLAGS += -DGP_MODULE_UUID=e6eaf32a-e9e7-4c0c-aa56-b83524556f77
 PACKET_NAME     = GpNetworkCore
 DEFINES        += GP_NETWORK_CORE_LIBRARY
 _VER_MAJ        = 2
 _VER_MIN        = 1
-_VER_PAT        = 5
+_VER_PAT        = 6
 DIR_LEVEL       = ./../..
 
 include($$DIR_LEVEL/../QtGlobalPro.pri)
+
+release_build_static{
+	CONFIG += staticlib
+}
 
 # ----------- Libraries -----------
 os_windows{
@@ -50,10 +53,10 @@ SOURCES += \
 	Sockets/GpSocketTCP.cpp \
 	Sockets/GpSocketUDP.cpp \
 	Sockets/GpSocketUtils.cpp \
-	Tasks/GpSingleSocketTask.cpp \
 	Tasks/GpSocketsTask.cpp \
 	Tasks/GpTcpAcceptServerTask.cpp \
-	Tasks/GpTcpClientTask.cpp
+	Tasks/GpTcpClientTask.cpp \
+	Tasks/GpTcpServerTask.cpp
 
 HEADERS += \
 	GpNetworkCoreLib.hpp \
@@ -83,9 +86,9 @@ HEADERS += \
 	Sockets/GpSocketTCP.hpp \
 	Sockets/GpSocketUDP.hpp \
 	Sockets/GpSocketUtils.hpp \
-	Tasks/GpSingleSocketTask.hpp \
-	Tasks/GpSingleSocketTaskFactory.hpp \
 	Tasks/GpSocketsTask.hpp \
 	Tasks/GpTcpAcceptServerTask.hpp \
-	Tasks/GpTcpClientTask.hpp
+	Tasks/GpTcpClientTask.hpp \
+	Tasks/GpTcpServerTask.hpp \
+	Tasks/GpTcpServerTaskFactory.hpp
 

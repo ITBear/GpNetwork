@@ -1,6 +1,6 @@
 #include "GpHttpClientPoolCatalog.hpp"
 
-//namespace GPlatform {
+// namespace GPlatform {
 //
 //GpHttpClientPoolCatalog::GpHttpClientPoolCatalog
 //(
@@ -21,7 +21,7 @@
 //  iPools.Clear();
 //}
 //
-//GpHttpClientPool& GpHttpClientPoolCatalog::Pool (std::u8string_view aName)
+//GpHttpClientPool& GpHttpClientPoolCatalog::Pool (std::string_view aName)
 //{
 //  return iPools.GetOrSet
 //  (
@@ -35,4 +35,4 @@
 //  ).V();
 //}
 //
-//}//namespace GPlatform
+//}// namespace GPlatform

@@ -1,30 +1,24 @@
-#include "GpUrl.hpp"
-
-#include <GpCore2/GpReflection/GpReflectManager.hpp>
-#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Url/GpUrl.hpp>
 
 namespace GPlatform {
 
-GP_ENUM_IMPL(GpUrlPart)
-
-REFLECT_IMPLEMENT(GpUrl, GP_MODULE_UUID)
+GP_ENUM_IMPL(GpUrlPartType)
 
 GpUrl::GpUrl (const GpUrl& aUrl):
-GpReflectObject(aUrl),
-scheme   (GpReflectUtils::SCopyValue(aUrl.scheme)),
-authority(GpReflectUtils::SCopyValue(aUrl.authority)),
-path     (GpReflectUtils::SCopyValue(aUrl.path)),
-query    (GpReflectUtils::SCopyValue(aUrl.query)),
-fragment (GpReflectUtils::SCopyValue(aUrl.fragment))
+iScheme   {aUrl.iScheme},
+iAuthority{aUrl.iAuthority},
+iPath     {aUrl.iPath},
+iQuery    {aUrl.iQuery},
+iFragment {aUrl.iFragment}
 {
 }
 
 GpUrl::GpUrl (GpUrl&& aUrl) noexcept:
-scheme   (std::move(aUrl.scheme)),
-authority(std::move(aUrl.authority)),
-path     (std::move(aUrl.path)),
-query    (std::move(aUrl.query)),
-fragment (std::move(aUrl.fragment))
+iScheme   {std::move(aUrl.iScheme)},
+iAuthority{std::move(aUrl.iAuthority)},
+iPath     {std::move(aUrl.iPath)},
+iQuery    {std::move(aUrl.iQuery)},
+iFragment {std::move(aUrl.iFragment)}
 {
 }
 
@@ -36,124 +30,112 @@ GpUrl::GpUrl
     GpUrlQuery      aQuery,
     std::string     aFragment
 ) noexcept:
-scheme   (std::move(aScheme)),
-authority(std::move(aAuthority)),
-path     (std::move(aPath)),
-query    (std::move(aQuery)),
-fragment (std::move(aFragment))
+iScheme   {std::move(aScheme)},
+iAuthority{std::move(aAuthority)},
+iPath     {std::move(aPath)},
+iQuery    {std::move(aQuery)},
+iFragment {std::move(aFragment)}
 {
 }
 
 void    GpUrl::Clear (void)
 {
-    scheme.clear();
-    authority.Clear();
-    path.clear();
-    query.Clear();
-    fragment.clear();
-}
-
-std::string GpUrl::SchemeHostPortPath (void) const
-{
-    const std::string port = std::to_string(authority.Port());
-
-    std::string res;
-    res.reserve
-    (
-        scheme.length()
-        + 3/*://*/
-        + authority.Host().length()
-        + 1/*:*/
-        + std::size(port)
-        + (path.length() > 0 ? (1 + path.length()) : 0)
-    );
-
-    res.append(scheme).append("://"_sv).append(authority.Host()).append(":"_sv).append(port);
-
-    if (path.length() > 0)
-    {
-        res.append("/"_sv).append(path);
-    }
-
-    return res;
+    iScheme.clear();
+    iAuthority.Clear();
+    iPath.clear();
+    iQuery.Clear();
+    iFragment.clear();
 }
 
 GpUrl::~GpUrl (void) noexcept
 {
 }
 
+std::string GpUrl::ToString (const GpUrlPartTypes& aUrlPartTypes) const
+{
+    std::string strRes;
+    strRes.reserve(512);
+
+    if (aUrlPartTypes.Test(GpUrlPartType::SCHEME))
+    {
+        strRes.append(iScheme).append("://");
+    }
+
+    if (aUrlPartTypes.Test(GpUrlPartType::AUTHORITY_USER_NAME_AND_PASSWORD))
+    {
+        strRes.append(iAuthority.UserName()).append(":").append(iAuthority.Password());
+
+        if (aUrlPartTypes.Test(GpUrlPartType::AUTHORITY_HOST_AND_PORT))
+        {
+            strRes.append("@");
+        }
+    }
+
+    if (aUrlPartTypes.Test(GpUrlPartType::AUTHORITY_HOST_AND_PORT))
+    {
+        strRes.append(iAuthority.Host());
+
+        const u_int_16 port = iAuthority.Port();
+        if (port > 0)
+        {
+            strRes.append(":").append(std::to_string(port));
+        }
+    }
+
+    if (aUrlPartTypes.Test(GpUrlPartType::PATH_QUERY_FRAGMENT))
+    {
+        // path
+        strRes.append(iPath);
+
+        // query
+        {
+            const GpUrlQuery& query     = iQuery;
+            const std::string queryStr  = query.ToString();
+
+            if (!queryStr.empty())
+            {
+                strRes.append("?").append(queryStr);
+            }
+        }
+
+        // fragment
+        {
+            std::string_view fragment = iFragment;
+            if (!fragment.empty())
+            {
+                strRes.append("#").append(StrOps::SPercentEncode(fragment));
+            }
+        }
+    }
+
+    return strRes;
+}
+
 GpUrl&  GpUrl::operator= (const GpUrl& aUrl)
 {
-    scheme      = aUrl.scheme;
-    authority   = aUrl.authority;
-    path        = aUrl.path;
-    query       = aUrl.query;
-    fragment    = aUrl.fragment;
+    iScheme     = aUrl.iScheme;
+    iAuthority  = aUrl.iAuthority;
+    iPath       = aUrl.iPath;
+    iQuery      = aUrl.iQuery;
+    iFragment   = aUrl.iFragment;
 
     return *this;
 }
 
 GpUrl&  GpUrl::operator= (GpUrl&& aUrl) noexcept
 {
-    scheme      = std::move(aUrl.scheme);
-    authority   = std::move(aUrl.authority);
-    path        = std::move(aUrl.path);
-    query       = std::move(aUrl.query);
-    fragment    = std::move(aUrl.fragment);
+    iScheme     = std::move(aUrl.iScheme);
+    iAuthority  = std::move(aUrl.iAuthority);
+    iPath       = std::move(aUrl.iPath);
+    iQuery      = std::move(aUrl.iQuery);
+    iFragment   = std::move(aUrl.iFragment);
 
     return *this;
 }
 
-void    GpUrl::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
+void    GpUrl::SetFromHeaders (const GpHttpHeaders& aHeaders)
 {
-    PROP(scheme);
-    PROP(authority);
-    PROP(path);
-    PROP(query);
-    PROP(fragment);
-}
-
-std::string GpUrl::SToString (const GpUrl& aUrl)
-{
-    std::string url;
-    url.reserve(512);
-
-    // scheme
-    {
-        url.append(aUrl.Scheme()).append("://");
-    }
-
-    // authority
-    {
-        url.append(GpUrlAuthority::SToString(aUrl.Authority()));
-    }
-
-    // path
-    {
-        url.append("/").append(aUrl.Path());
-    }
-
-    // query
-    {
-        const GpUrlQuery& query     = aUrl.Query();
-        const std::string queryStr  = GpUrlQuery::SToString(query);
-
-        if (!queryStr.empty())
-        {
-            url.append("?").append(queryStr);
-        }
-    }
-
-    // fragment
-    {
-        std::string_view fragment = aUrl.Fragment();
-        if (!fragment.empty())
-        {
-            url.append("#").append(StrOps::SPercentEncode(fragment));
-        }
-    }
-
-    return url;
+    iAuthority.SetFromHeaders(aHeaders);
 }
 
 GpUrl   GpUrl::SFromString (std::string_view aUrl)
@@ -196,10 +178,15 @@ GpUrl   GpUrl::SFromString (std::string_view aUrl)
     // Split authorityAndPathStr by '/'
     std::string_view authorityStr;
     std::string_view pathStr;
-    if (const auto pos = aUrl.find("/"_sv); pos != std::string::npos)
+    if (const auto pos = authorityAndPathStr.find("/"_sv); pos != std::string::npos)
     {
-        authorityStr    = aUrl.substr(0, pos);
-        pathStr         = aUrl.substr(pos + 1);
+        authorityStr    = authorityAndPathStr.substr(0, pos);
+        pathStr         = authorityAndPathStr.substr(pos);
+
+        if (pathStr.empty()) [[unlikely]]
+        {
+            pathStr = "/";
+        }
     } else
     {
         authorityStr    = aUrl;

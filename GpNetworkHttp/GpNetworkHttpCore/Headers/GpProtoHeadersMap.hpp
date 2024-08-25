@@ -1,24 +1,30 @@
 #pragma once
 
-#include "GpProtoHeaderValue.hpp"
+#include <GpCore2/Config/IncludeExt/boost_flat_map.hpp>
+#include <GpCore2/GpUtils/Types/Enums/GpEnum.hpp>
+#include <GpCore2/GpUtils/Types/Strings/GpStringOps.hpp>
+#include <GpCore2/GpUtils/Types/Strings/GpUTF.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Headers/GpProtoHeaderValue.hpp>
 
 namespace GPlatform {
 
-class GP_NETWORK_HTTP_CORE_API GpProtoHeadersMap: public GpReflectObject
+class GP_NETWORK_HTTP_CORE_API GpProtoHeadersMap
 {
 public:
     CLASS_DD(GpProtoHeadersMap)
-    REFLECT_DECLARE("88a01e4e-9105-4cd5-9990-4578ebb14b51"_uuid)
+
+    using HeadersT = GpProtoHeaderValue::C::SmallFlatMapStr<12>::Val;
 
 public:
     inline                                      GpProtoHeadersMap   (void) noexcept;
     inline                                      GpProtoHeadersMap   (const GpProtoHeadersMap& aHeaders);
     inline                                      GpProtoHeadersMap   (GpProtoHeadersMap&& aHeaders) noexcept;
-    virtual                                     ~GpProtoHeadersMap  (void) noexcept override;
+    virtual                                     ~GpProtoHeadersMap  (void) noexcept;
 
-    void                                        Clear               (void) {headers.clear();}
-    GpProtoHeaderValue::C::MapStr::SP&          Headers             (void) noexcept {return headers;}
-    const GpProtoHeaderValue::C::MapStr::SP&    Headers             (void) const noexcept {return headers;}
+    void                                        Clear               (void) {iHeaders.clear();}
+    bool                                        Empty               (void) const noexcept {return iHeaders.empty();}
+    HeadersT&                                   Headers             (void) noexcept {return iHeaders;}
+    const HeadersT&                             Headers             (void) const noexcept {return iHeaders;}
 
     inline void                                 Set                 (const GpProtoHeadersMap& aHeaders);
     inline void                                 Set                 (GpProtoHeadersMap&& aHeaders) noexcept;
@@ -66,13 +72,13 @@ public:
     template<EnumConcepts::IsEnum T,
              EnumConcepts::IsEnum V>
     typename std::optional<typename V::EnumT>   GetValueEnum        (const typename T::EnumT    aName,
-                                                                     const size_t               aElementId);
+                                                                     const size_t               aElementId) const noexcept;
 
 private:
-    std::vector<std::string>&                   GetOrCreateHeaders  (std::string_view aName);
+    GpProtoHeaderValue::ElementsT&              GetOrCreateHeaders  (std::string_view aName);
 
 private:
-    GpProtoHeaderValue::C::MapStr::SP           headers;
+    HeadersT                                    iHeaders;
 };
 
 GpProtoHeadersMap::GpProtoHeadersMap (void) noexcept
@@ -80,25 +86,23 @@ GpProtoHeadersMap::GpProtoHeadersMap (void) noexcept
 }
 
 GpProtoHeadersMap::GpProtoHeadersMap (const GpProtoHeadersMap& aHeaders):
-GpReflectObject(aHeaders),
-headers(GpReflectUtils::SCopyValue(aHeaders.headers))
+iHeaders{aHeaders.iHeaders}
 {
 }
 
 GpProtoHeadersMap::GpProtoHeadersMap (GpProtoHeadersMap&& aHeaders) noexcept:
-GpReflectObject(std::move(aHeaders)),
-headers(std::move(aHeaders.headers))
+iHeaders{std::move(aHeaders.iHeaders)}
 {
 }
 
 void    GpProtoHeadersMap::Set (const GpProtoHeadersMap& aHeaders)
 {
-    headers = aHeaders.headers;
+    iHeaders = aHeaders.iHeaders;
 }
 
 void    GpProtoHeadersMap::Set (GpProtoHeadersMap&& aHeaders) noexcept
 {
-    headers = std::move(aHeaders.headers);
+    iHeaders = std::move(aHeaders.iHeaders);
 }
 
 GpProtoHeadersMap&  GpProtoHeadersMap::Set
@@ -108,6 +112,7 @@ GpProtoHeadersMap&  GpProtoHeadersMap::Set
 )
 {
     GetOrCreateHeaders(aName) = {std::move(aValue)};
+
     return *this;
 }
 
@@ -226,7 +231,7 @@ GpProtoHeadersMap&  GpProtoHeadersMap::Add
     const typename V::EnumT aValue
 )
 {
-    return Set
+    return Add
     (
         GpProtoHeader_EnumToStr(aName),
         std::string(GpProtoHeader_EnumToStr(aValue))
@@ -237,14 +242,14 @@ GpProtoHeaderValue::C::Opt::CRef    GpProtoHeadersMap::GetValues (std::string_vi
 {
     std::string lowerName = GpUTF::SToLower(aName);
 
-    const auto iter = headers.find(lowerName);
+    const auto iter = iHeaders.find(lowerName);
 
-    if (iter == std::end(headers))
+    if (iter == std::end(iHeaders))
     {
         return std::nullopt;
     }
 
-    return iter->second.V();
+    return iter->second;
 }
 
 template<EnumConcepts::IsEnum T>
@@ -266,7 +271,7 @@ std::optional<std::string_view> GpProtoHeadersMap::GetValueStr
         return std::nullopt;
     }
 
-    const auto& elements = valueOptRef->get().elements;
+    const auto& elements = valueOptRef->get().iElements;
 
     if (aElementId >= std::size(elements))
     {
@@ -292,7 +297,7 @@ std::optional<typename V::EnumT>    GpProtoHeadersMap::GetValueEnum
 (
     const typename T::EnumT aName,
     const size_t            aElementId
-)
+) const noexcept
 {
     std::optional<std::string_view> value = GetValueStr(GpProtoHeader_EnumToStr(aName), aElementId);
 
@@ -301,7 +306,7 @@ std::optional<typename V::EnumT>    GpProtoHeadersMap::GetValueEnum
         return std::nullopt;
     }
 
-    return GpProtoHeader_StrToEnum<V>(value.value());
+    return GpProtoHeader_StrToEnum(value.value(), typename V::EnumT{});
 }
 
 }// namespace GPlatform

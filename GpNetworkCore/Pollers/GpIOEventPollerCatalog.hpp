@@ -7,7 +7,7 @@
 namespace GPlatform {
 
 class GpIOEventPollerIdx_TypeShell;
-using GpIOEventPollerIdx = GpTypeShell<size_t, GpIOEventPollerIdx_TypeShell>;
+using GpIOEventPollerIdx = GpTypeShell<ssize_t, GpIOEventPollerIdx_TypeShell>;
 
 class GP_NETWORK_CORE_API GpIOEventPollerCatalog
 {
@@ -30,7 +30,8 @@ public:
     static GpIOEventPollerCatalog&  S                       (void) noexcept {return sInstance;}
     [[nodiscard]] static bool       SAddSubscriptionSafe    (GpSocketId         aSocketId,
                                                              GpTaskId           aSocketTaskId,
-                                                             GpIOEventPollerIdx aIoEventPollerIdx);
+                                                             GpIOEventPollerIdx aIoEventPollerIdx,
+                                                             GpIOEventsTypes    aEventTypes);
     [[nodiscard]] static bool       SRemoveSubscriptionSafe (GpSocketId         aSocketId,
                                                              GpTaskId           aSocketTaskId,
                                                              GpIOEventPollerIdx aIoEventPollerIdx);
