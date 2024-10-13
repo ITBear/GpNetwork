@@ -248,6 +248,6 @@ void    GpIOEventPollerEpoll::OnRemoveObject (const GpSocketId aSocketId)
     }
 }
 
-}// GPlatform
+}// namespace GPlatform
 
 #endif// #if defined(GP_OS_LINUX)

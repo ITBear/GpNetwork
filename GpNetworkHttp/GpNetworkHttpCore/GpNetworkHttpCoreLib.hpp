@@ -5,6 +5,6 @@
 
 namespace GPlatform {
 
-GP_DECLARE_LIB(GP_NETWORK_HTTP_CORE_API, GpNetworkHttpCoreLib)
+GP_DECLARE_LIB_REGISTRATOR(GpNetworkHttpCoreLib)
 
 }// namespace GPlatform

@@ -11,37 +11,25 @@ DIR_LEVEL       = ./../../../
 
 include($$DIR_LEVEL/../QtGlobalPro.pri)
 
-release_build_static{
+equals(var_link, "static") {
 	CONFIG += staticlib
 }
 
-debug_build {
-	DEFINES += DEBUG
-	DEFINES += _DEBUG
-} else:profile_build {
-	DEFINES += DEBUG
-	DEFINES += _DEBUG
-} else:release_build {
+equals(var_build, "release") {
 	DEFINES += NDEBUG
-} else:release_build_static {
-DEFINES += NDEBUG
-} else {
-	error(Unknown build mode. Set CONFIG+=debug_build OR CONFIG+=release_build OR CONFIG+=release_build_static)
+}
+
+equals(var_build, "debug") {
+	DEFINES += DEBUG
+	DEFINES += _DEBUG
 }
 
 # ----------- Libraries -----------
-os_windows{
-	LIBS += -lGpNetworkCore$$TARGET_POSTFIX
-	LIBS += -lGpLogCore$$TARGET_POSTFIX
-	LIBS += -lGpTasks$$TARGET_POSTFIX
-	LIBS += -lGpReflection$$TARGET_POSTFIX
-	LIBS += -lGpUtils$$TARGET_POSTFIX
-
-	LIBS += -lllhttp$$TARGET_POSTFIX
+equals(var_os, "windows") {
 	LIBS += -lws2_32
 }
 
-os_linux{
+equals(var_os, "linux") {
 }
 
 # ----------- Sources and headers -----------

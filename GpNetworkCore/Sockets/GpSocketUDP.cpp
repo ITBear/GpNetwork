@@ -194,6 +194,8 @@ std::optional<size_t>   GpSocketUDP::RecvMsg (GpSocketMessageUDP& aMessageOut)
         .SetFlags(msg.dwFlags);
 
     return aMessageOut.DataUseSize();
+#else
+#   error Unsupported platform
 #endif
 }
 
@@ -342,6 +344,8 @@ bool    GpSocketUDP::SendMsg (const GpSocketMessageUDP& aMessage)
     }
 
     return true;
+#else
+#   error Unsupported platform
 #endif
 }
 

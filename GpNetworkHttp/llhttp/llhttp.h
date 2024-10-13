@@ -1,5 +1,4 @@
-#ifndef INCLUDE_LLHTTP_H_
-#define INCLUDE_LLHTTP_H_
+#pragma once
 
 #define LLHTTP_VERSION_MAJOR 6
 #define LLHTTP_VERSION_MINOR 0
@@ -316,9 +315,13 @@ extern "C" {
 #include <stddef.h>
 
 #if defined(__wasm__)
-#define LLHTTP_EXPORT __attribute__((visibility("default")))
+#   define LLHTTP_EXPORT __attribute__((visibility("default")))
 #else
-#define LLHTTP_EXPORT
+#   if (defined _WIN32) || (defined _WIN64)
+#       define LLHTTP_EXPORT __declspec(dllexport)
+#   else
+#       define LLHTTP_EXPORT
+#   endif
 #endif
 
 typedef llhttp__internal_t llhttp_t;
@@ -573,5 +576,3 @@ void llhttp_set_lenient_transfer_encoding(llhttp_t* parser, int enabled);
 }  /* extern "C" */
 #endif
 #endif  /* INCLUDE_LLHTTP_API_H_ */
-
-#endif  /* INCLUDE_LLHTTP_H_ */

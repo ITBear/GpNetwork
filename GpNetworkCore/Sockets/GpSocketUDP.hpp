@@ -49,12 +49,12 @@ private:
 };
 
 GpSocketUDP::GpSocketUDP (void) noexcept:
-GpSocket()
+GpSocket{}
 {
 }
 
 GpSocketUDP::GpSocketUDP (GpSocketUDP&& aSocket) noexcept:
-GpSocket(std::move(aSocket))
+GpSocket{std::move(aSocket)}
 {
 }
 
@@ -64,11 +64,11 @@ GpSocketUDP::GpSocketUDP
     const CloseModeT        aCloseMode
 ) noexcept:
 GpSocket
-(
+{
     ProtocolT::UDP,
     aFlags,
     aCloseMode
-)
+}
 {
 }
 

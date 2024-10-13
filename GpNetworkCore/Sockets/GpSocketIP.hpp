@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GpSocketIPv.hpp"
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketIPv.hpp>
 
 namespace GPlatform {
 
@@ -36,12 +36,12 @@ GpSocketIPv4::GpSocketIPv4 (void) noexcept
 }
 
 GpSocketIPv4::GpSocketIPv4 (const GpSocketIPv4& aIPv4) noexcept:
-iAddress(aIPv4.iAddress)
+iAddress{aIPv4.iAddress}
 {
 }
 
 GpSocketIPv4::GpSocketIPv4 (GpSocketIPv4&& aIPv4) noexcept:
-iAddress(std::move(aIPv4.iAddress))
+iAddress{std::move(aIPv4.iAddress)}
 {
 }
 
@@ -77,12 +77,12 @@ GpSocketIPv6::GpSocketIPv6 (void) noexcept
 }
 
 GpSocketIPv6::GpSocketIPv6 (const GpSocketIPv6& aIPv6) noexcept:
-iAddress(aIPv6.iAddress)
+iAddress{aIPv6.iAddress}
 {
 }
 
 GpSocketIPv6::GpSocketIPv6 (GpSocketIPv6&& aIPv6) noexcept:
-iAddress(aIPv6.iAddress)
+iAddress{aIPv6.iAddress}
 {
 }
 
@@ -91,17 +91,17 @@ iAddress(aIPv6.iAddress)
 // ---------------------------------------------- std -----------------------------------------------------
 namespace std
 {
-    size_t size ([[maybe_unused]] const ::GPlatform::GpSocketIPv4& aSocketIPv4)
+    inline size_t size ([[maybe_unused]] const ::GPlatform::GpSocketIPv4& aSocketIPv4)
     {
         return 4;
     }
 
-    const ::std::byte* data (const ::GPlatform::GpSocketIPv4& aSocketIPv4)
+    inline const ::std::byte* data (const ::GPlatform::GpSocketIPv4& aSocketIPv4)
     {
         return aSocketIPv4.Data().Ptr();
     }
 
-    ::std::byte* data (::GPlatform::GpSocketIPv4& aSocketIPv4)
+    inline ::std::byte* data (::GPlatform::GpSocketIPv4& aSocketIPv4)
     {
         return aSocketIPv4.Data().Ptr();
     }
@@ -109,17 +109,17 @@ namespace std
 
 namespace std
 {
-    size_t size ([[maybe_unused]] const ::GPlatform::GpSocketIPv6& aSocketIPv6)
+    inline size_t size ([[maybe_unused]] const ::GPlatform::GpSocketIPv6& aSocketIPv6)
     {
         return 16;
     }
 
-    const ::std::byte* data (const ::GPlatform::GpSocketIPv6& aSocketIPv6)
+    inline const ::std::byte* data (const ::GPlatform::GpSocketIPv6& aSocketIPv6)
     {
         return aSocketIPv6.Data().Ptr();
     }
 
-    ::std::byte* data (::GPlatform::GpSocketIPv6& aSocketIPv6)
+    inline ::std::byte* data (::GPlatform::GpSocketIPv6& aSocketIPv6)
     {
         return aSocketIPv6.Data().Ptr();
     }

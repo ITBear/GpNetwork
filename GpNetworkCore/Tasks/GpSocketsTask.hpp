@@ -4,7 +4,7 @@
 #include <GpNetwork/GpNetworkCore/Pollers/GpIOEventType.hpp>
 
 #include <GpCore2/GpTasks/Fibers/GpTaskFiber.hpp>
-#include <boost/container/flat_map.hpp>
+#include <GpCore2/Config/IncludeExt/boost_flat_map.hpp>
 
 namespace GPlatform {
 

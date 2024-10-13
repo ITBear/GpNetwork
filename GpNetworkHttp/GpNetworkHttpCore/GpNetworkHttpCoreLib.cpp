@@ -2,6 +2,6 @@
 
 namespace GPlatform {
 
-GP_IMPLEMENT_LIB(GpNetworkHttpCoreLib)
+GP_IMPLEMENT_LIB_REGISTRATOR(GpNetworkHttpCoreLib)
 
 }// namespace GPlatform

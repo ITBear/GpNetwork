@@ -1,7 +1,4 @@
 #include <GpNetwork/GpNetworkCore/GpNetworkErrors.hpp>
-#include <GpCore2/GpUtils/Macro/GpMacroWarnings.hpp>
-#include <GpCore2/GpUtils/Types/Strings/GpUTF.hpp>
-#include <GpCore2/GpUtils/Exceptions/GpExceptions.hpp>
 #include <GpCore2/GpUtils/Other/GpErrno.hpp>
 
 #if defined(GP_OS_WINDOWS)

@@ -292,4 +292,4 @@ void    GpIOEventPollerSelect::OnRemoveObject (const GpSocketId aSocketId)
     }
 }
 
-}// GPlatform
+}// namespace GPlatform

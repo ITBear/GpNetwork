@@ -1,4 +1,5 @@
-#include "GpNetworkUtils.hpp"
+#include <GpNetwork/GpNetworkCore/GpNetworkUtils.hpp>
+
 #include "GpNetworkCore_global.hpp"
 #include "GpNetworkErrors.hpp"
 

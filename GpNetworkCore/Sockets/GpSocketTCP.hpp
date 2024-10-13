@@ -64,9 +64,9 @@ private:
                                                      StateT     aState);
 
     void                        ConnectSync         (const GpSocketAddr&    aAddr);
-    void                        ConnectAsyncAndWait (const GpSocketAddr&        aAddr,
-                                                     const GpIOEventPollerIdx   aIOEventPollerIdx,
-                                                     const GpTaskId             aIOEventPollerSubscribeTaskId);
+    void                        ConnectAsyncAndWait (const GpSocketAddr&    aAddr,
+                                                     GpIOEventPollerIdx     aIOEventPollerIdx,
+                                                     GpTaskId               aIOEventPollerSubscribeTaskId);
 
     void                        SetUserTimeout      (milliseconds_t aTimeout);
     inline void                 SetFlag_NoDelay     (bool aValue);
