@@ -25,7 +25,7 @@ public:
 protected:
     virtual void                OnStart                 (void) override;
     virtual GpTaskRunRes::EnumT OnStep                  (void) override final;
-    virtual void                OnStop                  (StopExceptionsT& aStopExceptionsOut) noexcept override;
+    virtual void                OnStop                  (ExceptionsT& aStopExceptionsOut) noexcept override;
     virtual void                OnStopException         (const GpException& aException) noexcept override = 0;
 
     virtual void                OnReadyToRead           (GpSocket& aSocket) = 0;

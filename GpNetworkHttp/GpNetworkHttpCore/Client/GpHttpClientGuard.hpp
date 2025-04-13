@@ -1,6 +1,6 @@
 #pragma once
 
-//#include "GpHttpClientPool.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Client/GpHttpClientPool.hpp>
 //
 // namespace GPlatform {
 //

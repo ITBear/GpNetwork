@@ -43,7 +43,7 @@ GpUrlQuery  GpUrlQuery::SFromString (std::string_view aUrlQueryStr)
 {
     ParamsMapT paramsMap;
 
-    std::vector<std::string_view> parts = StrOps::SSplit(aUrlQueryStr, '&', 0, 0, Algo::SplitMode::SKIP_ZERO_LENGTH_PARTS);
+    std::vector<std::string_view> parts = StrOps::SSplitExt(aUrlQueryStr, '&', 0, 0, Algo::SplitMode::SKIP_ZERO_LENGTH_PARTS);
 
     for (std::string_view part: parts)
     {

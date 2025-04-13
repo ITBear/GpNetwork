@@ -1,6 +1,6 @@
 #pragma once
 
-//#include "GpHttpClientPool.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Client/GpHttpClientPool.hpp>
 //
 // namespace GPlatform {
 //
@@ -11,7 +11,7 @@
 //  CLASS_DD(GpHttpClientPoolCatalog)
 //  TAG_SET(THREAD_SAFE)
 //
-//  using PoolsT = GpDictionary<std::string, GpHttpClientPool::SP>;
+//  using PoolsT = GpSharedMap<std::string, GpHttpClientPool::SP>;
 //
 //public:
 //                                  GpHttpClientPoolCatalog     (GpHttpClientFactory::SP    aFactory,

@@ -40,7 +40,7 @@ public:
 
 protected:
     virtual void        OnStart                     (void) override final;
-    virtual void        OnStop                      (StopExceptionsT& aStopExceptionsOut) noexcept override final;
+    virtual void        OnStop                      (ExceptionsT& aStopExceptionsOut) noexcept override final;
     virtual void        OnStopException             (const GpException& aException) noexcept override final;
 
     virtual void        OnReadyToRead               (GpSocket& aSocket) override final;

@@ -1,4 +1,4 @@
-#include "GpHttpRouterRule.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Routers/RulesRouter/GpHttpRouterRule.hpp>
 
 namespace GPlatform {
 

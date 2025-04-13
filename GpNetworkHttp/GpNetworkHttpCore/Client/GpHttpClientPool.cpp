@@ -1,4 +1,4 @@
-#include "GpHttpClientPool.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Client/GpHttpClientPool.hpp>
 
 // namespace GPlatform {
 //
@@ -11,19 +11,9 @@
 //{
 //}
 //
-//void  GpHttpClientPool::PreInit (const size_t /*aCount*/)
-//{
-//  //NOP
-//}
-//
 //GpHttpClient::SP  GpHttpClientPool::NewElement (GpSpinlock& /*aLocked*/)
 //{
 //  return iFactory.V().NewInstance();
-//}
-//
-//void  GpHttpClientPool::OnClear (void) noexcept
-//{
-//  //NOP
 //}
 //
 //bool  GpHttpClientPool::Validate (GpHttpClient::SP aHttpClient) noexcept

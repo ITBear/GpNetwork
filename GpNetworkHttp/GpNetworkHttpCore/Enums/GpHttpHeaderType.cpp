@@ -1,4 +1,4 @@
-#include "GpHttpHeaderType.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Enums/GpHttpHeaderType.hpp>
 
 namespace GPlatform {
 

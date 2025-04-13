@@ -1,4 +1,4 @@
-#include "GpProtoHeadersMap.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Headers/GpProtoHeadersMap.hpp>
 
 namespace GPlatform {
 

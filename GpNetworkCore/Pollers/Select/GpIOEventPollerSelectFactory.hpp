@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../GpIOEventPollerFactory.hpp"
+#include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPollerFactory.hpp>
 
 namespace GPlatform {
 
@@ -21,7 +21,7 @@ private:
 };
 
 GpIOEventPollerSelectFactory::GpIOEventPollerSelectFactory (milliseconds_t aMaxStepTime) noexcept:
-iMaxStepTime(aMaxStepTime)
+iMaxStepTime{aMaxStepTime}
 {
 }
 

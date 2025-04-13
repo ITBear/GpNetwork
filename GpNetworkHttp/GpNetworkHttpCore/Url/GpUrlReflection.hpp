@@ -1,8 +1,8 @@
 #pragma once
 
 /*
-#include "../GpNetworkHttpCore_global.hpp"
-#include "GpUrl.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCore_global.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Url/GpUrl.hpp>
 
 #include <GpCore2/GpUtils/Macro/GpMacroClass.hpp>
 #include <GpCore2/GpReflection/GpReflectObject.hpp>

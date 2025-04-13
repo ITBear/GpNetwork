@@ -42,7 +42,7 @@ void    GpIOEventPollerEpoll::Configure
 
     GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
 
-    THROW_COND_GP
+    VERIFY
     (
         iEpollId == -1,
         "Already started"_sv
@@ -54,7 +54,7 @@ void    GpIOEventPollerEpoll::Configure
     // Create epoll
     iEpollId = epoll_create1(EPOLL_CLOEXEC);
 
-    THROW_COND_GP
+    VERIFY
     (
         iEpollId >= 0,
         []()
@@ -120,7 +120,7 @@ GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
     }
 
     // Check for errors
-    THROW_COND_GP
+    VERIFY
     (
         nfds >= 0,
         [&]()
@@ -159,7 +159,7 @@ GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
     return GpTaskRunRes::READY_TO_RUN;
 }
 
-void    GpIOEventPollerEpoll::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
+void    GpIOEventPollerEpoll::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {
@@ -224,7 +224,7 @@ void    GpIOEventPollerEpoll::OnAddObject
 
     if (epoll_ctl(iEpollId, EPOLL_CTL_ADD, fd, &listenev) != 0)
     {
-        THROW_GP(GpErrno::SGetAndClear());
+        THROW(GpErrno::SGetAndClear());
     }
 }
 
@@ -244,7 +244,7 @@ void    GpIOEventPollerEpoll::OnRemoveObject (const GpSocketId aSocketId)
 
     if (epoll_ctl(iEpollId, EPOLL_CTL_DEL, fd, nullptr) != 0)
     {
-        THROW_GP(GpErrno::SGetAndClear());
+        THROW(GpErrno::SGetAndClear());
     }
 }
 

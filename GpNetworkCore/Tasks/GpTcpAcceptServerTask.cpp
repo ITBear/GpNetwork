@@ -1,7 +1,6 @@
-#include "GpTcpAcceptServerTask.hpp"
-#include "../Pollers/GpIOEventPollerCatalog.hpp"
-#include "../Sockets/GpSocketTCP.hpp"
-
+#include <GpNetwork/GpNetworkCore/Tasks/GpTcpAcceptServerTask.hpp>
+#include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPollerCatalog.hpp>
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketTCP.hpp>
 #include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
 #include <GpLog/GpLogCore/GpLog.hpp>
 
@@ -54,7 +53,7 @@ void    GpTcpAcceptServerTask::OnStart (void)
             {GpIOEventType::READY_TO_READ, GpIOEventType::ERROR_OCCURRED}
         );
 
-        THROW_COND_GP
+        VERIFY
         (
             isAdded == true,
             "Failed to add subscription to IO event poller"
@@ -62,7 +61,7 @@ void    GpTcpAcceptServerTask::OnStart (void)
     }
 }
 
-void    GpTcpAcceptServerTask::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
+void    GpTcpAcceptServerTask::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {
@@ -73,7 +72,7 @@ void    GpTcpAcceptServerTask::OnStop (StopExceptionsT& aStopExceptionsOut) noex
             if (socketId != GpSocketId_Default()) [[likely]]
             {
                 // Check if IO event poller still exists
-                GpIOEventPoller::C::Opt::SP eventPollerOpt = GpIOEventPollerCatalog::S().GetByIdxOpt(iIOEventPollerIdx);
+                GpIOEventPoller::C::Opts::SP eventPollerOpt = GpIOEventPollerCatalog::S().GetByIdxOpt(iIOEventPollerIdx);
 
                 if (eventPollerOpt.has_value())
                 {
@@ -85,7 +84,7 @@ void    GpTcpAcceptServerTask::OnStop (StopExceptionsT& aStopExceptionsOut) noex
                         iIOEventPollerIdx
                     );
 
-                    THROW_COND_GP
+                    VERIFY
                     (
                         isRemoved == true,
                         fmt::format
@@ -128,20 +127,20 @@ void    GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
 {
     if (aSocket.Id() == GpSocketId_Default()) [[unlikely]]
     {
-        RequestTaskStop();
+        std::ignore = RequestStop();
         return;
     }
 
     GpSocketTCP& serverSocket = static_cast<GpSocketTCP&>(aSocket);
 
     // Accept
-    size_t maxCount = 30;// TODO: move to config. Max accepted sockets without YELD
+    size_t maxCount = 30;// TODO: move to config. Max accepted sockets without YIELD
 
     while (maxCount > 0)
     {
         maxCount--;
 
-        GpSocketTCP::C::Opt::Val acceptedSocketOpt = serverSocket.Accept(iAcceptSocketFlags | GpSocketFlag::NO_BLOCK);
+        GpSocketTCP::C::Opts::Val acceptedSocketOpt = serverSocket.Accept(iAcceptSocketFlags | GpSocketFlag::NO_BLOCK);
 
         if (!acceptedSocketOpt.has_value())
         {
@@ -158,7 +157,10 @@ void    GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
         );
 
         // Add to scheduler
-        GpTaskScheduler::S().NewToReady(std::move(serverTaskSP));
+        if (GpTaskScheduler::S().NewToReady(std::move(serverTaskSP)) == false)
+        {
+            break;
+        }
     }
 }
 
@@ -166,7 +168,7 @@ void    GpTcpAcceptServerTask::OnReadyToWrite (GpSocket& aSocket)
 {
     if (aSocket.Id() == GpSocketId_Default()) [[unlikely]]
     {
-        RequestTaskStop();
+        std::ignore = RequestStop();
         return;
     }
 
@@ -184,7 +186,7 @@ void    GpTcpAcceptServerTask::OnClosed (GpSocket& aSocket)
 {
     if (aSocket.Id() == GpSocketId_Default()) [[unlikely]]
     {
-        RequestTaskStop();
+        std::ignore = RequestStop();
         return;
     }
 
@@ -197,14 +199,14 @@ void    GpTcpAcceptServerTask::OnClosed (GpSocket& aSocket)
         )
     );
 
-    RequestTaskStop();
+    std::ignore = RequestStop();
 }
 
 void    GpTcpAcceptServerTask::OnError (GpSocket& aSocket)
 {
     if (aSocket.Id() == GpSocketId_Default()) [[unlikely]]
     {
-        RequestTaskStop();
+        std::ignore = RequestStop();
         return;
     }
 
@@ -217,7 +219,7 @@ void    GpTcpAcceptServerTask::OnError (GpSocket& aSocket)
         )
     );
 
-    RequestTaskStop();
+    std::ignore = RequestStop();
 }
 
 void    GpTcpAcceptServerTask::ProcessOtherMessages ([[maybe_unused]] GpAny& aMessage)

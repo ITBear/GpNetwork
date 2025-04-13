@@ -17,7 +17,7 @@
     using send_size_t   = size_t;
 
     using GpSocketId    = int;
-    constexpr GpSocketId GpSocketId_Default (void) {return GpSocketId(-1);}
+    constexpr GpSocketId GpSocketId_Default (void) {return GpSocketId{-1};}
 
 #   define GP_NETWORK_UDP_PACKET_MAX_SIZE   1500
 #   define GP_NETWORK_CONTROL_INFO_MAX_SIZE 256 // CMSG_SPACE(sizeof(struct in_pktinfo))

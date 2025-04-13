@@ -1,4 +1,4 @@
-//#include "GpHttpClientGuard.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Client/GpHttpClientGuard.hpp>
 
 namespace GPlatform {
 
@@ -22,7 +22,7 @@ namespace GPlatform {
 //  if (iHttpClient.IsNULL())
 //  {
 //      auto res = iPool.Acquire();
-//      THROW_COND_GP(res.has_value(), "HTTP clients limit exceeded"_sv);
+//      VERIFY(res.has_value(), "HTTP clients limit exceeded"_sv);
 //      iHttpClient = res.value();
 //  }
 //

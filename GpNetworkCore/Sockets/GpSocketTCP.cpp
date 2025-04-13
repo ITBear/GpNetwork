@@ -31,7 +31,7 @@ void    GpSocketTCP::Listen
 {
     try
     {
-        THROW_COND_GP
+        VERIFY
         (
             iState == StateT::NOT_CONNECTED,
             "TCP socket state must be NOT_CONNECTED"_sv
@@ -65,7 +65,7 @@ void    GpSocketTCP::ConnectAndWait
 {
     try
     {
-        THROW_COND_GP
+        VERIFY
         (
             iState == StateT::NOT_CONNECTED,
             "TCP socket state must be NOT_CONNECTED"_sv
@@ -102,11 +102,11 @@ void    GpSocketTCP::ConnectAndWait
     }
 }
 
-GpSocketTCP::C::Opt::Val    GpSocketTCP::Accept (const GpSocketFlags& aFlags)
+GpSocketTCP::C::Opts::Val   GpSocketTCP::Accept (const GpSocketFlags& aFlags)
 {
     try
     {
-        THROW_COND_GP
+        VERIFY
         (
             iState == StateT::LISTEN,
             "TCP socket state must be LISTEN"_sv
@@ -333,7 +333,7 @@ void    GpSocketTCP::ConnectAsyncAndWait
                     {GpIOEventType::READY_TO_READ, GpIOEventType::READY_TO_WRITE, GpIOEventType::CLOSED, GpIOEventType::ERROR_OCCURRED}
                 );
 
-                THROW_COND_GP
+                VERIFY
                 (
                     isAdded == true,
                     "Failed to subscribe to IO event poller"
@@ -341,10 +341,10 @@ void    GpSocketTCP::ConnectAsyncAndWait
             }
 
             // Wait
-            YELD_WAIT();
+            YIELD_WAIT();
 
             // Check result
-            THROW_COND_GP
+            VERIFY
             (
                 IsConnected() == true,
                 [aAddr]()

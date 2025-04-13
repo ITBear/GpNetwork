@@ -16,7 +16,7 @@ GpHttpResponse::SP  GpHttpResponse::SFromException
     //
     GpHttpBodyPayloadFixed::SP payloadSP = MakeSP<GpHttpBodyPayloadFixed>
     (
-        GpBytesArrayUtils::SMake<GpBytesArray>(std::string_view(aHttpEx.what()))
+        GpArrayUtils::SMake<GpBytesArray>(std::string_view(aHttpEx.what()))
     );
 
     //
@@ -45,7 +45,7 @@ GpHttpResponse::SP  GpHttpResponse::SFromException
     //
     GpHttpBodyPayloadFixed::SP payloadSP = MakeSP<GpHttpBodyPayloadFixed>
     (
-        GpBytesArrayUtils::SMake<GpBytesArray>(std::string_view(aEx.what()))
+        GpArrayUtils::SMake<GpBytesArray>(std::string_view(aEx.what()))
     );
 
     //
@@ -84,7 +84,7 @@ GpHttpResponse::SP  GpHttpResponse::SFromException
         std::move(rsDesc),
         MakeSP<GpHttpBodyPayloadFixed>
         (
-            GpBytesArrayUtils::SMake<GpBytesArray>(std::string_view(aEx.what()))
+            GpArrayUtils::SMake<GpBytesArray>(std::string_view(aEx.what()))
         )
     );
 }
@@ -144,7 +144,7 @@ GpHttpResponse::SerializeRes    GpHttpResponse::SSerialize
     const GpHttpBodyPayload& body = bodySP.Vn();
 
     // TODO: implement multipart
-    THROW_COND_GP
+    VERIFY
     (
         body.Type() == GpHttpBodyPayloadType::FIXED_SIZE,
         "Only FIXED_SIZE supported at the moment"

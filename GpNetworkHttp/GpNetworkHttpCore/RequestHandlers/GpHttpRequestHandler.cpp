@@ -1,4 +1,4 @@
-#include "GpHttpRequestHandler.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RequestHandlers/GpHttpRequestHandler.hpp>
 
 namespace GPlatform {
 

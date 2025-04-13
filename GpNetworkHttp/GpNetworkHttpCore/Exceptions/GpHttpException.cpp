@@ -1,4 +1,4 @@
-#include "GpHttpException.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Exceptions/GpHttpException.hpp>
 
 namespace GPlatform {
 

@@ -1,5 +1,4 @@
-#include "GpIOEventPollerSelectCfgDesc.hpp"
-
+#include <GpNetwork/GpNetworkCore/Pollers/Select/GpIOEventPollerSelectCfgDesc.hpp>
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
 #include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
 

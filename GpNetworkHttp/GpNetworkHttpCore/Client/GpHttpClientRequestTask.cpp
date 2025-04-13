@@ -71,7 +71,7 @@ void    GpHttpClientRequestTask::OnStart (void)
     WriteRqToSocket(SocketTCP());
 }
 
-void    GpHttpClientRequestTask::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
+void    GpHttpClientRequestTask::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {
@@ -103,7 +103,7 @@ void    GpHttpClientRequestTask::OnReadyToRead ([[maybe_unused]] GpSocket& aSock
 {
     if (iProcessState != ProcessStateT::WAIT_FOR_AND_READ_RS)
     {
-        THROW_GP("Incorrect HTTP client state detected while incoming data appeared on the socket"_sv);
+        THROW("Incorrect HTTP client state detected while incoming data appeared on the socket"_sv);
     }
 
     // Read from socket
@@ -125,13 +125,13 @@ void    GpHttpClientRequestTask::OnReadyToRead ([[maybe_unused]] GpSocket& aSock
             );
 
             // Fulfill done future
-            DonePromise().Fulfill(DonePromiseRes{std::move(httpRsSP)});
+            DonePromise(GpMethodAccess{this}).Fulfill(DonePromiseRes{std::move(httpRsSP)});
 
             // TODO:
             // If keep-allive, move socket to pool
 
             // Done task
-            RequestTaskStop();
+            std::ignore = RequestStop();
         }
     }
 }

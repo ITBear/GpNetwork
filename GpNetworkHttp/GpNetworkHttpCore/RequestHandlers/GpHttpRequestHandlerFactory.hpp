@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../GpNetworkHttpCore_global.hpp"
-#include "GpHttpRequestHandler.hpp"
-
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCore_global.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RequestHandlers/GpHttpRequestHandler.hpp>
 #include <GpCore2/GpUtils/Macro/GpMacroClass.hpp>
 #include <GpCore2/GpUtils/Types/Containers/GpContainersT.hpp>
 

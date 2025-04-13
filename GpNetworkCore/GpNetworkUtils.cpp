@@ -1,8 +1,6 @@
 #include <GpNetwork/GpNetworkCore/GpNetworkUtils.hpp>
-
-#include "GpNetworkCore_global.hpp"
-#include "GpNetworkErrors.hpp"
-
+#include <GpNetwork/GpNetworkCore/GpNetworkCore_global.hpp>
+#include <GpNetwork/GpNetworkCore/GpNetworkErrors.hpp>
 #include <GpCore2/GpUtils/Exceptions/GpException.hpp>
 
 namespace GPlatform {
@@ -13,7 +11,7 @@ void    GpNetworkUtils::SInitGlobal (void)
     WSADATA wsaData;
     const int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 
-    THROW_COND_GP
+    VERIFY
     (
         result == 0,
         []()

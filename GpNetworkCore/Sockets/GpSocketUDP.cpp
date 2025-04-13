@@ -1,7 +1,5 @@
-#include "GpSocketUDP.hpp"
-
-#include "../GpNetworkErrors.hpp"
-
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketUDP.hpp>
+#include <GpNetwork/GpNetworkCore/GpNetworkErrors.hpp>
 #include <GpCore2/GpUtils/Streams/GpByteWriter.hpp>
 #include <GpCore2/GpUtils/Streams/GpByteReader.hpp>
 
@@ -181,7 +179,7 @@ std::optional<size_t>   GpSocketUDP::RecvMsg (GpSocketMessageUDP& aMessageOut)
             return size_t{0};
         }
 
-        THROW_GP(GpNetworkErrors::SGetLastError());
+        THROW(GpNetworkErrors::SGetLastError());
     }
 
     if (rcvSize == 0) [[unlikely]]
@@ -229,7 +227,7 @@ bool    GpSocketUDP::WriteTo
         SCheckResOrThrow(-1, {});
     }
 
-    THROW_COND_GP
+    VERIFY
     (
         dataSize == NumOps::SConvert<decltype(dataSize)>(sendSize),
         "dataSize != sendSize"
@@ -262,7 +260,7 @@ bool    GpSocketUDP::Write (GpSpanByteR aData)
         SCheckResOrThrow(-1, {});
     }
 
-    THROW_COND_GP
+    VERIFY
     (
         dataSize == NumOps::SConvert<decltype(dataSize)>(sendSize),
         "dataSize != sendSize"
@@ -340,7 +338,7 @@ bool    GpSocketUDP::SendMsg (const GpSocketMessageUDP& aMessage)
             return false;
         }
 
-        THROW_GP(GpNetworkErrors::SGetLastError());
+        THROW(GpNetworkErrors::SGetLastError());
     }
 
     return true;

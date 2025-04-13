@@ -1,6 +1,5 @@
-#include "GpHttpRouteTableStatic.hpp"
-#include "../../Exceptions/GpHttpException.hpp"
-
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Routers/TableRouter/GpHttpRouteTableStatic.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Exceptions/GpHttpException.hpp>
 #include <GpCore2/GpUtils/SyncPrimitives/GpMutex.hpp>
 #include <GpCore2/GpUtils/SyncPrimitives/GpSharedMutex.hpp>
 
@@ -16,7 +15,7 @@ GpHttpRouteTableStatic::~GpHttpRouteTableStatic (void) noexcept
 
 GpHttpRequestHandler::SP    GpHttpRouteTableStatic::FindHandler (const GpHttpRequestNoBodyDesc& aHttpRqNoBody) const
 {
-    GpSharedLock<GpSpinLockRW> sharedLock(iSpinLockRW);
+    GpSharedLock<GpSpinLockRW> sharedLock{iSpinLockRW};
 
     const GpUrlAuthority&   urlAuthority        = aHttpRqNoBody.url.Authority();
     const std::string_view  urlPath             = aHttpRqNoBody.url.Path();
@@ -35,7 +34,7 @@ GpHttpRequestHandler::SP    GpHttpRouteTableStatic::FindHandler (const GpHttpReq
             return iDefaultHandlerFactory.Vn().NewInstance();
         } else
         {
-            THROW_HTTP
+            THROW
             (
                 GpHttpResponseCode::NOT_FOUND_404,
                 fmt::format
@@ -58,7 +57,7 @@ GpHttpRequestHandler::SP    GpHttpRouteTableStatic::FindHandler (const GpHttpReq
             return iDefaultHandlerFactory.Vn().NewInstance();
         } else
         {
-            THROW_HTTP
+            THROW
             (
                 GpHttpResponseCode::NOT_FOUND_404,
                 fmt::format

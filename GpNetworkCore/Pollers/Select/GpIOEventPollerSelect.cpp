@@ -126,7 +126,7 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
     );
 
     // Check for errors
-    THROW_COND_GP
+    VERIFY
     (
         selectRes >= 0,
         []()
@@ -190,7 +190,7 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
     return GpTaskRunRes::READY_TO_RUN;
 }
 
-void    GpIOEventPollerSelect::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
+void    GpIOEventPollerSelect::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {
@@ -236,14 +236,14 @@ void    GpIOEventPollerSelect::OnAddObject
 )
 {
     // Check for max count
-    THROW_COND_GP
+    VERIFY
     (
         aSocketId != GpSocketId_Default(),
         "Wrong socket ID"
     );
 
     // Check for max count
-    THROW_COND_GP
+    VERIFY
     (
         std::size(iSockets) < FD_SETSIZE,
         []()
@@ -257,7 +257,7 @@ void    GpIOEventPollerSelect::OnAddObject
     );
 
     // Add to iSockets
-    iSockets.emplace(aSocketId, aEventTypes.Value());
+    iSockets.emplace(aSocketId, aEventTypes.RawValue());
 
     // Add to iFdSetMaster
     FD_SET(aSocketId, &iFdSetMaster);

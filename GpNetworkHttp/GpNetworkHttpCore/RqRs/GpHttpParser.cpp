@@ -65,7 +65,7 @@ bool    GpHttpParser::ParseNext (GpSpanByteR aNextDataBlock)
         aNextDataBlock.Count()
     );
 
-    THROW_COND_HTTP
+    VERIFY
     (
         httpParseRes == HPE_OK,
         GpHttpResponseCode::BAD_REQUEST_400,
@@ -128,7 +128,7 @@ int GpHttpParser::Http_OnURL (std::string_view aValue)
             iRqNoBody.url = GpUrl::SFromString(aValue);
         } catch (const GpException& e)
         {
-            THROW_HTTP
+            THROW
             (
                 GpHttpResponseCode::BAD_REQUEST_400,
                 fmt::format
@@ -213,7 +213,7 @@ int GpHttpParser::Http_OnHeadersComplete (llhttp_t* aHttp)
     }  else
     {
         // TODO: add check for max content_length value to config
-        THROW_COND_HTTP
+        VERIFY
         (
             aHttp->content_length <= 1024*1024,
             GpHttpResponseCode::PAYLOAD_TOO_LARGE_413
@@ -303,7 +303,7 @@ int GpHttpParser::Http_OnMessageComplete (llhttp_t* aHttp)
             case HTTP_PATCH:    httpRequestType = GpHttpRequestType::HTTP_PATCH;    break;
             default:
             {
-                THROW_HTTP(GpHttpResponseCode::BAD_REQUEST_400, "Unsupported HTTP method"_sv);
+                THROW(GpHttpResponseCode::BAD_REQUEST_400, "Unsupported HTTP method"_sv);
             }
         }
 

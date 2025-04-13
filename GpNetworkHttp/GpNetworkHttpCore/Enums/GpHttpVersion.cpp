@@ -1,4 +1,4 @@
-#include "GpHttpVersion.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Enums/GpHttpVersion.hpp>
 
 namespace GPlatform {
 

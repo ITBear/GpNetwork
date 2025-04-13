@@ -21,7 +21,7 @@ void    GpIOEventPoller::AddSubscription
 {
     GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
 
-    THROW_COND_GP
+    VERIFY
     (
         iSubsribersByIOObject.contains(aSocketId) == false,
         [aSocketId]()
@@ -57,7 +57,7 @@ bool    GpIOEventPoller::RemoveSubscription
 
     if (channel.Unsubscribe(aTaskId) == 0)
     {
-        iSubsribersByIOObject.erase(aSocketId);
+        iSubsribersByIOObject.erase(iter);
         OnRemoveObject(aSocketId);
     }
 
@@ -78,7 +78,7 @@ void    GpIOEventPoller::ProcessEvents
     }
 
     SubsribersEventChannelT& channel = iter->second;
-    channel.PushEvent(SubsriberResValT{aSocketId, aEvents});
+    channel.PushEvent(SubsriberResValT{aSocketId, aEvents.RawValue()});
 
     if (   aEvents.Test(GpIOEventType::CLOSED)
         || aEvents.Test(GpIOEventType::ERROR_OCCURRED)) [[unlikely]]
@@ -93,7 +93,7 @@ void    GpIOEventPoller::OnStart (void)
     // NOP
 }
 
-void    GpIOEventPoller::OnStop ([[maybe_unused]] StopExceptionsT& aStopExceptionsOut) noexcept
+void    GpIOEventPoller::OnStop ([[maybe_unused]] ExceptionsT& aStopExceptionsOut) noexcept
 {
     // NOP
 }

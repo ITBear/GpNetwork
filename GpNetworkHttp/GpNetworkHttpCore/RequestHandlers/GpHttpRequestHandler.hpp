@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../RqRs/GpHttpRequest.hpp"
-#include "../RqRs/GpHttpResponse.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RqRs/GpHttpRequest.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RqRs/GpHttpResponse.hpp>
 
 namespace GPlatform {
 

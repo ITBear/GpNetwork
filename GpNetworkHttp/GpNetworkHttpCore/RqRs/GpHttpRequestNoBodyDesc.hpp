@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../Headers/GpHttpHeaders.hpp"
-#include "../Url/GpUrl.hpp"
-#include "../Enums/GpHttpVersion.hpp"
-#include "../Enums/GpHttpRequestType.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Headers/GpHttpHeaders.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Url/GpUrl.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Enums/GpHttpVersion.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Enums/GpHttpRequestType.hpp>
 
 namespace GPlatform {
 

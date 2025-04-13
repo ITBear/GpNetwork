@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../RequestHandlers/GpHttpRequestHandlerFactory.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RequestHandlers/GpHttpRequestHandlerFactory.hpp>
 
 namespace GPlatform {
 

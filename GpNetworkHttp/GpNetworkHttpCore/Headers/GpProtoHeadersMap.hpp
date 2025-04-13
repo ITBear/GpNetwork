@@ -59,10 +59,10 @@ public:
     GpProtoHeadersMap&                          Add                 (const typename T::EnumT    aName,
                                                                      const typename V::EnumT    aValue);
 
-    inline GpProtoHeaderValue::C::Opt::CRef     GetValues           (std::string_view   aName) const noexcept;
+    inline GpProtoHeaderValue::C::Opts::CRef    GetValues           (std::string_view   aName) const noexcept;
 
     template<EnumConcepts::IsEnum T>
-    GpProtoHeaderValue::C::Opt::CRef            GetValues           (const typename T::EnumT aName) const noexcept;
+    GpProtoHeaderValue::C::Opts::CRef           GetValues           (const typename T::EnumT aName) const noexcept;
 
     inline std::optional<std::string_view>      GetValueStr         (std::string_view   aName,
                                                                      const size_t       aElementId) const noexcept;
@@ -238,7 +238,7 @@ GpProtoHeadersMap&  GpProtoHeadersMap::Add
     );
 }
 
-GpProtoHeaderValue::C::Opt::CRef    GpProtoHeadersMap::GetValues (std::string_view aName) const noexcept
+GpProtoHeaderValue::C::Opts::CRef   GpProtoHeadersMap::GetValues (std::string_view aName) const noexcept
 {
     std::string lowerName = GpUTF::SToLower(aName);
 
@@ -253,7 +253,7 @@ GpProtoHeaderValue::C::Opt::CRef    GpProtoHeadersMap::GetValues (std::string_vi
 }
 
 template<EnumConcepts::IsEnum T>
-GpProtoHeaderValue::C::Opt::CRef    GpProtoHeadersMap::GetValues (const typename T::EnumT aName) const noexcept
+GpProtoHeaderValue::C::Opts::CRef   GpProtoHeadersMap::GetValues (const typename T::EnumT aName) const noexcept
 {
     return GetValues(GpProtoHeader_EnumToStr(aName));
 }
@@ -264,7 +264,7 @@ std::optional<std::string_view> GpProtoHeadersMap::GetValueStr
     const size_t        aElementId
 ) const noexcept
 {
-    GpProtoHeaderValue::C::Opt::CRef valueOptRef = GetValues(aName);
+    GpProtoHeaderValue::C::Opts::CRef valueOptRef = GetValues(aName);
 
     if (!valueOptRef.has_value())
     {

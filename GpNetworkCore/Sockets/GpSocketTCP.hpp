@@ -48,7 +48,7 @@ public:
                                                      milliseconds_t         aTimeout,
                                                      GpIOEventPollerIdx     aIOEventPollerIdx,
                                                      GpTaskId               aIOEventPollerSubscribeTaskId);
-    GpSocketTCP::C::Opt::Val    Accept              (const GpSocketFlags& aFlags);
+    GpSocketTCP::C::Opts::Val   Accept              (const GpSocketFlags& aFlags);
 
     [[nodiscard]] size_t        Read                (GpByteWriter& aWriter);
     [[nodiscard]] size_t        Write               (GpByteReader& aReader);

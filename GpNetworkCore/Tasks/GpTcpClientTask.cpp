@@ -117,7 +117,7 @@ void    GpTcpClientTask::ConnectTcpAndWait
     localSocketTcpSP->ConnectAndWait(aServerAddr, aConnectTimeout, localIOEventPollerIdx, localIOEventPollerSubscribeTaskId);
 
     // Pop event
-    GpAny::C::Opt::Val msg = PopMessage();
+    GpAny::C::Opt::Val msg = PopMessage(GpMethodAccess{this});
 
     //
     OnConnected(localSocketTcpSP.Vn());
@@ -128,7 +128,7 @@ void    GpTcpClientTask::OnStart (void)
     GpSocketsTask::OnStart();
 }
 
-void    GpTcpClientTask::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
+void    GpTcpClientTask::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {
@@ -151,7 +151,7 @@ void    GpTcpClientTask::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
 
 void    GpTcpClientTask::ProcessOtherMessages (GpAny& aMessage)
 {
-    THROW_GP
+    THROW
     (
         fmt::format
         (
@@ -175,7 +175,7 @@ void    GpTcpClientTask::CheckBeforeNewTcpConnection (const GpSocketAddr& aServe
         return;
     }
 
-    THROW_COND_GP
+    VERIFY
     (
         iConnectionState == ConnectionStateT::CONNECTED,
         "Other connection in progress"

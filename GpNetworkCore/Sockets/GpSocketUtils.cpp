@@ -1,4 +1,4 @@
-#include "GpSocketUtils.hpp"
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketUtils.hpp>
 
 namespace GPlatform {
 
@@ -35,7 +35,7 @@ const struct in_pktinfo*    GpSocketUtils::SGetPktInfo
     msg.Control.buf = reinterpret_cast<char*>(const_cast<std::byte*>(aControlBuffer.Ptr()));
     msg.Control.len = NumOps::SConvert<decltype(WSABUF::len)>(aControlBuffer.Count());
 
-    THROW_COND_GP
+    VERIFY
     (
         msg.Control.len >= WSA_CMSG_SPACE(sizeof(struct in_pktinfo)),
         [&]()
@@ -73,7 +73,7 @@ size_t  GpSocketUtils::SSetPktInfo
     const GpSocketIPv::EnumT    aIPv
 )
 {
-    THROW_COND_GP
+    VERIFY
     (
         aPktInfo != nullptr,
         "aPktInfo is null"
@@ -88,7 +88,7 @@ size_t  GpSocketUtils::SSetPktInfo
 
     struct cmsghdr* cmsgHdr = CMSG_FIRSTHDR(&msg);
 
-    THROW_COND_GP
+    VERIFY
     (
         cmsgHdr != nullptr,
         "CMSG_FIRSTHDR return null"
@@ -98,7 +98,7 @@ size_t  GpSocketUtils::SSetPktInfo
     cmsgHdr->cmsg_type  = IP_PKTINFO;
     cmsgHdr->cmsg_len   = CMSG_LEN(sizeof(struct in_pktinfo));
 
-    THROW_COND_GP
+    VERIFY
     (
         aControlBuffer.Count() >= CMSG_LEN(sizeof(struct in_pktinfo)),
         [&]()
@@ -122,7 +122,7 @@ size_t  GpSocketUtils::SSetPktInfo
     msg.Control.buf = reinterpret_cast<char*>(const_cast<std::byte*>(aControlBuffer.Ptr()));
     msg.Control.len = WSA_CMSG_SPACE(sizeof(struct in_pktinfo));
 
-    THROW_COND_GP
+    VERIFY
     (
         aControlBuffer.Count() >= WSA_CMSG_SPACE(sizeof(struct in_pktinfo)),
         [&]()
@@ -138,7 +138,7 @@ size_t  GpSocketUtils::SSetPktInfo
 
     WSACMSGHDR* cmsgHdr = WSA_CMSG_FIRSTHDR(&msg);
 
-    THROW_COND_GP
+    VERIFY
     (
         cmsgHdr != nullptr,
         "WSA_CMSG_FIRSTHDR return null"

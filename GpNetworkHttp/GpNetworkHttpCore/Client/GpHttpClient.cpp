@@ -1,6 +1,6 @@
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Client/GpHttpClient.hpp>
 #include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
-#include <GpCore2/GpTasks/ITC/GpItcSharedFutureUtils.hpp>
+#include <GpCore2/GpTasks/ITC/GpItcFutureUtils.hpp>
 
 namespace GPlatform {
 
@@ -37,15 +37,19 @@ GpHttpResponse::SP  GpHttpClient::DoAndWait
     );
 
     // Move to ready
-    GpTask::DoneFutureT::SP doneFutureSP    = GpTaskScheduler::S().NewToReadyDepend(requestTaskSP);
-    GpTask::DoneFutureT&    doneFuture      = doneFutureSP.V();
+    GpTask::DoneFutureT::C::Opts::SP doneFutureOptSP = GpTaskScheduler::S().NewToReadyDepend(requestTaskSP);
+
+    if (doneFutureOptSP.has_value() == false)
+    {
+        THROW("Failed to start HTTP request task");
+    }
 
     // Wait for done
     GpHttpResponse::SP httpResponseSP;
 
-    std::ignore = GpItcSharedFutureUtils::SWaitFor
+    std::ignore = GpItcFutureUtils::SWaitFor
     (
-        doneFuture,
+        doneFutureOptSP.value().V(),
         [&](typename GpTaskFiber::DoneFutureT::value_type& aResult)// OnSuccessFnT
         {
             if (aResult->IsContatinType<GpHttpResponse::SP>()) [[likely]]
@@ -53,7 +57,7 @@ GpHttpResponse::SP  GpHttpClient::DoAndWait
                 httpResponseSP = std::move(aResult->ValueNoCheck<GpHttpResponse::SP>());
             } else
             {
-                THROW_GP
+                THROW
                 (
                     fmt::format
                     (
@@ -63,16 +67,16 @@ GpHttpResponse::SP  GpHttpClient::DoAndWait
                 );
             }
         },
-        [&](const GpException& aEx)// OnExceptionFnT
+        [](const GpException& aEx)// OnExceptionFnT
         {
             throw aEx;
         },
         aConnectTimeout + aRequestTimeout, // Timeout
         [&]()// On timeout
         {
-            requestTaskSP.V().RequestTaskStop();
+            std::ignore = requestTaskSP.V().RequestStop();
 
-            THROW_HTTP
+            THROW
             (
                 GpHttpExceptionCode::REQUEST_TIMEOUT_408,
                 "Request timeout"

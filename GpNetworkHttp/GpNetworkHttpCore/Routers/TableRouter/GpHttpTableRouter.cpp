@@ -1,4 +1,4 @@
-#include "GpHttpTableRouter.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Routers/TableRouter/GpHttpTableRouter.hpp>
 
 namespace GPlatform {
 

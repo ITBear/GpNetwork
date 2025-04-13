@@ -30,7 +30,7 @@ void    GpHttpRequestNoBodyDesc::SetHttpVersion
         http_version = HttpVersionTE::HTTP_1_1;
     } else
     {
-        THROW_HTTP(GpHttpResponseCode::BAD_REQUEST_400, "Unsupported HTTP version"_sv);
+        THROW(GpHttpResponseCode::BAD_REQUEST_400, "Unsupported HTTP version"_sv);
     }
 }
 

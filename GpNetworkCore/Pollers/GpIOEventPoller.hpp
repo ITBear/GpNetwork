@@ -16,7 +16,7 @@ public:
 
     using SubsriberResValT          = std::tuple<GpSocketId, GpIOEventsTypes>;
     using SubsribersEventChannelT   = GpEventChannel<GpTaskId, SubsriberResValT>;
-    using SubsribersByObjectT       = std::unordered_map<GpSocketId, SubsribersEventChannelT>;
+    using SubsribersByObjectT       = ankerl::unordered_dense::map<GpSocketId, SubsribersEventChannelT>;
 
 protected:
                                 GpIOEventPoller     (std::string aName) noexcept;
@@ -37,7 +37,7 @@ protected:
 
     virtual void                OnStart             (void) override;
     virtual GpTaskRunRes::EnumT OnStep              (void) override = 0;
-    virtual void                OnStop              (StopExceptionsT& aStopExceptionsOut) noexcept override;
+    virtual void                OnStop              (ExceptionsT& aStopExceptionsOut) noexcept override;
     virtual void                OnStopException     (const GpException& aException) noexcept override = 0;
 
     virtual void                OnAddObject         (GpSocketId         aSocketId,

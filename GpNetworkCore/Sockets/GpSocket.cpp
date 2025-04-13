@@ -1,5 +1,4 @@
-#include "GpSocket.hpp"
-
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocket.hpp>
 #include <GpCore2/GpUtils/Types/Strings/GpStringUtils.hpp>
 
 namespace GPlatform {

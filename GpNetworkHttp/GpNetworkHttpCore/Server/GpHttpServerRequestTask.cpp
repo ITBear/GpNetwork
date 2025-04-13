@@ -50,7 +50,7 @@ void    GpHttpServerRequestTask::OnStart (void)
     );
 }
 
-void    GpHttpServerRequestTask::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
+void    GpHttpServerRequestTask::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {
@@ -154,7 +154,7 @@ void    GpHttpServerRequestTask::OnReadyToRead (GpSocket& aSocket)
             GpBytesArray buff;
             const size_t readFromSocketSize = SReadFromSocket(aSocket, buff);
 
-            THROW_COND_GP
+            VERIFY
             (
                 readFromSocketSize == 0,
                 "Data income after RQ was full read"
@@ -185,7 +185,7 @@ void    GpHttpServerRequestTask::OnClosed ([[maybe_unused]] GpSocket& aSocket)
         )
     );
 
-    RequestTaskStop();
+    std::ignore = RequestStop();
 }
 
 void    GpHttpServerRequestTask::OnError (GpSocket& aSocket)
@@ -199,7 +199,7 @@ void    GpHttpServerRequestTask::OnError (GpSocket& aSocket)
         )
     );
 
-    RequestTaskStop();
+    std::ignore = RequestStop();
 }
 
 void    GpHttpServerRequestTask::ProcessOtherMessages (GpAny& aMessage)
@@ -261,7 +261,7 @@ void    GpHttpServerRequestTask::FinishCycle (void)
 
     if (isNeedToCloseConnection)
     {
-        RequestTaskStop();
+        std::ignore = RequestStop();
     }
 }
 

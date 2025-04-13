@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../GpHttpRouter.hpp"
-#include "GpHttpRouteTable.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Routers/GpHttpRouter.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Routers/TableRouter/GpHttpRouteTable.hpp>
 
 namespace GPlatform {
 
@@ -23,7 +23,7 @@ private:
 };
 
 GpHttpTableRouter::GpHttpTableRouter (GpHttpRouteTable::SP aRouteTable) noexcept:
-iRouteTable(std::move(aRouteTable))
+iRouteTable{std::move(aRouteTable)}
 {
 }
 

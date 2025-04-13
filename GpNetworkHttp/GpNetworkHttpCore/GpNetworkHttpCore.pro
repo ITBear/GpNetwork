@@ -7,7 +7,7 @@ DEFINES        += GP_NETWORK_HTTP_CORE_LIBRARY
 _VER_MAJ        = 2
 _VER_MIN        = 1
 _VER_PAT        = 6
-DIR_LEVEL       = ./../../../
+DIR_LEVEL       = ./../../..
 
 include($$DIR_LEVEL/../QtGlobalPro.pri)
 
@@ -17,13 +17,13 @@ equals(var_link, "static") {
 
 # ----------- Libraries -----------
 equals(var_os, "windows") {
-	LIBS += -lGpNetworkCore$$TARGET_POSTFIX
-	LIBS += -lGpLogCore$$TARGET_POSTFIX
-	LIBS += -lGpTasks$$TARGET_POSTFIX
-	LIBS += -lGpReflection$$TARGET_POSTFIX
-	LIBS += -lGpUtils$$TARGET_POSTFIX
+	LIBS += -lGpNetworkCore$$TARGET_POSTFIX$$_VER_MAJ
+	LIBS += -lGpLogCore$$TARGET_POSTFIX$$_VER_MAJ
+	LIBS += -lGpTasks$$TARGET_POSTFIX$$_VER_MAJ
+	LIBS += -lGpReflection$$TARGET_POSTFIX$$_VER_MAJ
+	LIBS += -lGpUtils$$TARGET_POSTFIX$$_VER_MAJ
 
-	LIBS += -lllhttp$$TARGET_POSTFIX
+	LIBS += -lllhttp$$TARGET_POSTFIX$$_VER_MAJ
 	LIBS += -lws2_32
 }
 
@@ -112,6 +112,7 @@ HEADERS += \
     Routers/TableRouter/GpHttpTableRouter.hpp \
     RqRs/GpHttpParser.hpp \
     RqRs/GpHttpRequest.hpp \
+    RqRs/GpHttpRequestFactory.hpp \
     RqRs/GpHttpRequestNoBodyDesc.hpp \
     RqRs/GpHttpResponse.hpp \
     RqRs/GpHttpResponseNoBodyDesc.hpp \

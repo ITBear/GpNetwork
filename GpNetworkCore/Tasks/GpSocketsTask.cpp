@@ -24,7 +24,7 @@ void    GpSocketsTask::OnStart (void)
 
 GpTaskRunRes::EnumT GpSocketsTask::OnStep (void)
 {
-    GpAny::C::Opt::Val messageOpt = PopMessage();
+    GpAny::C::Opt::Val messageOpt = PopMessage(GpMethodAccess{this});
 
     while (   (!IsStopCalled())
            && (messageOpt.has_value()))
@@ -42,13 +42,13 @@ GpTaskRunRes::EnumT GpSocketsTask::OnStep (void)
             }
         }
 
-        messageOpt = PopMessage();
+        messageOpt = PopMessage(GpMethodAccess{this});
     }
 
     return GpTaskRunRes::WAIT;
 }
 
-void    GpSocketsTask::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
+void    GpSocketsTask::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {

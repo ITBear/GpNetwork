@@ -1,5 +1,4 @@
-#include "GpHttpServerCfgDesc.hpp"
-
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Server/GpHttpServerCfgDesc.hpp>
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
 #include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
 

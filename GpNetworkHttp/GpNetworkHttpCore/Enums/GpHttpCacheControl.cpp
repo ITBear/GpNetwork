@@ -1,4 +1,4 @@
-#include "GpHttpCacheControl.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Enums/GpHttpCacheControl.hpp>
 
 namespace GPlatform {
 
@@ -28,7 +28,7 @@ GpHttpCacheControl::EnumT   GpProtoHeader_StrToEnum (std::string_view aStr, GpHt
         i++;
     }
 
-    THROW_GP
+    THROW
     (
         "Unknown string value '"_sv + aStr + "' for enum GpHttpCacheControl"_sv
     );

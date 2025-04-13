@@ -1,7 +1,7 @@
 #pragma once
 
-#include "GpSocket.hpp"
-#include "GpSocketMessageUDP.hpp"
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocket.hpp>
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketMessageUDP.hpp>
 
 namespace GPlatform {
 

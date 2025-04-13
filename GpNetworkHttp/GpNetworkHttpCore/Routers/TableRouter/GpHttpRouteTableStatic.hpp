@@ -1,7 +1,7 @@
 #pragma once
 
-#include "GpHttpRouteTable.hpp"
-#include "../../RequestHandlers/GpHttpRequestHandlerFactory.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Routers/TableRouter/GpHttpRouteTable.hpp>
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RequestHandlers/GpHttpRequestHandlerFactory.hpp>
 
 #include <GpCore2/Config/IncludeExt/boost_flat_map.hpp>
 #include <GpCore2/GpUtils/SyncPrimitives/GpSpinLockRW.hpp>

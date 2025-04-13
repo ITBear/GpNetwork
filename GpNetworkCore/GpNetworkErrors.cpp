@@ -25,7 +25,7 @@ std::string GpNetworkErrors::SGetLastError (void)
         nullptr
     );
 
-    THROW_COND_GP
+    VERIFY
     (
         msgSize != 0,
         []()

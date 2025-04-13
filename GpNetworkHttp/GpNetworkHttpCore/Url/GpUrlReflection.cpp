@@ -1,4 +1,4 @@
-#include "GpUrlReflection.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Url/GpUrlReflection.hpp>
 
 /*
 //#include <GpCore2/GpReflection/GpReflectType.hpp>
@@ -28,7 +28,7 @@ GpUrl   GpUrlReflection::SReflectToUrl (const GpReflectObject& aObj)
         const GpReflectType::EnumT          propType        = propInfo.Type();
         const GpReflectContainerType::EnumT propContainer   = propInfo.Container();
 
-        THROW_COND_GP
+        VERIFY
         (
             propContainer == GpReflectContainerType::NO,
             [&](){return "Property '"_sv + propName + "' container must be NO"_sv;}
@@ -106,7 +106,7 @@ GpUrl   GpUrlReflection::SReflectToUrl (const GpReflectObject& aObj)
             case GpReflectType::NOT_SET:    [[fallthrough]];
             default:
             {
-                THROW_GP("Unsupported type '"_sv + GpReflectType::SToString(propType) + "' of prop '"_sv + propName + "'"_sv);
+                THROW("Unsupported type '"_sv + GpReflectType::SToString(propType) + "' of prop '"_sv + propName + "'"_sv);
             }
         }//switch (propType)
     }

@@ -1,4 +1,4 @@
-#include "GpHttpConnectionFlag.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Enums/GpHttpConnectionFlag.hpp>
 
 namespace GPlatform {
 
@@ -29,7 +29,7 @@ GpHttpConnectionFlag::EnumT GpProtoHeader_StrToEnum (std::string_view aStr, GpHt
         i++;
     }
 
-    THROW_GP
+    THROW
     (
         "Unknown string value '"_sv + aStr + "' for enum GpHttpConnectionFlag"_sv
     );

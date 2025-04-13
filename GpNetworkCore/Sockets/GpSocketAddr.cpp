@@ -51,7 +51,7 @@ void    GpSocketAddr::Set
         || (std::size(aIP) > maxLength)
         || (inet_pton(sinFamily, std::data(ipStr), sinAddrPtr) != 1))
     {
-        THROW_GP
+        THROW
         (
             fmt::format
             (
@@ -75,7 +75,7 @@ GpSocketAddr    GpSocketAddr::SLocalFromSocketId (const GpSocketId aSocketId)
         &sockLen
     );
 
-    THROW_COND_GP
+    VERIFY
     (
         res == 0,
         []()
@@ -108,7 +108,7 @@ GpSocketAddr    GpSocketAddr::SRemoteFromSocketId (const GpSocketId aSocketId)
         &sockLen
     );
 
-    THROW_COND_GP
+    VERIFY
     (
         res == 0,
         []()
@@ -168,7 +168,7 @@ std::string GpSocketAddr::ToStringIP (void) const
 
     if (inet_ntop(GpSocketIPv_SSFamily(IPv()), addrPtr, std::data(buff), std::size(buff)) == nullptr)
     {
-        THROW_GP(GpErrno::SGetAndClear());
+        THROW(GpErrno::SGetAndClear());
     }
 
     return std::string(reinterpret_cast<const char*>(std::data(buff)));
@@ -198,7 +198,7 @@ GpSocketAddr::IPvTE GpSocketAddr::SDetectIPv (std::string_view aIP)
         }
     }
 
-    THROW_GP
+    THROW
     (
         fmt::format
         (

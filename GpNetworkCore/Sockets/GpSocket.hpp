@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../GpNetworkErrors.hpp"
-#include "GpSocketProtocol.hpp"
-#include "GpSocketFlags.hpp"
-#include "GpSocketAddr.hpp"
+#include <GpNetwork/GpNetworkCore/GpNetworkErrors.hpp>
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketProtocol.hpp>
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketFlags.hpp>
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketAddr.hpp>
 
 namespace GPlatform {
 
@@ -146,7 +146,7 @@ void    GpSocket::CheckForErrors (void) const
         &errlen
     );
 
-    THROW_COND_GP
+    VERIFY
     (
         res == 0,
         [&error]()
@@ -230,7 +230,7 @@ void    GpSocket::Create (IPvTE aIPv)
         int(GpSocketProtocol_Proto(protocol))
     );
 
-    THROW_COND_GP
+    VERIFY
     (
         socketID != GpSocketId_Default(),
         []()
@@ -379,7 +379,7 @@ void    GpSocket::SCheckResOrThrow
     std::function<void()>   aFnOnThrow
 )
 {
-    THROW_COND_GP
+    VERIFY
     (
         aRes >= 0,
         [&]()

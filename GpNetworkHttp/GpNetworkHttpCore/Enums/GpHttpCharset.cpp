@@ -1,4 +1,4 @@
-#include "GpHttpCharset.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Enums/GpHttpCharset.hpp>
 
 namespace GPlatform {
 

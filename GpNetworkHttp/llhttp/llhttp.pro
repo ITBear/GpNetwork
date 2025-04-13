@@ -7,7 +7,7 @@ DEFINES        += LLHTTP_LIBRARY
 _VER_MAJ        = 2
 _VER_MIN        = 1
 _VER_PAT        = 6
-DIR_LEVEL       = ./../../../
+DIR_LEVEL       = ./../../..
 
 include($$DIR_LEVEL/../QtGlobalPro.pri)
 

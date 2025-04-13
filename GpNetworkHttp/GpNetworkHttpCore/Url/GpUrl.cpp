@@ -169,7 +169,7 @@ GpUrl   GpUrl::SFromString (std::string_view aUrl)
         authorityAndPathStr = aUrl;
     }
 
-    THROW_COND_GP
+    VERIFY
     (
         !authorityAndPathStr.empty(),
         "Authority and path parts are empty"

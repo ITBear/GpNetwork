@@ -1,4 +1,4 @@
-#include "GpHttpRequestType.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Enums/GpHttpRequestType.hpp>
 
 namespace GPlatform {
 

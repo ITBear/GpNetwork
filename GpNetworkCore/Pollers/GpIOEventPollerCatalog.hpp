@@ -2,7 +2,7 @@
 
 #include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPoller.hpp>
 #include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPollerCfgDesc.hpp>
-#include <GpCore2/GpUtils/Types/Containers/GpDictionary.hpp>
+#include <GpCore2/GpUtils/Types/Containers/GpSharedMap.hpp>
 
 namespace GPlatform {
 
@@ -36,10 +36,10 @@ public:
                                                              GpTaskId           aSocketTaskId,
                                                              GpIOEventPollerIdx aIoEventPollerIdx);
 
-    GpIOEventPoller::C::Opt::SP     GetByIdxOpt             (GpIOEventPollerIdx aIoEventPollerIdx) noexcept;
+    GpIOEventPoller::C::Opts::SP    GetByIdxOpt             (GpIOEventPollerIdx aIoEventPollerIdx) noexcept;
     GpIOEventPoller::SP             GetByIdx                (GpIOEventPollerIdx aIoEventPollerIdx);
 
-    GpIOEventPoller::C::Opt::SP     GetByNameOpt            (std::string_view aName) noexcept;
+    GpIOEventPoller::C::Opts::SP    GetByNameOpt            (std::string_view aName) noexcept;
     GpIOEventPoller::SP             GetByName               (std::string_view aName);
 
     GpIOEventPollerIdx              IdxByName               (std::string_view aName);

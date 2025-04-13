@@ -16,6 +16,27 @@ const GpHttpRequest::RequestTypeToStrT  GpHttpRequest::sRequestTypeToStr =
     "PATCH"
 };
 
+GpHttpRequest::GpHttpRequest (GpHttpRequest&& aRequest) noexcept:
+iRequestNoBody{std::move(aRequest.iRequestNoBody)},
+iBody         {std::move(aRequest.iBody)}
+{
+}
+
+GpHttpRequest::GpHttpRequest (GpHttpRequestNoBodyDesc aRequestNoBodyDesc) noexcept:
+iRequestNoBody{std::move(aRequestNoBodyDesc)}
+{
+}
+
+GpHttpRequest::GpHttpRequest
+(
+    GpHttpRequestNoBodyDesc aRequestNoBodyDesc,
+    GpHttpBodyPayload::SP   aBody
+) noexcept:
+iRequestNoBody{std::move(aRequestNoBodyDesc)},
+iBody         {std::move(aBody)}
+{
+}
+
 GpHttpRequest::~GpHttpRequest (void) noexcept
 {
 }
@@ -88,7 +109,7 @@ GpHttpRequest::SerializeRes GpHttpRequest::SSerialize
     const GpHttpBodyPayload& body = bodySP.Vn();
 
     // TODO: implement multipart
-    THROW_COND_GP
+    VERIFY
     (
         body.Type() == GpHttpBodyPayloadType::FIXED_SIZE,
         "Only FIXED_SIZE supported at the moment"

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../GpNetworkHttpCore_global.hpp"
-#include "../../../GpNetworkCore/Sockets/GpSocketFlags.hpp"
-
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCore_global.hpp>
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketFlags.hpp>
 #include <GpCore2/GpReflection/GpReflectObject.hpp>
 #include <GpCore2/GpReflection/GpReflectUtils.hpp>
 

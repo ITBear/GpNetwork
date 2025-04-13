@@ -1,4 +1,4 @@
-#include "GpSocketFlags.hpp"
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketFlags.hpp>
 
 namespace GPlatform {
 

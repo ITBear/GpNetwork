@@ -1,6 +1,5 @@
-#include "GpIOEventPollerSelectFactory.hpp"
-
-#include "GpIOEventPollerSelect.hpp"
+#include <GpNetwork/GpNetworkCore/Pollers/Select/GpIOEventPollerSelectFactory.hpp>
+#include <GpNetwork/GpNetworkCore/Pollers/Select/GpIOEventPollerSelect.hpp>
 
 namespace GPlatform {
 

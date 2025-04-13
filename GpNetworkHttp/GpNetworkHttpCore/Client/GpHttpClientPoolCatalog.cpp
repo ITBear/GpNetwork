@@ -1,4 +1,4 @@
-#include "GpHttpClientPoolCatalog.hpp"
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Client/GpHttpClientPoolCatalog.hpp>
 
 // namespace GPlatform {
 //

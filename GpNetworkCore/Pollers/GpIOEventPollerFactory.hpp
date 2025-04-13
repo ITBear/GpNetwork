@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GpIOEventPoller.hpp"
+#include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPoller.hpp>
 
 namespace GPlatform {
 

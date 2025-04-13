@@ -52,7 +52,7 @@ void    GpTcpServerTask::OnStart (void)
             {GpIOEventType::READY_TO_READ, GpIOEventType::READY_TO_WRITE, GpIOEventType::CLOSED, GpIOEventType::ERROR_OCCURRED}
         );
 
-        THROW_COND_GP
+        VERIFY
         (
             isAdded == true,
             "Failed to subscribe to IO event poller"
@@ -60,7 +60,7 @@ void    GpTcpServerTask::OnStart (void)
     }
 }
 
-void    GpTcpServerTask::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
+void    GpTcpServerTask::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {
@@ -83,7 +83,7 @@ void    GpTcpServerTask::OnStop (StopExceptionsT& aStopExceptionsOut) noexcept
 
 void    GpTcpServerTask::ProcessOtherMessages (GpAny& aMessage)
 {
-    THROW_GP
+    THROW
     (
         fmt::format
         (

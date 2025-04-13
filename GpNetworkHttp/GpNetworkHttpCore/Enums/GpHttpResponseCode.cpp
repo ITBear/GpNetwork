@@ -1,5 +1,4 @@
-#include "GpHttpResponseCode.hpp"
-
+#include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Enums/GpHttpResponseCode.hpp>
 #include <GpCore2/Config/IncludeExt/boost_flat_map.hpp>
 
 namespace GPlatform {

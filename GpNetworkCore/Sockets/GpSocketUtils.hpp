@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../GpNetworkCore_global.hpp"
-#include "GpSocketIPv.hpp"
-
+#include <GpNetwork/GpNetworkCore/GpNetworkCore_global.hpp>
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketIPv.hpp>
 #include <GpCore2/GpUtils/Types/Containers/GpBytesArray.hpp>
 
 namespace GPlatform {

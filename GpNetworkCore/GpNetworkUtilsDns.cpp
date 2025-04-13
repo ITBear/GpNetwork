@@ -12,7 +12,12 @@ namespace GPlatform {
 GpNetworkUtilsDns   GpNetworkUtilsDns::sInstance;
 
 GpNetworkUtilsDns::GpNetworkUtilsDns (void) noexcept:
-iCache{256/*max cache size*/}
+iCache
+{
+    4096/*max cache size*/,
+    4/*shards count*/,
+    4/*shard init size*/
+}
 {
 }
 
@@ -24,16 +29,15 @@ GpSocketAddr    GpNetworkUtilsDns::Resolve
 (
     std::string_view            aDomainName,
     GpSocketIPv                 aIPv,
-    GpSocketAddr::C::Opt::CRef  aCurrentResolvedAddrOptCRef
+    GpSocketAddr::C::Opts::CRef aCurrentResolvedAddrOptCRef
 )
 {
-    const auto generateNewValueFn = [aDomainName, aIPv]() -> ResolveRes
+    const CacheT::GenerateFnT generateFn = [aDomainName, aIPv]() -> ResolveRes
     {
-        const std::string domainName{aDomainName};// Must be null terminated
-        return GpNetworkUtilsDns::SResolveNoCache(domainName, aIPv);
+        return GpNetworkUtilsDns::SResolveNoCache(aDomainName, aIPv);
     };
 
-    static const auto validateFn = [](const ResolveRes& aResolveRes) -> bool
+    static const CacheT::ValidateFnT sValidateFn = [](const ResolveRes& aResolveRes) -> bool
     {
         // 5 min max cache valid timeout
         const unix_ts_s_t nowTS = GpDateTimeOps::SUnixTS_s();
@@ -45,7 +49,7 @@ GpSocketAddr    GpNetworkUtilsDns::Resolve
         return false;
     };
 
-    static const auto removeOneTimedOutFn = []([[maybe_unused]] auto& aContainer) -> void
+    static const CacheT::EvictionFnT sEvictionFn = [](auto& aContainer) -> void
     {
         // Try to find one timed out element
         auto    minUseCountIter = std::begin(aContainer);
@@ -63,7 +67,7 @@ GpSocketAddr    GpNetworkUtilsDns::Resolve
             }
 
             // Validate
-            if (!validateFn(val))
+            if (!sValidateFn(val))
             {
                 aContainer.erase(iter);
                 return;
@@ -73,7 +77,12 @@ GpSocketAddr    GpNetworkUtilsDns::Resolve
         aContainer.erase(minUseCountIter);
     };
 
-    static const auto onGetValueFn = [aCurrentResolvedAddrOptCRef](ResolveRes& aResolveRes) -> GpSocketAddr
+    static const CacheT::IsUseGeneratedValueFnT sIsUseGeneratedValueFn = []([[maybe_unused]] const auto& aInCacheValue, [[maybe_unused]] const auto& aGeneratedValue)
+    {
+        return true;
+    };
+
+    const CacheT::TransformFnT<GpSocketAddr> transformValueFn = [aCurrentResolvedAddrOptCRef](ResolveRes& aResolveRes) -> GpSocketAddr
     {
         aResolveRes.useCount++;
         aResolveRes.lastGetId++;
@@ -83,7 +92,6 @@ GpSocketAddr    GpNetworkUtilsDns::Resolve
         if (aCurrentResolvedAddrOptCRef.has_value())
         {
             // Try to find 'aCurrentResolvedAddrOpt' in aResolveRes.addresses
-
             const auto iter = std::find
             (
                 std::begin(addresses),
@@ -103,56 +111,56 @@ GpSocketAddr    GpNetworkUtilsDns::Resolve
     };
 
     // Try to find in cache or generate new
-    return iCache.GetOrGenerateNew<std::string_view, GpSocketAddr>
+    auto[resolveRes, _] = iCache.FindOrGenerate
     (
         aDomainName,
-        onGetValueFn,
-        generateNewValueFn,
-        validateFn,
-        removeOneTimedOutFn
+        generateFn,
+        sValidateFn,
+        sIsUseGeneratedValueFn,
+        sEvictionFn,
+        transformValueFn
     );
+
+    return resolveRes;
 }
 
 GpNetworkUtilsDns::ResolveRes   GpNetworkUtilsDns::SResolveNoCache
 (
-    const std::string&  aDomainName,
+    std::string_view    aDomainName,
     GpSocketIPv         aIPv
 )
 {
-//#if defined(GP_POSIX) // -------------------------------------------- GP_POSIX --------------------------------------------
     struct addrinfo*    resolvedAddrInfo = nullptr;
     struct addrinfo     addrHints;
 
-    GpRAIIonDestruct onDestruct
-    (
-        [&resolvedAddrInfo]()
+    GpRAIIonDestruct onDestruct = [&resolvedAddrInfo]()
+    {
+        // Free the linked list
+        if (resolvedAddrInfo != nullptr)
         {
-            // Free the linked list
-            if (resolvedAddrInfo != nullptr)
-            {
-                freeaddrinfo(resolvedAddrInfo);
-                resolvedAddrInfo = nullptr;
-            }
+            freeaddrinfo(resolvedAddrInfo);
+            resolvedAddrInfo = nullptr;
         }
-    );
+    };
 
     memset(&addrHints, 0, sizeof(addrHints));
     addrHints.ai_family = GpSocketIPv_SSFamily(aIPv);
 
     // Resolve
+    const std::string domainName{aDomainName};
     const int getaddrinfoRes = getaddrinfo
     (
-        std::data(aDomainName),
+        std::data(domainName),
         nullptr,
         &addrHints,
         &resolvedAddrInfo
     );
 
     // Check resolve result
-    THROW_COND_GP
+    VERIFY
     (
         getaddrinfoRes == 0,
-        [getaddrinfoRes, aDomainName]()
+        [getaddrinfoRes, domainName]()
         {
 #if defined(GP_POSIX)
             const std::string errorMsg = gai_strerror(getaddrinfoRes);
@@ -165,7 +173,7 @@ GpNetworkUtilsDns::ResolveRes   GpNetworkUtilsDns::SResolveNoCache
             return fmt::format
             (                       
                 "Failed to get ip address for domain '{}': {}",
-                aDomainName,
+                domainName,
                 errorMsg
             );
         }
@@ -190,7 +198,6 @@ GpNetworkUtilsDns::ResolveRes   GpNetworkUtilsDns::SResolveNoCache
     }
 
     return resolveRes;
-//#endif// #if defined(GP_POSIX)
 }
 
 }// namespace GPlatform

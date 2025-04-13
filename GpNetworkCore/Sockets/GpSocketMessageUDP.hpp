@@ -1,8 +1,7 @@
 #pragma once
 
 #include <GpCore2/Config/IncludeExt/fmt.hpp>
-
-#include "GpSocketAddr.hpp"
+#include <GpNetwork/GpNetworkCore/Sockets/GpSocketAddr.hpp>
 
 namespace GPlatform {
 
@@ -90,7 +89,7 @@ size_t  GpSocketMessageUDP::DataUseSize (void) const
 
 GpSocketMessageUDP& GpSocketMessageUDP::SetDataUseSize (const size_t aSize)
 {
-    THROW_COND_GP
+    VERIFY
     (
         aSize <= std::size(iData),
         [&]()
@@ -136,7 +135,7 @@ size_t  GpSocketMessageUDP::ControlBufferUseSize (void) const noexcept
 
 GpSocketMessageUDP& GpSocketMessageUDP::SetControlBufferUseSize (const size_t aSize)
 {
-    THROW_COND_GP
+    VERIFY
     (
         aSize <= std::size(iControlBuffer),
         [&]()

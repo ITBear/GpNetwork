@@ -1,6 +1,6 @@
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Server/GpHttpServer.hpp>
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Server/GpHttpServerRequestTaskFactory.hpp>
-#include <GpCore2/GpTasks/ITC/GpItcSharedFutureUtils.hpp>
+#include <GpCore2/GpTasks/ITC/GpItcFutureUtils.hpp>
 
 #include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
 #include <GpLog/GpLogCore/GpLog.hpp>
@@ -29,7 +29,7 @@ void    GpHttpServer::Start (void)
 {
     GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
 
-    THROW_COND_GP
+    VERIFY
     (
         iAcceptSocketTask.IsNULL(),
         "Already started"_sv
@@ -52,12 +52,12 @@ void    GpHttpServer::Start (void)
     );
 
     // Add to scheduler and start
-    GpTaskScheduler::S().NewToReady(iAcceptSocketTask);
+    std::ignore = GpTaskScheduler::S().NewToReady(iAcceptSocketTask);
 
     // Wait for start
-    GpTask::StartFutureT::SP startFuture = iAcceptSocketTask->GetStartFuture();
+    GpTask::StartFutureT::SP startFuture = iAcceptSocketTask->StartFuture();
 
-    GpItcSharedFutureUtils::SWaitForInf
+    GpItcFutureUtils::SWait
     (
         startFuture.V(),
         [&](typename GpTaskFiber::StartFutureT::value_type&)// OnSuccessFnT
@@ -67,8 +67,7 @@ void    GpHttpServer::Start (void)
         [&](const GpException& aEx)// OnExceptionFnT
         {
             throw aEx;
-        },
-        100.0_si_ms
+        }
     );
 }
 
@@ -81,7 +80,7 @@ void    GpHttpServer::Start
     {
         GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
 
-        THROW_COND_GP
+        VERIFY
         (
             iAcceptSocketTask.IsNULL(),
             "Already started"_sv
@@ -94,7 +93,7 @@ void    GpHttpServer::Start
     Start();
 }
 
-void    GpHttpServer::RequestAndWaitForStop (void)
+void    GpHttpServer::RequestStopAndWait (void)
 {
     {
         GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
@@ -109,22 +108,30 @@ void    GpHttpServer::RequestAndWaitForStop (void)
     GpTask::DoneFutureT::SP acceptSocketTaskDoneFuture;
     {
         GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
-        acceptSocketTaskDoneFuture = iAcceptSocketTask.Vn().RequestTaskStop();
+
+        auto acceptSocketTaskDoneFutureOpt = iAcceptSocketTask.Vn().RequestStop();
+
+        VERIFY
+        (
+            acceptSocketTaskDoneFutureOpt.has_value(),
+            "Failed to stop HTTP server task"
+        );
+
+        acceptSocketTaskDoneFuture = acceptSocketTaskDoneFutureOpt.value();
     }
 
     // Wait for stop
-    GpItcSharedFutureUtils::SWaitForInf
+    GpItcFutureUtils::SWait
     (
         acceptSocketTaskDoneFuture.V(),
         [&](typename GpTaskFiber::DoneFutureT::value_type&)// OnSuccessFnT
         {
-            LOG_INFO("[GpHttpServer::RequestAndWaitForStop]: done"_sv);
+            LOG_INFO("[GpHttpServer::RequestStopAndWait]: done"_sv);
         },
         [&](const GpException& aEx)// OnExceptionFnT
         {
             throw aEx;
-        },
-        100.0_si_ms
+        }
     );
 }
 
