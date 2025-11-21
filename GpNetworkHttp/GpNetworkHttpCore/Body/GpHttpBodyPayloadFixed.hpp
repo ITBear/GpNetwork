@@ -10,25 +10,25 @@ public:
     CLASS_DD(GpHttpBodyPayloadFixed)
 
 public:
-                        GpHttpBodyPayloadFixed  (void) noexcept = default;
-    inline              GpHttpBodyPayloadFixed  (const GpBytesArray& aData);
-    inline              GpHttpBodyPayloadFixed  (GpBytesArray&& aData) noexcept;
-    virtual             ~GpHttpBodyPayloadFixed (void) noexcept override final;
+                    GpHttpBodyPayloadFixed  (void) noexcept = default;
+    inline          GpHttpBodyPayloadFixed  (const GpByteArray& aData);
+    inline          GpHttpBodyPayloadFixed  (GpByteArray&& aData) noexcept;
+    virtual         ~GpHttpBodyPayloadFixed (void) noexcept override final;
 
-    GpSpanByteRW        Data                    (void) noexcept {return iData;}
-    GpSpanByteR         Data                    (void) const noexcept {return iData;}
-    GpBytesArray&       DataStorage             (void) noexcept {return iData;}
+    GpSpanByteRW    Data                    (void) noexcept {return iData;}
+    GpSpanByteR     Data                    (void) const noexcept {return iData;}
+    GpByteArray&    DataStorage             (void) noexcept {return iData;}
 
 private:
-    GpBytesArray        iData;
+    GpByteArray iData;
 };
 
-GpHttpBodyPayloadFixed::GpHttpBodyPayloadFixed (const GpBytesArray& aData):
-GpHttpBodyPayloadFixed(GpBytesArray(aData))
+GpHttpBodyPayloadFixed::GpHttpBodyPayloadFixed (const GpByteArray& aData):
+GpHttpBodyPayloadFixed(GpByteArray{aData})
 {
 }
 
-GpHttpBodyPayloadFixed::GpHttpBodyPayloadFixed (GpBytesArray&& aData) noexcept:
+GpHttpBodyPayloadFixed::GpHttpBodyPayloadFixed (GpByteArray&& aData) noexcept:
 GpHttpBodyPayload
 (
     GpHttpBodyPayloadType::FIXED_SIZE,

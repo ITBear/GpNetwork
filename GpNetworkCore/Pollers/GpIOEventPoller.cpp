@@ -1,4 +1,6 @@
 #include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPoller.hpp>
+#include <GpNetwork/GpNetworkCore/Tasks/GpSocketTask.hpp>
+#include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
 
 namespace GPlatform {
 
@@ -8,22 +10,21 @@ GpTaskFiber{std::move(aName)}
 }
 
 GpIOEventPoller::~GpIOEventPoller (void) noexcept
-{   
+{
 }
 
 void    GpIOEventPoller::AddSubscription
 (
-    const GpSocketId                        aSocketId,
-    const GpTaskId                          aTaskId,
-    const GpIOEventsTypes                   aEventTypes,
-    SubsribersEventChannelT::CallbackFnT&&  aFn
+    const GpSocketId        aSocketId,
+    GpTask::WP              aTaskWP,
+    const GpIOEventsTypes   aEventTypes
 )
 {
-    GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+    GpUniqueLock uniqueLock{iSpinLock};
 
     VERIFY
     (
-        iSubsribersByIOObject.contains(aSocketId) == false,
+        iSocketsByTask.contains(aSocketId) == false,
         [aSocketId]()
         {
             return fmt::format
@@ -34,58 +35,88 @@ void    GpIOEventPoller::AddSubscription
         }
     );
 
-    iSubsribersByIOObject[aSocketId].Subscribe(aTaskId, std::move(aFn));
-    OnAddObject(aSocketId, aEventTypes);
+    // Verify task type (task must be GpSocketsTask)
+    {
+        GpTask::SP taskSP = aTaskWP.Lock();
+
+        VERIFY
+        (
+            taskSP.IsNotNULL(),
+            "The task does not exist"
+        );
+
+        VERIFY
+        (
+            taskSP.Vn().TypeUID() == GpSocketTask::STypeUID(),
+            []()
+            {
+                return fmt::format("Wrong task type, expected {}", GpSocketTask::STypeUID());
+            }
+        );
+    }
+
+    iSocketsByTask.emplace(aSocketId, std::move(aTaskWP));
+
+    try
+    {
+        OnAddSocket(aSocketId, aEventTypes);
+    } catch (...)
+    {
+        iSocketsByTask.erase(aSocketId);
+        throw;
+    }
 }
 
-bool    GpIOEventPoller::RemoveSubscription
-(
-    const GpSocketId    aSocketId,
-    const GpTaskId      aTaskId
-)
+bool    GpIOEventPoller::RemoveSubscription (const GpSocketId aSocketId)
 {
-    GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+    GpUniqueLock uniqueLock{iSpinLock};
 
-    auto iter = iSubsribersByIOObject.find(aSocketId);
+    auto iter = iSocketsByTask.find(aSocketId);
 
-    if (iter == std::end(iSubsribersByIOObject)) [[unlikely]]
+    if (iter != std::end(iSocketsByTask)) [[likely]]
     {
-        return false;
+        iSocketsByTask.erase(iter);
+        OnRemoveSocket(aSocketId);
+
+        return true;
     }
 
-    SubsribersEventChannelT& channel = iter->second;
-
-    if (channel.Unsubscribe(aTaskId) == 0)
-    {
-        iSubsribersByIOObject.erase(iter);
-        OnRemoveObject(aSocketId);
-    }
-
-    return true;
+    return false;
 }
 
-void    GpIOEventPoller::ProcessEvents
+bool    GpIOEventPoller::ProcessEvents
 (
     const GpSocketId    aSocketId,
     GpIOEventsTypes     aEvents
 )
 {
-    auto iter = iSubsribersByIOObject.find(aSocketId);
+    auto iter = iSocketsByTask.find(aSocketId);
 
-    if (iter == std::end(iSubsribersByIOObject))
+    if (iter == std::end(iSocketsByTask))
     {
-        return;
+        return false;
+    }   
+
+    GpTask::WP& taskWP = iter->second;
+    GpTask::SP  taskSP = taskWP.Lock();
+
+    if (taskSP.IsNULL())
+    {
+        return false;
     }
 
-    SubsribersEventChannelT& channel = iter->second;
-    channel.PushEvent(SubsriberResValT{aSocketId, aEvents.RawValue()});
+    GpSocketTask& socketTask = static_cast<GpSocketTask&>(taskSP.Vn());
+    socketTask.PushSocketEvents(aSocketId, aEvents);
+    WAKEUP_TASK(socketTask);
 
     if (   aEvents.Test(GpIOEventType::CLOSED)
         || aEvents.Test(GpIOEventType::ERROR_OCCURRED)) [[unlikely]]
     {
-        iSubsribersByIOObject.erase(aSocketId);
-        OnRemoveObject(aSocketId);
+        iSocketsByTask.erase(aSocketId);
+        OnRemoveSocket(aSocketId);
     }
+
+    return true;
 }
 
 void    GpIOEventPoller::OnStart (void)

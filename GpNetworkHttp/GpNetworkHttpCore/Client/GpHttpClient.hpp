@@ -13,13 +13,13 @@ public:
     TAG_SET(THREAD_SAFE)
 
 public:
-                                GpHttpClient    (GpSocketFlags      aSocketFlags,
-                                                 GpIOEventPollerIdx aIOEventPollerIdx) noexcept;
-                                ~GpHttpClient   (void) noexcept;
+                            GpHttpClient    (GpSocketFlags      aSocketFlags,
+                                             GpIOEventPollerIdx aIOEventPollerIdx) noexcept;
+                            ~GpHttpClient   (void) noexcept;
 
-    GpHttpResponse::SP          DoAndWait       (GpHttpRequest::SP  aRequestSP,
-                                                 milliseconds_t     aConnectTimeout,
-                                                 milliseconds_t     aRequestTimeout);
+    GpHttpResponse::UP      DoAndWait       (GpHttpRequest::UP  aRequestSP,
+                                             milliseconds_t     aConnectTimeout,
+                                             milliseconds_t     aRequestTimeout);
 
 private:
     const GpSocketFlags         iSocketFlags;

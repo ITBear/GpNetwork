@@ -1,5 +1,5 @@
 #include <GpNetwork/GpNetworkCore/GpNetworkUtilsDns.hpp>
-#include <GpCore2/GpUtils/Other/GpRAIIonDestruct.hpp>
+#include <GpCore2/GpUtils/Other/GpDefer.hpp>
 #include <GpCore2/GpUtils/DateTime/GpDateTimeOps.hpp>
 #include <GpNetwork/GpNetworkCore/GpNetworkErrors.hpp>
 
@@ -11,13 +11,13 @@ namespace GPlatform {
 
 GpNetworkUtilsDns   GpNetworkUtilsDns::sInstance;
 
-GpNetworkUtilsDns::GpNetworkUtilsDns (void) noexcept:
-iCache
+GpNetworkUtilsDns::GpNetworkUtilsDns (void) noexcept
+/*iCache
 {
-    4096/*max cache size*/,
-    4/*shards count*/,
-    4/*shard init size*/
-}
+    4096,   // max cache size
+    4,      // shards count,
+    4       // shard init size
+}*/
 {
 }
 
@@ -25,6 +25,7 @@ GpNetworkUtilsDns::~GpNetworkUtilsDns (void) noexcept
 {
 }
 
+/*
 GpSocketAddr    GpNetworkUtilsDns::Resolve
 (
     std::string_view            aDomainName,
@@ -87,6 +88,7 @@ GpSocketAddr    GpNetworkUtilsDns::Resolve
         aResolveRes.useCount++;
         aResolveRes.lastGetId++;
 
+        aResolveRes.timestamp = GpDateTimeOps::SUnixTS_s();
         const auto& addresses = aResolveRes.addresses;
 
         if (aCurrentResolvedAddrOptCRef.has_value())
@@ -99,7 +101,7 @@ GpSocketAddr    GpNetworkUtilsDns::Resolve
                 aCurrentResolvedAddrOptCRef.value().get()
             );
 
-            if (iter != addresses.end())
+            if (iter != std::end(addresses))
             {
                 return *iter;
             }
@@ -122,7 +124,7 @@ GpSocketAddr    GpNetworkUtilsDns::Resolve
     );
 
     return resolveRes;
-}
+}*/
 
 GpNetworkUtilsDns::ResolveRes   GpNetworkUtilsDns::SResolveNoCache
 (
@@ -133,7 +135,7 @@ GpNetworkUtilsDns::ResolveRes   GpNetworkUtilsDns::SResolveNoCache
     struct addrinfo*    resolvedAddrInfo = nullptr;
     struct addrinfo     addrHints;
 
-    GpRAIIonDestruct onDestruct = [&resolvedAddrInfo]()
+    GpDefer onDestruct = [&resolvedAddrInfo]()
     {
         // Free the linked list
         if (resolvedAddrInfo != nullptr)
@@ -171,7 +173,7 @@ GpNetworkUtilsDns::ResolveRes   GpNetworkUtilsDns::SResolveNoCache
 #endif
 
             return fmt::format
-            (                       
+            (
                 "Failed to get ip address for domain '{}': {}",
                 domainName,
                 errorMsg

@@ -16,7 +16,7 @@ const struct in_pktinfo*    GpSocketUtils::SGetPktInfo
     std::memset(&msg, 0, sizeof(msg));
 
     msg.msg_control     = const_cast<std::byte*>(aControlBuffer.Ptr());
-    msg.msg_controllen  = aControlBuffer.Count();
+    msg.msg_controllen  = NumOps::SConvert<decltype(msg.msg_controllen)>(aControlBuffer.Count());
 
     struct cmsghdr* cmsgHdr = nullptr;
     for (cmsgHdr = CMSG_FIRSTHDR(&msg); cmsgHdr != nullptr; cmsgHdr = CMSG_NXTHDR(&msg, cmsgHdr))
@@ -84,7 +84,7 @@ size_t  GpSocketUtils::SSetPktInfo
     std::memset(&msg, 0, sizeof(msg));
 
     msg.msg_control     = const_cast<std::byte*>(aControlBuffer.Ptr());
-    msg.msg_controllen  = aControlBuffer.Count();
+    msg.msg_controllen  = NumOps::SConvert<decltype(msg.msg_controllen)>(aControlBuffer.Count());
 
     struct cmsghdr* cmsgHdr = CMSG_FIRSTHDR(&msg);
 

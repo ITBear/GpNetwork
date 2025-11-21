@@ -24,7 +24,7 @@ public:
     virtual         ~GpIOEventPollerEpollCfgDesc    (void) noexcept override final;
 
 public:
-    milliseconds_t  max_step_time   = 10.0_si_s;
+    milliseconds_t  max_step_time   = 10'000.0_si_ms;
     size_t          max_events_cnt  = 0;
 };
 

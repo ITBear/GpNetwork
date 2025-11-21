@@ -8,19 +8,19 @@ namespace GPlatform {
 
 GpTcpAcceptServerTask::GpTcpAcceptServerTask
 (
-    GpSocketAddr                aListenAddr,
-    const GpSocketFlags         aListenSocketFlags,
-    const size_t                aListenMaxQueueSize,
-    const GpSocketFlags         aAcceptSocketFlags,
-    const GpIOEventPollerIdx    aIOEventPollerIdx,
-    GpTcpServerTaskFactory::SP  aServerTaskFactory
+    GpSocketTCP::UP         aSocketUP,
+    GpSocketAddr            aListenAddr,
+    size_t                  aListenMaxQueueSize,
+    GpSocketFlags           aAcceptSocketFlags,
+    GpIOEventPollerIdx      aIOEventPollerIdx,
+    GpSocketTaskFactory::UP aSocketTaskFactoryUP
 ) noexcept:
-iListenAddr        {aListenAddr},
-iListenSocketFlags {aListenSocketFlags},
-iListenMaxQueueSize{aListenMaxQueueSize},
-iAcceptSocketFlags {aAcceptSocketFlags},
-iIOEventPollerIdx  {aIOEventPollerIdx},
-iServerTaskFactory {std::move(aServerTaskFactory)}
+GpSingleSocketTask{std::move(aSocketUP)},
+iListenAddr         {aListenAddr},
+iListenMaxQueueSize {aListenMaxQueueSize},
+iAcceptSocketFlags  {aAcceptSocketFlags},
+iIOEventPollerIdx   {aIOEventPollerIdx},
+iSocketTaskFactoryUP{std::move(aSocketTaskFactoryUP)}
 {
 }
 
@@ -30,88 +30,25 @@ GpTcpAcceptServerTask::~GpTcpAcceptServerTask (void) noexcept
 
 void    GpTcpAcceptServerTask::OnStart (void)
 {
-    GpSocketsTask::OnStart();
-
-    // Configure listen socket
-    {
-        // Create listen socket
-        iListenSocketSP = MakeSP<GpSocketTCP>
-        (
-            iListenSocketFlags | GpSocketFlag::NO_BLOCK,
-            GpSocket::CloseModeT::CLOSE_ON_DESTRUCT
-        );
-
-        // Listen socket
-        iListenSocketSP.Vn().Listen(iListenAddr, iListenMaxQueueSize);
-
-        // Add socket to io poller subscription
-        const bool isAdded = GpIOEventPollerCatalog::SAddSubscriptionSafe
-        (
-            iListenSocketSP.Vn().Id(),
-            TaskId(),
-            iIOEventPollerIdx,
-            {GpIOEventType::READY_TO_READ, GpIOEventType::ERROR_OCCURRED}
-        );
-
-        VERIFY
-        (
-            isAdded == true,
-            "Failed to add subscription to IO event poller"
-        );
-    }
+    StartListen();
 }
 
 void    GpTcpAcceptServerTask::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {
-        if (iListenSocketSP.IsNotNULL())
-        {
-            const GpSocketId socketId = iListenSocketSP.Vn().Id();
-
-            if (socketId != GpSocketId_Default()) [[likely]]
-            {
-                // Check if IO event poller still exists
-                GpIOEventPoller::C::Opts::SP eventPollerOpt = GpIOEventPollerCatalog::S().GetByIdxOpt(iIOEventPollerIdx);
-
-                if (eventPollerOpt.has_value())
-                {
-                    // Remove socket from IO poller subscription
-                    const bool isRemoved = GpIOEventPollerCatalog::SRemoveSubscriptionSafe
-                    (
-                        socketId,
-                        TaskId(),
-                        iIOEventPollerIdx
-                    );
-
-                    VERIFY
-                    (
-                        isRemoved == true,
-                        fmt::format
-                        (
-                            "Failed to remove subscription from IO event poller (idx {}). Socket id {}",
-                            iIOEventPollerIdx.Value(),
-                            socketId
-                        )
-                    );
-                }
-
-                iListenSocketSP.Vn().Close();
-                OnClosed(iListenSocketSP.Vn());
-            }
-        }
+        GpUniqueLock uniqueLock{SpinLock()};
+        Socket().Close();
     } catch (const GpException& ex)
     {
         aStopExceptionsOut.emplace_back(ex);
-    } catch (const std::exception& e)
+    } catch (const std::exception& ex)
     {
-        aStopExceptionsOut.emplace_back(GpException{e.what()});
+        aStopExceptionsOut.emplace_back(GpException{ex.what()});
     } catch (...)
     {
         aStopExceptionsOut.emplace_back(GpException{"[GpTcpAcceptServerTask::OnStop]: unknown exception"_sv});
     }
-
-    GpSocketsTask::OnStop(aStopExceptionsOut);
 }
 
 void    GpTcpAcceptServerTask::OnStopException (const GpException& aException) noexcept
@@ -127,7 +64,6 @@ void    GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
 {
     if (aSocket.Id() == GpSocketId_Default()) [[unlikely]]
     {
-        std::ignore = RequestStop();
         return;
     }
 
@@ -147,89 +83,123 @@ void    GpTcpAcceptServerTask::OnReadyToRead (GpSocket& aSocket)
             break;
         }
 
-        GpSocketTCP& acceptedSocket = acceptedSocketOpt.value();
+        GpSocketTCP&    acceptedSocket      = acceptedSocketOpt.value();
+        GpSocketId      acceptedSocketId    = acceptedSocket.Id();
 
         // Create socket task from factory
-        GpTcpServerTask::SP serverTaskSP = iServerTaskFactory.Vn().NewInstance
+        GpSocketTask::SP acceptedSocketTaskSP = iSocketTaskFactoryUP->NewInstance
         (
-            MakeSP<GpSocketTCP>(std::move(acceptedSocket)),
-            iIOEventPollerIdx
+            std::make_unique<GpSocketTCP>(std::move(acceptedSocket))
+        );
+
+        // Register socket and task to IO event poller
+        GpIOEventPollerCatalog::SAddSubscription
+        (
+            acceptedSocketId,
+            acceptedSocketTaskSP,
+            iIOEventPollerIdx,
+            GpIOEventsTypes
+            {
+                GpIOEventType::READY_TO_READ,
+                GpIOEventType::READY_TO_WRITE,
+                GpIOEventType::CLOSED,
+                GpIOEventType::ERROR_OCCURRED,
+            }
         );
 
         // Add to scheduler
-        if (GpTaskScheduler::S().NewToReady(std::move(serverTaskSP)) == false)
+        SPAWN_READY_TASK(std::move(acceptedSocketTaskSP));
+    }
+}
+
+void    GpTcpAcceptServerTask::OnReadyToWrite ([[maybe_unused]] GpSocket& aSocket)
+{
+    // NOP
+}
+
+void    GpTcpAcceptServerTask::OnClosed ([[maybe_unused]] GpSocket& aSocket)
+{
+    // NOP
+}
+
+void    GpTcpAcceptServerTask::OnError ([[maybe_unused]] GpSocket& aSocket)
+{
+    // NOP
+}
+
+void    GpTcpAcceptServerTask::StartListen (void)
+{
+    GpUniqueLock uniqueLock{SpinLock()};
+
+    // Check if already connected
+    if (VerifyBeforeListen() == true)
+    {
+        // Already listen iListenAddr
+        return;
+    }
+
+    // New outgoing connection
+    GpSocketTCP& socketTcp = static_cast<GpSocketTCP&>(Socket());
+
+    socketTcp.Listen(iListenAddr, iListenMaxQueueSize);
+}
+
+bool    GpTcpAcceptServerTask::VerifyBeforeListen (void) const
+{
+    const GpSocketTCP&              socketTcp   = static_cast<const GpSocketTCP&>(Socket());
+    const GpSocketStateTCP::EnumT   socketState = socketTcp.State();
+
+    switch (socketState)
+    {
+        case GpSocketStateTCP::NOT_CONNECTED:
         {
-            break;
-        }
-    }
-}
+            // OK
+            return false;
+        } break;
+        case GpSocketStateTCP::LISTEN:
+        {
+            // Check to what ip connected
+            VERIFY
+            (
+                socketTcp.AddrLocal() == iListenAddr,
+                [&]()
+                {
+                    return fmt::format
+                    (
+                        "Failed to listen '{}': socket is in listening mode on '{}'",
+                        iListenAddr.ToString(),
+                        socketTcp.AddrLocal().ToString()
+                    );
+                }
+            );
+        } break;
+        case GpSocketStateTCP::CONNECTION_IN_PROGRESS:
+        {
+            THROW(fmt::format(
+                "Failed to listen '{}': another connection is in progress to '{}'",
+                iListenAddr.ToString(),
+                socketTcp.AddrRemote().ToString()
+            ));
+        } break;
+        case GpSocketStateTCP::OUTGOING:
+        {
+            THROW(fmt::format(
+                "Failed to listen '{}': already connected to '{}'",
+                iListenAddr.ToString(),
+                socketTcp.AddrRemote().ToString()
+            ));
+        } break;
+        case GpSocketStateTCP::INCOMING:
+        {
+            THROW(fmt::format(
+                "Failed to listen '{}': socket is in incoming connection mode from '{}'",
+                iListenAddr.ToString(),
+                socketTcp.AddrRemote().ToString()
+            ));
+        } break;
+    };
 
-void    GpTcpAcceptServerTask::OnReadyToWrite (GpSocket& aSocket)
-{
-    if (aSocket.Id() == GpSocketId_Default()) [[unlikely]]
-    {
-        std::ignore = RequestStop();
-        return;
-    }
-
-    LOG_INFO
-    (
-        fmt::format
-        (
-            "[GpTcpAcceptServerTask::OnReadyToWrite]: socket id {}",
-            aSocket.Id()
-        )
-    );
-}
-
-void    GpTcpAcceptServerTask::OnClosed (GpSocket& aSocket)
-{
-    if (aSocket.Id() == GpSocketId_Default()) [[unlikely]]
-    {
-        std::ignore = RequestStop();
-        return;
-    }
-
-    LOG_INFO
-    (
-        fmt::format
-        (
-            "[GpTcpAcceptServerTask::OnClosed]: socket id {}",
-            aSocket.Id()
-        )
-    );
-
-    std::ignore = RequestStop();
-}
-
-void    GpTcpAcceptServerTask::OnError (GpSocket& aSocket)
-{
-    if (aSocket.Id() == GpSocketId_Default()) [[unlikely]]
-    {
-        std::ignore = RequestStop();
-        return;
-    }
-
-    LOG_INFO
-    (
-        fmt::format
-        (
-            "[GpTcpAcceptServerTask::OnError]: socket id {}",
-            aSocket.Id()
-        )
-    );
-
-    std::ignore = RequestStop();
-}
-
-void    GpTcpAcceptServerTask::ProcessOtherMessages ([[maybe_unused]] GpAny& aMessage)
-{
-    // TODO: add message to log
-}
-
-GpSocket::SP    GpTcpAcceptServerTask::FindSocket ([[maybe_unused]] GpSocketId aSocketId)
-{
-    return iListenSocketSP;
+    return true;
 }
 
 }// namespace GPlatform

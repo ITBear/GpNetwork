@@ -2,7 +2,7 @@
 
 #include <GpNetwork/GpNetworkCore/GpNetworkCore_global.hpp>
 #include <GpNetwork/GpNetworkCore/Sockets/GpSocketIPv.hpp>
-#include <GpCore2/GpUtils/Types/Containers/GpBytesArray.hpp>
+#include <GpCore2/GpUtils/Types/Containers/GpByteArray.hpp>
 
 namespace GPlatform {
 

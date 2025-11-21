@@ -1,7 +1,6 @@
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Routers/TableRouter/GpHttpRouteTableStatic.hpp>
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Exceptions/GpHttpException.hpp>
-#include <GpCore2/GpUtils/SyncPrimitives/GpMutex.hpp>
-#include <GpCore2/GpUtils/SyncPrimitives/GpSharedMutex.hpp>
+#include <GpCore2/GpUtils/SyncPrimitives/GpSyncPrimitives.hpp>
 
 namespace GPlatform {
 
@@ -15,7 +14,7 @@ GpHttpRouteTableStatic::~GpHttpRouteTableStatic (void) noexcept
 
 GpHttpRequestHandler::SP    GpHttpRouteTableStatic::FindHandler (const GpHttpRequestNoBodyDesc& aHttpRqNoBody) const
 {
-    GpSharedLock<GpSpinLockRW> sharedLock{iSpinLockRW};
+    GpSharedLock sharedLock{iSpinLockRW};
 
     const GpUrlAuthority&   urlAuthority        = aHttpRqNoBody.url.Authority();
     const std::string_view  urlPath             = aHttpRqNoBody.url.Path();
@@ -74,7 +73,7 @@ GpHttpRequestHandler::SP    GpHttpRouteTableStatic::FindHandler (const GpHttpReq
 
 void    GpHttpRouteTableStatic::RegisterDefaultHandler (GpHttpRequestHandlerFactory::SP aHandlerFactory)
 {
-    GpUniqueLock<GpSpinLockRW> uniqueLock{iSpinLockRW};
+    GpUniqueLock uniqueLock{iSpinLockRW};
 
     iDefaultHandlerFactory = std::move(aHandlerFactory);
 }
@@ -86,7 +85,7 @@ void    GpHttpRouteTableStatic::RegisterPathHandler
     GpHttpRequestHandlerFactory::SP aHandlerFactory
 )
 {
-    GpUniqueLock<GpSpinLockRW> uniqueLock{iSpinLockRW};
+    GpUniqueLock uniqueLock{iSpinLockRW};
 
     iRouteRable[std::move(aHost)][std::move(aPath)] = std::move(aHandlerFactory);
 }

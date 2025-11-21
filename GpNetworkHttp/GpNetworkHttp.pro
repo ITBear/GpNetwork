@@ -16,7 +16,7 @@ os_linux {
 	SUBDIRS += \
 		./llhttp \
 		./GpNetworkHttpCore
-} else:os_macx {
+} else:os_macos {
 	SUBDIRS += \
 		./llhttp \
 		./GpNetworkHttpCore

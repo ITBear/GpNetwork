@@ -32,6 +32,9 @@ equals(var_os, "windows") {
 equals(var_os, "linux") {
 }
 
+equals(var_os, "macos") {
+}
+
 # ----------- Sources and headers -----------
 SOURCES += \
 	api.c \

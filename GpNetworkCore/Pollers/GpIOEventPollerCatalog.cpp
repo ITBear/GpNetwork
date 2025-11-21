@@ -26,16 +26,14 @@ GpIOEventPollerCatalog::~GpIOEventPollerCatalog (void) noexcept
 {
 }
 
-bool    GpIOEventPollerCatalog::SAddSubscriptionSafe
+void    GpIOEventPollerCatalog::SAddSubscription
 (
     const GpSocketId            aSocketId,
-    const GpTaskId              aSocketTaskId,
+    GpTask::WP                  aTaskWP,
     const GpIOEventPollerIdx    aIoEventPollerIdx,
     const GpIOEventsTypes       aEventTypes
 )
 {
-    bool res = true;
-
     // Get event poller
     GpIOEventPoller::C::Opts::SP eventPollerOpt = GpIOEventPollerCatalog::S().GetByIdxOpt(aIoEventPollerIdx);
 
@@ -44,24 +42,15 @@ bool    GpIOEventPollerCatalog::SAddSubscriptionSafe
         eventPollerOpt->Vn().AddSubscription
         (
             aSocketId,
-            aSocketTaskId,
-            aEventTypes,
-            [&res](const GpTaskId aTaskId, const GpIOEventPoller::SubsriberResValT aIOEventsTypes)
-            {
-                res &= GpTaskScheduler::S().MakeTaskReady(aTaskId, aIOEventsTypes);
-            }
+            std::move(aTaskWP),
+            aEventTypes
         );
-
-        return res;
     }
-
-    return res;
 }
 
-bool    GpIOEventPollerCatalog::SRemoveSubscriptionSafe
+bool    GpIOEventPollerCatalog::SRemoveSubscription
 (
     const GpSocketId            aSocketId,
-    const GpTaskId              aSocketTaskId,
     const GpIOEventPollerIdx    aIoEventPollerIdx
 )
 {
@@ -70,7 +59,7 @@ bool    GpIOEventPollerCatalog::SRemoveSubscriptionSafe
 
     if (eventPollerOpt.has_value()) [[likely]]
     {
-        return eventPollerOpt->Vn().RemoveSubscription(aSocketId, aSocketTaskId);
+        return eventPollerOpt->Vn().RemoveSubscription(aSocketId);
     }
 
     return false;
@@ -78,7 +67,7 @@ bool    GpIOEventPollerCatalog::SRemoveSubscriptionSafe
 
 GpIOEventPoller::C::Opts::SP    GpIOEventPollerCatalog::GetByIdxOpt (const GpIOEventPollerIdx aIoEventPollerIdx) noexcept
 {
-    GpSharedLock<GpSpinLockRW> sharedLock{iSpinLockRW};
+    GpSharedLock sharedLock{iSpinLockRW};
 
     const auto idx = aIoEventPollerIdx.Value();
 
@@ -97,7 +86,7 @@ GpIOEventPoller::C::Opts::SP    GpIOEventPollerCatalog::GetByIdxOpt (const GpIOE
 
 GpIOEventPoller::SP GpIOEventPollerCatalog::GetByIdx (const GpIOEventPollerIdx aIoEventPollerIdx)
 {
-    GpSharedLock<GpSpinLockRW> sharedLock{iSpinLockRW};
+    GpSharedLock sharedLock{iSpinLockRW};
 
     GpIOEventPoller::C::Opts::SP eventPollerOpt = GetByIdxOpt(aIoEventPollerIdx);
 
@@ -131,7 +120,7 @@ GpIOEventPoller::SP GpIOEventPollerCatalog::GetByName (std::string_view aName)
 
 GpIOEventPollerIdx  GpIOEventPollerCatalog::IdxByName (std::string_view aName)
 {
-    GpSharedLock<GpSpinLockRW> sharedLock{iSpinLockRW};
+    GpSharedLock sharedLock{iSpinLockRW};
 
     const auto iter = iCatalogNameToIdx.find(aName);
 
@@ -152,7 +141,7 @@ GpIOEventPollerIdx  GpIOEventPollerCatalog::IdxByName (std::string_view aName)
 
 void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::SP& aCfgs)
 {
-    GpUniqueLock<GpSpinLockRW> uniqueLock{iSpinLockRW};
+    GpUniqueLock uniqueLock{iSpinLockRW};
 
 #if defined(GP_OS_LINUX)
     // epoll
@@ -210,10 +199,7 @@ void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::
 
         // Start
         GpTaskFiber::StartFutureT::SP startFuture = ioEventPoller.Vn().StartFuture();
-        if (GpTaskScheduler::S().NewToReady(ioEventPoller) == false)
-        {
-            THROW("Failed to start event pooler");
-        }
+        SPAWN_READY_TASK(ioEventPoller);
 
         // Wait for start
         const std::string pollerNameStr{pollerName};
@@ -221,7 +207,7 @@ void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::
         GpItcFutureUtils::SWait
         (
             startFuture.V(),
-            [&](typename GpTaskFiber::StartFutureT::value_type&) REQUIRES(iSpinLockRW) // OnSuccessFnT
+            [&](typename GpTaskFiber::StartFutureT::value_type&&) REQUIRES(iSpinLockRW) // OnSuccessFnT
             {
                 const GpIOEventPollerIdx    idx = AddNewName(pollerNameStr);
                 const std::size_t           id  = NumOps::SConvert<std::size_t>(idx.Value());
@@ -237,11 +223,11 @@ void    GpIOEventPollerCatalog::Start (const GpIOEventPollerCfgDesc::C::MapStr::
     }
 }
 
-void    GpIOEventPollerCatalog::StopAndClear (void)
+void    GpIOEventPollerCatalog::Stop (void)
 {
     CatalogIdxToPollerT localCatalogIdxToPoller;
     {
-        GpUniqueLock<GpSpinLockRW> uniqueLock{iSpinLockRW};
+        GpUniqueLock uniqueLock{iSpinLockRW};
 
         iCatalogNameToIdx.clear();
         iRegisteredPollerTypes.clear();
@@ -252,14 +238,10 @@ void    GpIOEventPollerCatalog::StopAndClear (void)
     for (GpIOEventPoller::SP& ioEventPoller: localCatalogIdxToPoller)
     {
         // Send stop
-        GpTask::DoneFutureT::C::Opts::SP doneFutureOpt = GpTaskScheduler::S().RequestStop(ioEventPoller.V());
-        if (!doneFutureOpt.has_value())
-        {
-            continue;
-        }
+        GpTask::DoneFutureT::SP doneFutureSP = STOP_TASK(ioEventPoller.V());
 
         // Wait for stop
-        if (doneFutureOpt.value()->WaitFor(2000.0_si_ms) == false)
+        if (doneFutureSP.Vn().WaitFor(2000.0_si_ms) == false)
         {
             LOG_ERROR
             (

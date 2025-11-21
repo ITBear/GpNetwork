@@ -12,16 +12,17 @@ GpHttpServerRequestTaskFactory::~GpHttpServerRequestTaskFactory (void) noexcept
 {
 }
 
-GpTcpServerTask::SP GpHttpServerRequestTaskFactory::NewInstance
-(
-    GpSocketTCP::SP     aSocketTCP,
-    GpIOEventPollerIdx  aIOEventPollerIdx
-) const
+GpSocketTask::SP    GpHttpServerRequestTaskFactory::NewInstance (GpSocket::UP aSocketUP) const
 {
+    VERIFY
+    (
+        aSocketUP->Protocol() == GpSocketProtocol::TCP,
+        "Socket must be TCP"
+    );
+
     return MakeSP<GpHttpServerRequestTask>
     (
-        std::move(aSocketTCP),
-        aIOEventPollerIdx,
+        std::unique_ptr<GpSocketTCP>{static_cast<GpSocketTCP*>(aSocketUP.release())},
         iRouter
     );
 }

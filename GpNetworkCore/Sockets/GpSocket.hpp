@@ -10,7 +10,7 @@ namespace GPlatform {
 class GP_NETWORK_CORE_API GpSocket
 {
 public:
-    CLASS_REMOVE_CTRS_COPY(GpSocket)
+    CLASS_REMOVE_CTRS_DEFAULT_COPY(GpSocket)
     CLASS_DD(GpSocket)
 
     using ProtocolT     = GpSocketProtocol;
@@ -25,12 +25,10 @@ public:
     };
 
 protected:
-    inline                  GpSocket            (void) noexcept;
     inline                  GpSocket            (GpSocket&& aSocket) noexcept;
     inline                  GpSocket            (ProtocolTE     aProtocol,
                                                  GpSocketFlags  aFlags,
                                                  CloseModeT     aCloseMode) noexcept;
-
     inline                  GpSocket            (GpSocketId     aId,
                                                  IPvTE          aIpV,
                                                  ProtocolTE     aProtocol,
@@ -52,7 +50,7 @@ public:
     inline void             CheckForErrors      (void) const;
     inline void             Close               (void);
     inline void             Bind                (const GpSocketAddr& aAddr);
-    inline void             Create              (IPvTE aIPv);
+    inline GpSocketId       Create              (IPvTE aIPv);
 
 protected:
     GpSocket&               operator=           (GpSocket&&) noexcept = delete;
@@ -79,18 +77,14 @@ protected:
                                                  std::function<void()>  aFnOnThrow);
 
 private:
-    GpSocketId              iId         = GpSocketId_Default();
-    IPvTE                   iIPv        = IPvTE::IPv4;
-    ProtocolTE              iProtocol;
-    GpSocketAddr            iAddrLocal;
-    GpSocketAddr            iAddrRemote;
-    GpSocketFlags           iFlags;
-    CloseModeT              iCloseMode  = CloseModeT::CLOSE_ON_DESTRUCT;
+    GpSocketId      iId         = GpSocketId_Default();
+    IPvTE           iIPv        = IPvTE::IPv4;
+    ProtocolTE      iProtocol;
+    GpSocketAddr    iAddrLocal;
+    GpSocketAddr    iAddrRemote;
+    GpSocketFlags   iFlags;
+    CloseModeT      iCloseMode  = CloseModeT::CLOSE_ON_DESTRUCT;
 };
-
-GpSocket::GpSocket (void) noexcept
-{
-}
 
 GpSocket::GpSocket (GpSocket&& aSocket) noexcept:
 iId        {std::move(aSocket.iId        )},
@@ -213,7 +207,7 @@ void    GpSocket::Set (GpSocket&& aSocket)
     aSocket.iCloseMode  = CloseModeT::KEEP_ON_DESTRUCT;
 }
 
-void    GpSocket::Create (IPvTE aIPv)
+GpSocketId  GpSocket::Create (IPvTE aIPv)
 {
     if (Id() != GpSocketId_Default()) [[unlikely]]
     {
@@ -240,8 +234,9 @@ void    GpSocket::Create (IPvTE aIPv)
     );
 
     iId = socketID;
-
     ApplyFlags();
+
+    return Id();
 }
 
 void    GpSocket::SetFromRaw (const GpSocketId aId)

@@ -7,50 +7,31 @@
 
 namespace GPlatform {
 
-GP_ENUM_IMPL(GpTcpClientConnectionState)
-
-GpTcpClientTask::GpTcpClientTask
-(
-    const GpSocketFlags         aSocketFlags,
-    const GpIOEventPollerIdx    aIOEventPollerIdx
-):
-iSocketFlags     {aSocketFlags},
-iIOEventPollerIdx{aIOEventPollerIdx}
+GpTcpClientTask::GpTcpClientTask (GpSocketTCP::UP aSocketUP) noexcept:
+GpSingleSocketTask{std::move(aSocketUP)}
 {
 }
 
 GpTcpClientTask::GpTcpClientTask
 (
-    const GpSocketFlags         aSocketFlags,
-    const GpIOEventPollerIdx    aIOEventPollerIdx,
-    std::string                 aTaskName
-):
-GpSocketsTask{std::move(aTaskName)},
-iSocketFlags     {aSocketFlags},
-iIOEventPollerIdx{aIOEventPollerIdx}
+    GpSocketTCP::UP aSocketUP,
+    std::string     aTaskName
+) noexcept:
+GpSingleSocketTask{std::move(aSocketUP), std::move(aTaskName)}
 {
 }
 
 GpTcpClientTask::~GpTcpClientTask (void) noexcept
 {
-    GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
-
-    _CloseConnection();
 }
 
-void    GpTcpClientTask::CloseTcpConnection (void)
-{
-    GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
-
-    _CloseConnection();
-}
-
-void    GpTcpClientTask::ConnectTcpAndWait
+GpSocketStateTCP    GpTcpClientTask::ConnectTo
 (
     std::string_view        aDomainName,
     const u_int_16          aPort,
     const GpSocketIPv       aIPv,
-    const milliseconds_t    aConnectTimeout
+    const milliseconds_t    aConnectTimeout,
+    GpTask::WP              aTaskWP
 )
 {
     // Get server ip from domain name
@@ -58,83 +39,72 @@ void    GpTcpClientTask::ConnectTcpAndWait
     {
         GpSocketAddr connectedToAddr;
         {
-            GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
-            connectedToAddr = iConnectedToAddr;
+            GpUniqueLock uniqueLock{SpinLock()};
+            connectedToAddr = Socket().AddrRemote();
         }
 
-        serverAddr = GpNetworkUtilsDns::S().Resolve(aDomainName, aIPv, connectedToAddr);
+        //serverAddr = GpNetworkUtilsDns::S().Resolve(aDomainName, aIPv, connectedToAddr);
+        serverAddr = GpNetworkUtilsDns::SResolveNoCache(aDomainName, aIPv).addresses.at(0);
         serverAddr.SetPort(aPort);
     }
 
     // Connect
-    ConnectTcpAndWait(serverAddr, aConnectTimeout);
+    return ConnectTo(serverAddr, aConnectTimeout, std::move(aTaskWP));
 }
 
-void    GpTcpClientTask::ConnectTcpAndWait
+GpSocketStateTCP    GpTcpClientTask::ConnectTo
 (
     const GpSocketAddr&     aServerAddr,
-    const milliseconds_t    aConnectTimeout
+    const milliseconds_t    aConnectTimeout,
+    GpTask::WP              aTaskWP
 )
 {
-    // Check and start connection
-    GpSocketTCP::SP     localSocketTcpSP;
-    GpIOEventPollerIdx  localIOEventPollerIdx;
-    GpTaskId            localIOEventPollerSubscribeTaskId;
+    GpUniqueLock uniqueLock{SpinLock()};
 
+    // Check if already connected
+    if (VerifyConnectTo(aServerAddr) == true)
     {
-        GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
-
-        CheckBeforeNewTcpConnection(aServerAddr);
-
-        // Check if connected
-        if (iConnectionState == ConnectionStateT::CONNECTED)
-        {
-            return;
-        }
-
-        // Create socket
-        iSocketTCP = MakeSP<GpSocketTCP>
-        (
-            iSocketFlags | GpSocketFlag::NO_BLOCK,
-            GpSocket::CloseModeT::CLOSE_ON_DESTRUCT
-        );
-
-        GpSocketTCP& socketTCP = iSocketTCP.Vn();
-
-        // Init socket
-        socketTCP.Create(aServerAddr.IPv());
-
-        iIOEventPollerSubscribeTaskId       = GpTask::SCurrentTask().value().get().TaskId();
-        iConnectionState                    = ConnectionStateT::CONNECTION_IN_PROGRESS;
-        iConnectedToAddr                    = aServerAddr;
-
-        localSocketTcpSP                    = iSocketTCP;
-        localIOEventPollerIdx               = iIOEventPollerIdx;
-        localIOEventPollerSubscribeTaskId   = iIOEventPollerSubscribeTaskId;
+        // Already connected to aServerAddr
+        OnConnected(static_cast<GpSocketTCP&>(Socket()));
+        return GpSocketStateTCP::OUTGOING;
     }
 
-    // Wait for connection  
-    localSocketTcpSP->ConnectAndWait(aServerAddr, aConnectTimeout, localIOEventPollerIdx, localIOEventPollerSubscribeTaskId);
+    // New outgoing connection
+    GpSocketTCP&            socketTcp   = static_cast<GpSocketTCP&>(Socket());
+    GpSocketStateTCP::EnumT socketState = socketTcp.Connect(aServerAddr);
 
-    // Pop event
-    GpAny::C::Opt::Val msg = PopMessage(GpMethodAccess{this});
+    if (socketState == GpSocketStateTCP::OUTGOING)
+    {
+        // Connected to aServerAddr
+        return GpSocketStateTCP::OUTGOING;
+    }
 
-    //
-    OnConnected(localSocketTcpSP.Vn());
-}
+    // Setup timeout
+    {
+        GpTimersManager::SSingleShot
+        (
+            [aTaskWP](const GpTimer&)
+            {
+                if (auto taskSP = aTaskWP.Lock(); taskSP.IsNotNULL())
+                {
+                    GpTcpClientTask& task = static_cast<GpTcpClientTask&>(taskSP.Vn());
+                    task.PushSocketEvents(-1, {GpIOEventType::CONNECTION_TIMEOUT});
+                    WAKEUP_TASK(task);
+                }
+            },
+            aConnectTimeout
+        );
+    }
 
-void    GpTcpClientTask::OnStart (void)
-{
-    GpSocketsTask::OnStart();
+    return GpSocketStateTCP::CONNECTION_IN_PROGRESS;
 }
 
 void    GpTcpClientTask::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {
-        GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
-
-        _CloseConnection();
+        GpUniqueLock uniqueLock{SpinLock()};
+        Socket().Close();
     } catch (const GpException& ex)
     {
         aStopExceptionsOut.emplace_back(ex);
@@ -145,71 +115,105 @@ void    GpTcpClientTask::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
     {
         aStopExceptionsOut.emplace_back(GpException{"[GpTcpClientTask::OnStop]: unknown exception"_sv});
     }
-
-    GpSocketsTask::OnStop(aStopExceptionsOut);
 }
 
-void    GpTcpClientTask::ProcessOtherMessages (GpAny& aMessage)
+void    GpTcpClientTask::ProcessSocketEvents
+(
+    GpSocket&       aSocket,
+    GpIOEventsTypes aIoEvents
+)
 {
-    THROW
-    (
-        fmt::format
-        (
-            "Get not socket message {}",
-            aMessage.TypeInfo().name()
-        )
-    );
-}
+    GpSocketTCP& socketTcp = static_cast<GpSocketTCP&>(aSocket);
 
-GpSocket::SP    GpTcpClientTask::FindSocket ([[maybe_unused]] GpSocketId aSocketId)
-{
-    GpUniqueLock<GpSpinLock> uniqueLock{iSocketSpinLock};
-
-    return iSocketTCP;
-}
-
-void    GpTcpClientTask::CheckBeforeNewTcpConnection (const GpSocketAddr& aServerAddr)
-{
-    if (iConnectionState == ConnectionStateT::NOT_CONNECTED)
+    if (aIoEvents.Test(GpIOEventType::READY_TO_READ))
     {
-        return;
+        OnReadyToRead(socketTcp);
     }
 
-    VERIFY
-    (
-        iConnectionState == ConnectionStateT::CONNECTED,
-        "Other connection in progress"
-    );
+    if (aIoEvents.Test(GpIOEventType::READY_TO_WRITE))
+    {
+        OnReadyToWrite(socketTcp);
 
-    // Check to what ip connected
-    if (iConnectedToAddr != aServerAddr)
+        if (!iIsConnected) [[unlikely]]
+        {
+            socketTcp.OnConnected();
+            iIsConnected = true;
+            OnConnected(socketTcp);
+        }
+    }
+
+    if (aIoEvents.Test(GpIOEventType::CLOSED)) [[unlikely]]
     {
-        _CloseConnection();
-        iConnectedToAddr = aServerAddr;
-    } else
+        OnClosed(socketTcp);
+    } else if (aIoEvents.Test(GpIOEventType::ERROR_OCCURRED)) [[unlikely]]
     {
-        // OK, connected to correct ip
-        return;
+        OnError(socketTcp);
+    } else if (aIoEvents.Test(GpIOEventType::CONNECTION_TIMEOUT)) [[unlikely]]
+    {
+        if (!iIsConnected)
+        {
+            socketTcp.OnConnectionFailed();
+            OnConnectionTimeout(socketTcp);
+        }
     }
 }
 
-void    GpTcpClientTask::_CloseConnection (void)
+bool    GpTcpClientTask::VerifyConnectTo (const GpSocketAddr& aServerAddr) const
 {
-    if (iSocketTCP.IsNotNULL())
+    const GpSocketTCP&              socketTcp   = static_cast<const GpSocketTCP&>(Socket());
+    const GpSocketStateTCP::EnumT   socketState = socketTcp.State();
+
+    switch (socketState)
     {
-        std::ignore = GpIOEventPollerCatalog::SRemoveSubscriptionSafe
-        (
-            iSocketTCP.Vn().Id(),
-            iIOEventPollerSubscribeTaskId,
-            iIOEventPollerIdx
-        );
+        case GpSocketStateTCP::NOT_CONNECTED:
+        {
+            // OK
+            return false;
+        } break;
+        case GpSocketStateTCP::LISTEN:
+        {
+            THROW(fmt::format(
+                "Failed to connect to '{}': socket is in listening mode on '{}'",
+                aServerAddr.ToString(),
+                socketTcp.AddrLocal().ToString()
+            ));
+        } break;
+        case GpSocketStateTCP::CONNECTION_IN_PROGRESS:
+        {
+            THROW(fmt::format(
+                "Failed to connect to '{}': another connection is in progress to '{}'",
+                aServerAddr.ToString(),
+                socketTcp.AddrRemote().ToString()
+            ));
+        } break;
+        case GpSocketStateTCP::OUTGOING:
+        {
+            // Check to what ip connected
+            VERIFY
+            (
+                socketTcp.AddrRemote() == aServerAddr,
+                [&]()
+                {
+                    return fmt::format
+                    (
+                        "Failed to connect to '{}': already connected to '{}'",
+                        aServerAddr.ToString(),
+                        socketTcp.AddrRemote().ToString()
+                    );
+                }
+            );
+        } break;
+        case GpSocketStateTCP::INCOMING:
+        {
+            THROW(fmt::format(
+                "Failed to connect to '{}': socket is in incoming connection mode from '{}'",
+                aServerAddr.ToString(),
+                socketTcp.AddrRemote().ToString()
+            ));
+        } break;
+    };
 
-        iSocketTCP.Vn().Close();
-        iSocketTCP.Clear();
-    }
-
-    iConnectionState = ConnectionStateT::NOT_CONNECTED;
-    iConnectedToAddr.Clear();   
+    return true;
 }
 
 }// namespace GPlatform

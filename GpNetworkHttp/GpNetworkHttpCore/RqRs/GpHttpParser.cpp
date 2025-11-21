@@ -243,7 +243,7 @@ int GpHttpParser::Http_OnBody (GpSpanByteR aValue)
 
     // Read new data
     {
-        GpBytesArray& bodyPayloadFixed = static_cast<GpHttpBodyPayloadFixed&>(iBodyPayloadSP.Vn()).DataStorage();
+        GpByteArray& bodyPayloadFixed = static_cast<GpHttpBodyPayloadFixed&>(iBodyPayloadSP.Vn()).DataStorage();
 
         const size_t currentSize            = std::size(bodyPayloadFixed);
         const size_t totalSizeWithNewData   = NumOps::SAdd<size_t>(currentSize, aValue.Count());

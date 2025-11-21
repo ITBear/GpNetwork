@@ -28,12 +28,11 @@ public:
                                     ~GpIOEventPollerCatalog (void) noexcept;
 
     static GpIOEventPollerCatalog&  S                       (void) noexcept {return sInstance;}
-    [[nodiscard]] static bool       SAddSubscriptionSafe    (GpSocketId         aSocketId,
-                                                             GpTaskId           aSocketTaskId,
+    static void                     SAddSubscription        (GpSocketId         aSocketId,
+                                                             GpTask::WP         aTaskWP,
                                                              GpIOEventPollerIdx aIoEventPollerIdx,
                                                              GpIOEventsTypes    aEventTypes);
-    [[nodiscard]] static bool       SRemoveSubscriptionSafe (GpSocketId         aSocketId,
-                                                             GpTaskId           aSocketTaskId,
+    [[nodiscard]] static bool       SRemoveSubscription     (GpSocketId         aSocketId,
                                                              GpIOEventPollerIdx aIoEventPollerIdx);
 
     GpIOEventPoller::C::Opts::SP    GetByIdxOpt             (GpIOEventPollerIdx aIoEventPollerIdx) noexcept;
@@ -45,7 +44,7 @@ public:
     GpIOEventPollerIdx              IdxByName               (std::string_view aName);
 
     void                            Start                   (const GpIOEventPollerCfgDesc::C::MapStr::SP& aCfgs);
-    void                            StopAndClear            (void);
+    void                            Stop                    (void);
 
 private:
     void                            RegisterPollerType      (const GpUUID&      aUid,
@@ -54,7 +53,7 @@ private:
     GpIOEventPollerIdx              AddNewName              (std::string aName) REQUIRES(iSpinLockRW);
 
 private:
-    mutable GpSpinLockRW            iSpinLockRW;
+    mutable GpSpinLockRW<>          iSpinLockRW;
     CatalogNameToIdxT               iCatalogNameToIdx       GUARDED_BY(iSpinLockRW);
     CatalogIdxToPollerT             iCatalogIdxToPoller     GUARDED_BY(iSpinLockRW);
     CreatePollerFnsCatalogT         iRegisteredPollerTypes  GUARDED_BY(iSpinLockRW);

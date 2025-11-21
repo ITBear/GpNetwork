@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GpCore2/GpUtils/Types/Containers/GpBytesArray.hpp>
+#include <GpCore2/GpUtils/Types/Containers/GpByteArray.hpp>
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCore_global.hpp>
 #include <GpNetwork/GpNetworkHttp/llhttp/llhttp.h>
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RqRs/GpHttpRequestNoBodyDesc.hpp>

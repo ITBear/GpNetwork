@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GpNetwork/GpNetworkCore/Tasks/GpTcpClientTask.hpp>
+#include <GpNetwork/GpNetworkCore/Pollers/GpIOEventPollerCatalog.hpp>
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RqRs/GpHttpRequest.hpp>
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RqRs/GpHttpResponse.hpp>
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RqRs/GpHttpParser.hpp>
@@ -31,45 +32,47 @@ public:
     };
 
 public:
-                            GpHttpClientRequestTask     (GpSocketFlags      aSocketFlags,
-                                                         GpIOEventPollerIdx aIOEventPollerIdx,
-                                                         GpHttpRequest::SP  aRequestSP,
-                                                         milliseconds_t     aConnectTimeout);
-                            GpHttpClientRequestTask     (GpSocketFlags      aSocketFlags,
-                                                         GpIOEventPollerIdx aIOEventPollerIdx,
-                                                         GpHttpRequest::SP  aRequestSP,
-                                                         milliseconds_t     aConnectTimeout,
-                                                         std::string        aTaskName);
-    virtual                 ~GpHttpClientRequestTask    (void) noexcept override final;
+                    GpHttpClientRequestTask     (GpSocketFlags      aSocketFlags,
+                                                 GpIOEventPollerIdx aIOEventPollerIdx,
+                                                 GpHttpRequest::UP  aRequestUP,
+                                                 milliseconds_t     aConnectTimeout);
+                    GpHttpClientRequestTask     (GpSocketFlags      aSocketFlags,
+                                                 GpIOEventPollerIdx aIOEventPollerIdx,
+                                                 GpHttpRequest::UP  aRequestUP,
+                                                 milliseconds_t     aConnectTimeout,
+                                                 std::string        aTaskName);
+    virtual         ~GpHttpClientRequestTask    (void) noexcept override final;
 
 protected:
-    virtual void            OnStart                     (void) override final;
-    virtual void            OnStop                      (ExceptionsT& aStopExceptionsOut) noexcept override final;
-    virtual void            OnStopException             (const GpException& aException) noexcept override final;
+    virtual void    OnStart                     (void) override final;
+    virtual void    OnStop                      (ExceptionsT& aStopExceptionsOut) noexcept override final;
+    virtual void    OnStopException             (const GpException& aException) noexcept override final;
 
-    virtual void            OnReadyToRead               (GpSocket& aSocket) override final;
-    virtual void            OnReadyToWrite              (GpSocket& aSocket) override final;
-    virtual void            OnClosed                    (GpSocket& aSocket) override final;
-    virtual void            OnError                     (GpSocket& aSocket) override final;
-    virtual void            OnConnected                 (GpSocketTCP& aSocket) override final;
-    virtual void            ProcessOtherMessages        (GpAny& aMessage) override;
+    virtual void    OnReadyToRead               (GpSocket& aSocket) REQUIRES(SpinLock()) override final;
+    virtual void    OnReadyToWrite              (GpSocket& aSocket) REQUIRES(SpinLock()) override final;
+    virtual void    OnClosed                    (GpSocket& aSocket) REQUIRES(SpinLock()) override final;
+    virtual void    OnError                     (GpSocket& aSocket) REQUIRES(SpinLock()) override final;
 
-private:
-    void                    WriteRqToSocket             (GpSocket& aSocket);
+    virtual void    OnConnected                 (GpSocketTCP& aSocket) REQUIRES(SpinLock()) override final;
+    virtual void    OnConnectionTimeout         (GpSocketTCP& aSocket) REQUIRES(SpinLock()) override final;
 
 private:
-    ProcessStateT           iProcessState           = ProcessStateT::CHECK_CONNECTION;
-    GpBytesArray            iSocketTmpBuffer;
+    void            WriteRqToSocket             (GpSocket& aSocket);
+
+private:
+    const GpIOEventPollerIdx    iIOEventPollerIdx;
+    ProcessStateT               iProcessState           = ProcessStateT::CHECK_CONNECTION;
+    GpByteArray                 iSocketTmpBuffer;
 
     // RQ
-    GpHttpRequest::SP       iRqSP;
-    RqWriteStateT           iRqWriteState           = RqWriteStateT::WRITE_HEADERS_S0;
-    size_t                  iRqBytesToWriteTotal    = 0;
-    size_t                  iRqBytesWrited          = 0;
-    const milliseconds_t    iConnectTimeout;
+    GpHttpRequest::UP           iRqUP;
+    RqWriteStateT               iRqWriteState           = RqWriteStateT::WRITE_HEADERS_S0;
+    size_t                      iRqBytesToWriteTotal    = 0;
+    size_t                      iRqBytesWrited          = 0;
+    const milliseconds_t        iConnectTimeout;
 
     // RS
-    GpHttpParser            iHttpParser;
+    GpHttpParser                iHttpParser;
 };
 
 }// namespace GPlatform

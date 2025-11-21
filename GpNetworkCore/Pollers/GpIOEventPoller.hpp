@@ -3,7 +3,7 @@
 #include <GpNetwork/GpNetworkCore/Pollers/GpIOEventType.hpp>
 #include <GpCore2/GpUtils/Types/Enums/GpEnum.hpp>
 #include <GpCore2/GpTasks/Fibers/GpTaskFiber.hpp>
-#include <GpCore2/GpUtils/EventBus/GpEventChannel.hpp>
+#include <GpCore2/GpUtils/SyncPrimitives/GpSpinLock.hpp>
 
 namespace GPlatform {
 
@@ -14,9 +14,7 @@ public:
     CLASS_DD(GpIOEventPoller)
     TAG_SET(THREAD_SAFE)
 
-    using SubsriberResValT          = std::tuple<GpSocketId, GpIOEventsTypes>;
-    using SubsribersEventChannelT   = GpEventChannel<GpTaskId, SubsriberResValT>;
-    using SubsribersByObjectT       = ankerl::unordered_dense::map<GpSocketId, SubsribersEventChannelT>;
+    using SocketsByTaskT = ankerl::unordered_dense::map<GpSocketId, GpTask::WP>;
 
 protected:
                                 GpIOEventPoller     (std::string aName) noexcept;
@@ -24,15 +22,13 @@ protected:
 public:
     virtual                     ~GpIOEventPoller    (void) noexcept override;
 
-    void                        AddSubscription     (GpSocketId                             aSocketId,
-                                                     GpTaskId                               aTaskId,
-                                                     GpIOEventsTypes                        aEventTypes,
-                                                     SubsribersEventChannelT::CallbackFnT&& aFn);
-    bool                        RemoveSubscription  (GpSocketId aSocketId,
-                                                     GpTaskId   aTaskId);
+    void                        AddSubscription     (GpSocketId         aSocketId,
+                                                     GpTask::WP         aTaskWP,
+                                                     GpIOEventsTypes    aEventTypes);
+    bool                        RemoveSubscription  (GpSocketId aSocketId);
 
 protected:
-    void                        ProcessEvents       (GpSocketId         aSocketId,
+    [[nodiscard]] bool          ProcessEvents       (GpSocketId         aSocketId,
                                                      GpIOEventsTypes    aEvents) REQUIRES(iSpinLock);
 
     virtual void                OnStart             (void) override;
@@ -40,15 +36,15 @@ protected:
     virtual void                OnStop              (ExceptionsT& aStopExceptionsOut) noexcept override;
     virtual void                OnStopException     (const GpException& aException) noexcept override = 0;
 
-    virtual void                OnAddObject         (GpSocketId         aSocketId,
+    virtual void                OnAddSocket         (GpSocketId         aSocketId,
                                                      GpIOEventsTypes    aEventTypes) REQUIRES(iSpinLock) = 0;
-    virtual void                OnRemoveObject      (GpSocketId aSocketId) REQUIRES(iSpinLock) = 0;
+    virtual void                OnRemoveSocket      (GpSocketId aSocketId) REQUIRES(iSpinLock) = 0;
 
 protected:
-    mutable GpSpinLock          iSpinLock;
+    mutable GpSpinLock<>    iSpinLock;
 
 private:
-    SubsribersByObjectT         iSubsribersByIOObject GUARDED_BY(iSpinLock);
+    SocketsByTaskT          iSocketsByTask GUARDED_BY(iSpinLock);
 };
 
 }// namespace GPlatform

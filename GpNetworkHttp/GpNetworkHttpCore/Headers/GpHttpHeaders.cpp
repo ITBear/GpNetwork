@@ -172,7 +172,7 @@ GpHttpHeaders&  GpHttpHeaders::SetAuthBasic
 
 std::string GpHttpHeaders::ToString (void) const
 {
-    GpBytesArray                    headersData;
+    GpByteArray                     headersData;
     GpByteWriterStorageByteArray    writerStorage(headersData);
     GpByteWriter                    writer(writerStorage);
 

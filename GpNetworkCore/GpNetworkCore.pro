@@ -34,6 +34,15 @@ equals(var_os, "linux") {
 	LIBS += -lfmt
 }
 
+equals(var_os, "macos") {
+	LIBS += -lGpLogCore$$TARGET_POSTFIX
+	LIBS += -lGpTasks$$TARGET_POSTFIX
+	LIBS += -lGpReflection$$TARGET_POSTFIX
+	LIBS += -lGpUtils$$TARGET_POSTFIX
+
+	LIBS += -lfmt
+}
+
 # ----------- Sources and headers -----------
 SOURCES += \
 	GpNetworkCoreLib.cpp \
@@ -59,7 +68,9 @@ SOURCES += \
 	Sockets/GpSocketTCP.cpp \
 	Sockets/GpSocketUDP.cpp \
 	Sockets/GpSocketUtils.cpp \
-	Tasks/GpSocketsTask.cpp \
+	Sockets/GpSocketWriterTCP.cpp \
+	Tasks/GpSingleSocketTask.cpp \
+	Tasks/GpSocketTask.cpp \
 	Tasks/GpTcpAcceptServerTask.cpp \
 	Tasks/GpTcpClientTask.cpp \
 	Tasks/GpTcpServerTask.cpp
@@ -92,9 +103,11 @@ HEADERS += \
 	Sockets/GpSocketTCP.hpp \
 	Sockets/GpSocketUDP.hpp \
 	Sockets/GpSocketUtils.hpp \
-	Tasks/GpSocketsTask.hpp \
+	Sockets/GpSocketWriterTCP.hpp \
+	Tasks/GpSingleSocketTask.hpp \
+	Tasks/GpSocketTask.hpp \
+	Tasks/GpSocketTaskFactory.hpp \
 	Tasks/GpTcpAcceptServerTask.hpp \
 	Tasks/GpTcpClientTask.hpp \
-	Tasks/GpTcpServerTask.hpp \
-	Tasks/GpTcpServerTaskFactory.hpp
+	Tasks/GpTcpServerTask.hpp
 

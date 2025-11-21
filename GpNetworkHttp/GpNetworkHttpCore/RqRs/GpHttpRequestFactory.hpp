@@ -15,7 +15,7 @@ protected:
 public:
     virtual                     ~GpHttpRequestFactory   (void) noexcept = default;
 
-    virtual GpHttpRequest::SP   NewInstance             (void) const  = 0;
+    virtual GpHttpRequest::UP   NewInstance             (void) const  = 0;
 };
 
 }// namespace GPlatform

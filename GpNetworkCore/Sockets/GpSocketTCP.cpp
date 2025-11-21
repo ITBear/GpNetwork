@@ -5,15 +5,51 @@
 
 namespace GPlatform {
 
+GP_ENUM_IMPL(GpSocketStateTCP)
+
+GpSocketTCP::GpSocketTCP (GpSocketTCP&& aSocket) noexcept:
+GpSocket{std::move(aSocket)},
+iState{aSocket.iState}
+{
+}
+
+GpSocketTCP::GpSocketTCP
+(
+    const GpSocketFlags aFlags,
+    const CloseModeT    aCloseMode
+) noexcept:
+GpSocket
+{
+    ProtocolT::TCP,
+    aFlags,
+    aCloseMode
+}
+{
+}
+
 GpSocketTCP::~GpSocketTCP (void) noexcept
 {
+}
+
+GpSocketTCP&    GpSocketTCP::operator= (GpSocketTCP&& aSocket)
+{
+    Set(std::move(aSocket));
+
+    return *this;
+}
+
+void    GpSocketTCP::Set (GpSocketTCP&& aSocket)
+{
+    GpSocket::Set(std::move(aSocket));
+    iState = aSocket.State();
+    aSocket.iState = StateE::NOT_CONNECTED;
 }
 
 GpSocketTCP::SP GpSocketTCP::SFromID
 (
     GpSocketId          aId,
     const CloseModeT    aCloseMode,
-    const StateT        aState
+    const StateE        aState
 )
 {
     GpSocketTCP::SP socketSP = MakeSP<GpSocketTCP>(GpSocketFlags{}, aCloseMode);
@@ -33,7 +69,7 @@ void    GpSocketTCP::Listen
     {
         VERIFY
         (
-            iState == StateT::NOT_CONNECTED,
+            iState == StateE::NOT_CONNECTED,
             "TCP socket state must be NOT_CONNECTED"_sv
         );
 
@@ -42,64 +78,70 @@ void    GpSocketTCP::Listen
         const int listenRes = listen(Id(), NumOps::SConvert<int>(aMaxQueueSize));
         SCheckResOrThrow(listenRes, {});
 
-        iState = StateT::LISTEN;
+        iState = StateE::LISTEN;
     } catch (...)
     {
         std::exception_ptr currentException = std::current_exception();
         {
             Close();
-            iState = StateT::NOT_CONNECTED;
+            iState = StateE::NOT_CONNECTED;
         }
 
         std::rethrow_exception(currentException);
     }
 }
 
-void    GpSocketTCP::ConnectAndWait
-(
-    const GpSocketAddr&         aAddr,
-    const milliseconds_t        aTimeout,
-    const GpIOEventPollerIdx    aIOEventPollerIdx,
-    const GpTaskId              aIOEventPollerSubscribeTaskId
-)
+GpSocketTCP::StateE GpSocketTCP::Connect (const GpSocketAddr& aAddr)
 {
     try
     {
         VERIFY
         (
-            iState == StateT::NOT_CONNECTED,
+            iState == StateE::NOT_CONNECTED,
             "TCP socket state must be NOT_CONNECTED"_sv
         );
 
         Create(aAddr.IPv());
-        SetUserTimeout(aTimeout);
-
-        iState = StateT::CONNECTION_IN_PROGRESS;
 
         if (Flags().Test(GpSocketFlag::NO_BLOCK))
         {
-            ConnectAsyncAndWait(aAddr, aIOEventPollerIdx, aIOEventPollerSubscribeTaskId);
+            if (ConnectAsync(aAddr) == StateE::CONNECTION_IN_PROGRESS)
+            {
+                iState = StateE::CONNECTION_IN_PROGRESS;
+                return iState;
+            }
         } else
         {
             ConnectSync(aAddr);
+            iState = StateE::CONNECTION_IN_PROGRESS;
         }
 
-        SetUserTimeout(0.0_si_ms);
-
-        iState = StateT::OUTGOING;
-
-        SetAddrLocal(GpSocketAddr::SLocalFromSocketId(Id()));
-        SetAddrRemote(GpSocketAddr::SRemoteFromSocketId(Id()));
+        OnConnected();
     } catch (...)
     {
         std::exception_ptr currentException = std::current_exception();
         {
-            Close();
-            iState = StateT::NOT_CONNECTED;
+            OnConnectionFailed();
         }
 
         std::rethrow_exception(currentException);
     }
+
+    return iState;
+}
+
+void    GpSocketTCP::OnConnected (void)
+{
+    iState = StateE::OUTGOING;
+
+    SetAddrLocal(GpSocketAddr::SLocalFromSocketId(Id()));
+    SetAddrRemote(GpSocketAddr::SRemoteFromSocketId(Id()));
+}
+
+void    GpSocketTCP::OnConnectionFailed (void)
+{
+    Close();
+    iState = StateE::NOT_CONNECTED;
 }
 
 GpSocketTCP::C::Opts::Val   GpSocketTCP::Accept (const GpSocketFlags& aFlags)
@@ -108,7 +150,7 @@ GpSocketTCP::C::Opts::Val   GpSocketTCP::Accept (const GpSocketFlags& aFlags)
     {
         VERIFY
         (
-            iState == StateT::LISTEN,
+            iState == StateE::LISTEN,
             "TCP socket state must be LISTEN"_sv
         );
 
@@ -130,7 +172,7 @@ GpSocketTCP::C::Opts::Val   GpSocketTCP::Accept (const GpSocketFlags& aFlags)
 
         try
         {
-            connectedSocket.SetFromRawTCP(incomingSocketId, StateT::INCOMING);
+            connectedSocket.SetFromRawTCP(incomingSocketId, StateE::INCOMING);
         } catch (...)
         {
             std::exception_ptr currentException = std::current_exception();
@@ -147,7 +189,7 @@ GpSocketTCP::C::Opts::Val   GpSocketTCP::Accept (const GpSocketFlags& aFlags)
         std::exception_ptr currentException = std::current_exception();
         {
             Close();
-            iState = StateT::NOT_CONNECTED;
+            iState = StateE::NOT_CONNECTED;
         }
 
         std::rethrow_exception(currentException);
@@ -199,6 +241,20 @@ size_t  GpSocketTCP::Read (GpByteWriter& aWriter)
     return totalRcvSize;
 }
 
+GpByteArray GpSocketTCP::Read (void)
+{
+    GpByteArray dataBuffer;
+
+    GpByteWriterStorageByteArray    dataWriterStorage(dataBuffer);
+    GpByteWriter                    dataWriter(dataWriterStorage);
+
+    std::ignore = Read(dataWriter);
+
+    dataWriter.OnEnd();
+
+    return dataBuffer;
+}
+
 size_t  GpSocketTCP::Write (GpByteReader& aReader)
 {
     const size_t sizeLeft = aReader.SizeLeft();
@@ -208,8 +264,9 @@ size_t  GpSocketTCP::Write (GpByteReader& aReader)
         return 0;
     }
 
-    GpSpanByteR tryToSendDataPtr    = aReader.StoragePtr();
-    ssize_t     sendSize            = send
+    GpSpanByteR tryToSendDataPtr = aReader.StoragePtr();
+
+    const ssize_t sendSize = send
     (
         Id(),
         reinterpret_cast<const char*>(tryToSendDataPtr.Ptr()),
@@ -231,6 +288,39 @@ size_t  GpSocketTCP::Write (GpByteReader& aReader)
     }
 
     aReader.OffsetAdd(size_t(sendSize));
+
+    return size_t(sendSize);
+}
+
+size_t  GpSocketTCP::Write (GpSpanByteR aData)
+{
+    const size_t sizeLeft = aData.SizeInBytes();
+
+    if (sizeLeft == 0)
+    {
+        return 0;
+    }
+
+    const ssize_t sendSize = send
+    (
+        Id(),
+        reinterpret_cast<const char*>(aData.Ptr()),
+        NumOps::SConvert<send_size_t>(sizeLeft),
+        0
+    );
+
+    if (sendSize < 0)
+    {
+        const int networkErrCode = GpNetworkErrors::SErrno();
+
+        if (GpNetworkErrors::SIsWouldBlock(networkErrCode))
+        {
+            return 0;
+        } else
+        {
+            SCheckResOrThrow(-1, {});
+        }
+    }
 
     return size_t(sendSize);
 }
@@ -276,7 +366,7 @@ bool    GpSocketTCP::SIsConnected (const GpSocketId aId) noexcept
 void    GpSocketTCP::SetFromRawTCP
 (
     const GpSocketId    aId,
-    const StateT        aState
+    const StateE        aState
 )
 {
     try
@@ -289,7 +379,7 @@ void    GpSocketTCP::SetFromRawTCP
         {
             //SetFlag_LingerZero(true);
             Close();
-            iState = StateT::NOT_CONNECTED;
+            iState = StateE::NOT_CONNECTED;
         }
 
         std::rethrow_exception(currentException);
@@ -303,12 +393,7 @@ void    GpSocketTCP::ConnectSync (const GpSocketAddr& aAddr)
     SCheckResOrThrow(res, {});
 }
 
-void    GpSocketTCP::ConnectAsyncAndWait
-(
-    const GpSocketAddr&         aAddr,
-    const GpIOEventPollerIdx    aIOEventPollerIdx,
-    const GpTaskId              aIOEventPollerSubscribeTaskId
-)
+GpSocketTCP::StateE GpSocketTCP::ConnectAsync (const GpSocketAddr& aAddr)
 {
     const int res = connect
     (
@@ -323,49 +408,19 @@ void    GpSocketTCP::ConnectAsyncAndWait
 
         if (GpNetworkErrors::SConnInProgress(networkErrCode))
         {
-            // Add to IO event poller
-            {
-                const bool isAdded = GpIOEventPollerCatalog::SAddSubscriptionSafe
-                (
-                    Id(),
-                    aIOEventPollerSubscribeTaskId,
-                    aIOEventPollerIdx,
-                    {GpIOEventType::READY_TO_READ, GpIOEventType::READY_TO_WRITE, GpIOEventType::CLOSED, GpIOEventType::ERROR_OCCURRED}
-                );
-
-                VERIFY
-                (
-                    isAdded == true,
-                    "Failed to subscribe to IO event poller"
-                );
-            }
-
-            // Wait
-            YIELD_WAIT();
-
-            // Check result
-            VERIFY
-            (
-                IsConnected() == true,
-                [aAddr]()
-                {
-                    return fmt::format
-                    (
-                        "Failed to connect to {}",
-                        aAddr.ToString()
-                    );
-                }
-            );
+            return StateE::CONNECTION_IN_PROGRESS;
         } else
         {
             SCheckResOrThrow(res, {});
         }
     }
+
+    return StateE::OUTGOING;
 }
 
 void    GpSocketTCP::SetUserTimeout ([[maybe_unused]] const milliseconds_t aTimeout)
 {
-#if defined(GP_POSIX)
+#if defined(GP_OS_LINUX)
     int tcp_timeout = aTimeout.As<int>();
 
     const int res = setsockopt
@@ -379,6 +434,15 @@ void    GpSocketTCP::SetUserTimeout ([[maybe_unused]] const milliseconds_t aTime
 
     SCheckResOrThrow(res, {});
 #endif
+}
+
+void    GpSocketTCP::SetFlag_NoDelay (bool aValue)
+{
+    int option = aValue ? 1 : 0;
+    //const int res = setsockopt(Id(), SOL_TCP, TCP_NODELAY, &option, sizeof(option));
+    const int res = setsockopt(Id(), IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&option), sizeof(option));
+
+    SCheckResOrThrow(res, {});
 }
 
 }// namespace GPlatform

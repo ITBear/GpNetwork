@@ -10,7 +10,8 @@ GP_ENUM(GP_NETWORK_CORE_API, GpIOEventType,
     READY_TO_READ,
     READY_TO_WRITE,
     CLOSED,
-    ERROR_OCCURRED
+    ERROR_OCCURRED,
+    CONNECTION_TIMEOUT
 );
 
 using GpIOEventsTypes = GpEnumFlagsST<GpIOEventType>;

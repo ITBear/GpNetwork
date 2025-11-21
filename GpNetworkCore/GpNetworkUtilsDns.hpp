@@ -22,23 +22,23 @@ public:
         size_t                                          lastGetId   = 0; // For round robin
     };
 
-    using CacheT = GpItcCacheMap<boost::container::small_flat_map<std::string, ResolveRes, 32, std::less<>>>;
+//  using CacheT = GpItcCacheMap<boost::container::small_flat_map<std::string, ResolveRes, 32, std::less<>>>;
 
 public:
                                 GpNetworkUtilsDns   (void) noexcept;
                                 ~GpNetworkUtilsDns  (void) noexcept;
 
-    static GpNetworkUtilsDns&   S                   (void) noexcept {return sInstance;}
+/*  static GpNetworkUtilsDns&   S                   (void) noexcept {return sInstance;}
 
     GpSocketAddr                Resolve             (std::string_view               aDomainName,
                                                      GpSocketIPv                    aIPv,
-                                                     GpSocketAddr::C::Opts::CRef    aCurrentResolvedAddrOptCRef = std::nullopt);
+                                                     GpSocketAddr::C::Opts::CRef    aCurrentResolvedAddrOptCRef = std::nullopt);*/
 
     static ResolveRes           SResolveNoCache     (std::string_view   aDomainName,
                                                      GpSocketIPv        aIPv);
 
 private:
-    CacheT                      iCache;
+//  CacheT                      iCache;
 
     static GpNetworkUtilsDns    sInstance;
 };

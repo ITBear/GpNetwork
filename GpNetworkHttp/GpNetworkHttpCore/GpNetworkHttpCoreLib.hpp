@@ -1,10 +1,6 @@
 #pragma once
 
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCore_global.hpp>
-#include <GpCore2/GpUtils/Other/GpLinkedLibsInfo.hpp>
+#include <GpCore2/GpUtils/Other/GpStaticInitializer.hpp>
 
-namespace GPlatform {
-
-GP_DECLARE_LIB_REGISTRATOR(GpNetworkHttpCoreLib)
-
-}// namespace GPlatform
+GP_STATIC_INITIALIZER(GP_NETWORK_HTTP_CORE_API, GpNetworkHttpCore)

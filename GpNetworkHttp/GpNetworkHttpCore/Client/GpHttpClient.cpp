@@ -18,9 +18,9 @@ GpHttpClient::~GpHttpClient (void) noexcept
 {
 }
 
-GpHttpResponse::SP  GpHttpClient::DoAndWait
+GpHttpResponse::UP  GpHttpClient::DoAndWait
 (
-    GpHttpRequest::SP       aRequestSP,
+    GpHttpRequest::UP       aRequestUP,
     const milliseconds_t    aConnectTimeout,
     const milliseconds_t    aRequestTimeout
 )
@@ -28,33 +28,29 @@ GpHttpResponse::SP  GpHttpClient::DoAndWait
     // TODO: create tasks pool
 
     // Create task
-    GpHttpClientRequestTask::SP requestTaskSP = MakeSP<GpHttpClientRequestTask>
+    GpTask::SP requestTaskSP = MakeSP<GpHttpClientRequestTask>
     (
         iSocketFlags,
         iIOEventPollerIdx,
-        std::move(aRequestSP),
+        std::move(aRequestUP),
         aConnectTimeout
     );
 
     // Move to ready
-    GpTask::DoneFutureT::C::Opts::SP doneFutureOptSP = GpTaskScheduler::S().NewToReadyDepend(requestTaskSP);
-
-    if (doneFutureOptSP.has_value() == false)
-    {
-        THROW("Failed to start HTTP request task");
-    }
+    GpTask::DoneFutureT::SP doneFutureSP = requestTaskSP.Vn().DoneFuture();
+    SPAWN_READY_TASK(requestTaskSP);
 
     // Wait for done
-    GpHttpResponse::SP httpResponseSP;
+    GpHttpResponse::UP httpResponseUP;
 
     std::ignore = GpItcFutureUtils::SWaitFor
     (
-        doneFutureOptSP.value().V(),
-        [&](typename GpTaskFiber::DoneFutureT::value_type& aResult)// OnSuccessFnT
+        doneFutureSP.V(),
+        [&](typename GpTaskFiber::DoneFutureT::value_type&& aResult)// OnSuccessFnT
         {
             if (aResult->IsContatinType<GpHttpResponse::SP>()) [[likely]]
             {
-                httpResponseSP = std::move(aResult->ValueNoCheck<GpHttpResponse::SP>());
+                httpResponseUP = std::move(aResult->ValueNoCheck<GpHttpResponse::UP>());
             } else
             {
                 THROW
@@ -84,7 +80,7 @@ GpHttpResponse::SP  GpHttpClient::DoAndWait
         }
     );
 
-    return httpResponseSP;
+    return httpResponseUP;
 }
 
 }// namespace GPlatform

@@ -5,10 +5,6 @@
 
 namespace GPlatform {
 
-GpSocketUDP::~GpSocketUDP (void) noexcept
-{
-}
-
 void    GpSocketUDP::Connect (const GpSocketAddr& aAddr)
 {
     try
@@ -124,7 +120,7 @@ std::optional<size_t>   GpSocketUDP::RecvMsg (GpSocketMessageUDP& aMessageOut)
     msg.msg_name        = aMessageOut.Addr().Raw();
     msg.msg_namelen     = aMessageOut.Addr().RawSize();
     msg.msg_control     = aMessageOut.ControlBuffer().Ptr();
-    msg.msg_controllen  = aMessageOut.ControlBuffer().Count();
+    msg.msg_controllen  = NumOps::SConvert<decltype(msg.msg_controllen)>(aMessageOut.ControlBuffer().Count());
 
     const ssize_t rcvSize = recvmsg(Id(), &msg, 0);
 
@@ -284,7 +280,7 @@ bool    GpSocketUDP::SendMsg (const GpSocketMessageUDP& aMessage)
     msg.msg_name        = const_cast<sockaddr*>(aMessage.Addr().Raw());
     msg.msg_namelen     = aMessage.Addr().RawSize();
     msg.msg_control     = const_cast<std::byte*>(aMessage.ControlBufferUseOnly().Ptr());
-    msg.msg_controllen  = aMessage.ControlBufferUseOnly().Count();
+    msg.msg_controllen  = NumOps::SConvert<decltype(msg.msg_controllen)>(aMessage.ControlBufferUseOnly().Count());
     msg.msg_flags       = aMessage.Flags();
 
     const ssize_t sendSize = sendmsg

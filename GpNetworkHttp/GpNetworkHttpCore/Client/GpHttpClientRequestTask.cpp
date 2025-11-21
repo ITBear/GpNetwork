@@ -10,16 +10,20 @@ GpHttpClientRequestTask::GpHttpClientRequestTask
 (
     const GpSocketFlags         aSocketFlags,
     const GpIOEventPollerIdx    aIOEventPollerIdx,
-    GpHttpRequest::SP           aRequestSP,
+    GpHttpRequest::UP           aRequestUP,
     const milliseconds_t        aConnectTimeout
 ):
 GpTcpClientTask
 {
-    aSocketFlags,
-    aIOEventPollerIdx
+    std::make_unique<GpSocketTCP>
+    (
+        aSocketFlags | GpSocketFlag::NO_BLOCK,
+        GpSocket::CloseModeT::CLOSE_ON_DESTRUCT
+    )
 },
-iRqSP          {std::move(aRequestSP)},
-iConnectTimeout{aConnectTimeout}
+iIOEventPollerIdx{aIOEventPollerIdx},
+iRqUP            {std::move(aRequestUP)},
+iConnectTimeout  {aConnectTimeout}
 {
 }
 
@@ -27,18 +31,22 @@ GpHttpClientRequestTask::GpHttpClientRequestTask
 (
     const GpSocketFlags         aSocketFlags,
     const GpIOEventPollerIdx    aIOEventPollerIdx,
-    GpHttpRequest::SP           aRequestSP,
+    GpHttpRequest::UP           aRequestUP,
     const milliseconds_t        aConnectTimeout,
     std::string                 aTaskName
 ):
 GpTcpClientTask
 {
-    aSocketFlags,
-    aIOEventPollerIdx,
+    std::make_unique<GpSocketTCP>
+    (
+        aSocketFlags | GpSocketFlag::NO_BLOCK,
+        GpSocket::CloseModeT::CLOSE_ON_DESTRUCT
+    ),
     std::move(aTaskName)
 },
-iRqSP          {std::move(aRequestSP)},
-iConnectTimeout{aConnectTimeout}
+iIOEventPollerIdx{aIOEventPollerIdx},
+iRqUP            {std::move(aRequestUP)},
+iConnectTimeout  {aConnectTimeout}
 {
 }
 
@@ -48,34 +56,53 @@ GpHttpClientRequestTask::~GpHttpClientRequestTask (void) noexcept
 
 void    GpHttpClientRequestTask::OnStart (void)
 {
-    GpTcpClientTask::OnStart();
+    // Create socket
+    GpSocketId socketId = GpSocketId_Default();
+    {
+        GpUniqueLock uniqueLock{SpinLock()};
+        GpSocketTCP& socketTcp = static_cast<GpSocketTCP&>(Socket());
+        socketId = socketTcp.Create(GpSocketIPv::IPv4);
+    }
+
+    // Register socket and task to IO event poller
+    GpIOEventPollerCatalog::SAddSubscription
+    (
+        socketId,
+        SelfWP(),
+        iIOEventPollerIdx,
+        GpIOEventsTypes
+        {
+            GpIOEventType::READY_TO_READ,
+            GpIOEventType::READY_TO_WRITE,
+            GpIOEventType::CLOSED,
+            GpIOEventType::ERROR_OCCURRED,
+        }
+    );
 
     iProcessState = ProcessStateT::CHECK_CONNECTION;
 
     // Get server host name to connect
-    const GpUrlAuthority& urlAuthority = iRqSP.Vn().iRequestNoBody.url.Authority();
+    const GpUrlAuthority& urlAuthority = iRqUP->iRequestNoBody.url.Authority();
 
-    // TODO: implement IPv6
     // Connect
-    ConnectTcpAndWait
+    // TODO: implement IPv6
+    ConnectTo
     (
         urlAuthority.Host(),
         urlAuthority.Port(),
         GpSocketIPv::IPv4,
-        iConnectTimeout
+        iConnectTimeout,
+        SelfWP()
     );
 
     iSocketTmpBuffer.resize(4096); // TODO: move to config
-
-    iProcessState = ProcessStateT::WRITE_RQ;
-    WriteRqToSocket(SocketTCP());
 }
 
 void    GpHttpClientRequestTask::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
 {
     try
     {
-        LOG_INFO("[GpHttpClientRequestTask::OnStop]:..."_sv);
+        LOG_DEBUG("[GpHttpClientRequestTask::OnStop]:..."_sv);
     } catch (const GpException& ex)
     {
         aStopExceptionsOut.emplace_back(ex);
@@ -99,12 +126,13 @@ void    GpHttpClientRequestTask::OnStopException (const GpException& aException)
     );
 }
 
-void    GpHttpClientRequestTask::OnReadyToRead ([[maybe_unused]] GpSocket& aSocket)
+void    GpHttpClientRequestTask::OnReadyToRead (GpSocket& aSocket)
 {
-    if (iProcessState != ProcessStateT::WAIT_FOR_AND_READ_RS)
-    {
-        THROW("Incorrect HTTP client state detected while incoming data appeared on the socket"_sv);
-    }
+    VERIFY
+    (
+        iProcessState == ProcessStateT::WAIT_FOR_AND_READ_RS,
+        "Incorrect HTTP client state detected while incoming data appeared on the socket"_sv
+    );
 
     // Read from socket
     GpByteWriterStorageByteArray    writerStorage(iSocketTmpBuffer);
@@ -113,30 +141,32 @@ void    GpHttpClientRequestTask::OnReadyToRead ([[maybe_unused]] GpSocket& aSock
     GpSocketTCP& socketTcp          = static_cast<GpSocketTCP&>(aSocket);
     const size_t readFromSocketSize = socketTcp.Read(writer);
 
-    if (readFromSocketSize > 0)
+    if (readFromSocketSize == 0) [[unlikely]]
     {
-        if (iHttpParser.ParseNext(GpSpanByteR{std::data(iSocketTmpBuffer), readFromSocketSize}) == true)
+        return;
+    }
+
+    if (iHttpParser.ParseNext(GpSpanByteR{std::data(iSocketTmpBuffer), readFromSocketSize}) == true)
+    {
+        // Get RS
+        GpHttpResponse httpRs
         {
-            // Get RS
-            GpHttpResponse::SP httpRsSP = MakeSP<GpHttpResponse>
-            (
-                iHttpParser.RsNoBody(),
-                iHttpParser.BodyPayload()
-            );
+            iHttpParser.RsNoBody(),
+            iHttpParser.BodyPayload()
+        };
 
-            // Fulfill done future
-            DonePromise(GpMethodAccess{this}).Fulfill(DonePromiseRes{std::move(httpRsSP)});
+        // Fulfill done future
+        DonePromise(GpMethodAccess{this}).Fulfill(GpAny{std::move(httpRs)});
 
-            // TODO:
-            // If keep-allive, move socket to pool
+        // TODO:
+        // If keep-allive, move socket to pool
 
-            // Done task
-            std::ignore = RequestStop();
-        }
+        // Done task
+        std::ignore = RequestStop();
     }
 }
 
-void    GpHttpClientRequestTask::OnReadyToWrite ([[maybe_unused]] GpSocket& aSocket)
+void    GpHttpClientRequestTask::OnReadyToWrite (GpSocket& aSocket)
 {
     if (iProcessState != ProcessStateT::WRITE_RQ)
     {
@@ -148,7 +178,7 @@ void    GpHttpClientRequestTask::OnReadyToWrite ([[maybe_unused]] GpSocket& aSoc
 
 void    GpHttpClientRequestTask::OnClosed ([[maybe_unused]] GpSocket& aSocket)
 {
-    LOG_INFO("[GpHttpClientRequestTask::OnClosed]"_sv);
+    LOG_DEBUG("[GpHttpClientRequestTask::OnClosed]"_sv);
 }
 
 void    GpHttpClientRequestTask::OnError ([[maybe_unused]] GpSocket& aSocket)
@@ -156,11 +186,11 @@ void    GpHttpClientRequestTask::OnError ([[maybe_unused]] GpSocket& aSocket)
     LOG_ERROR("[GpHttpClientRequestTask::OnError]"_sv);
 }
 
-void    GpHttpClientRequestTask::OnConnected ([[maybe_unused]] GpSocketTCP& aSocket)
+void    GpHttpClientRequestTask::OnConnected (GpSocketTCP& aSocket)
 {
-    std::string_view serverHost = iRqSP.Vn().iRequestNoBody.url.Authority().Host();
+    std::string_view serverHost = iRqUP->iRequestNoBody.url.Authority().Host();
 
-    LOG_INFO
+    LOG_DEBUG
     (
         fmt::format
         (
@@ -168,22 +198,34 @@ void    GpHttpClientRequestTask::OnConnected ([[maybe_unused]] GpSocketTCP& aSoc
             serverHost
         )
     );
+
+    iProcessState = ProcessStateT::WRITE_RQ;
+    WriteRqToSocket(aSocket);
 }
 
-void    GpHttpClientRequestTask::ProcessOtherMessages (GpAny& aMessage)
+void    GpHttpClientRequestTask::OnConnectionTimeout ([[maybe_unused]] GpSocketTCP& aSocket) REQUIRES(SpinLock())
 {
-#if DEBUG_BUILD
-    GpDebugging::SBreakpoint();
-#endif// #if DEBUG_BUILD
+    std::string_view serverHost = iRqUP->iRequestNoBody.url.Authority().Host();
 
-    LOG_ERROR
+    LOG_DEBUG
     (
         fmt::format
         (
-            "[GpHttpClientRequestTask::ProcessOtherMessages]: not socket message {}",
-            aMessage.TypeInfo().name()
+            "[GpHttpClientRequestTask::OnConnectionTimeout]: connection to '{}' timed out",
+            serverHost
         )
     );
+
+    GpHttpResponse httpRs
+    {
+        GpHttpResponseNoBodyDesc
+        {
+            GpHttpResponseCode::REQUEST_TIMEOUT_408
+        }
+    };
+
+    // Fulfill done future
+    DonePromise(GpMethodAccess{this}).Fulfill(GpAny{std::move(httpRs)});
 }
 
 void    GpHttpClientRequestTask::WriteRqToSocket (GpSocket& aSocket)
@@ -201,7 +243,7 @@ void    GpHttpClientRequestTask::WriteRqToSocket (GpSocket& aSocket)
             // Serialize RQ
             GpByteWriterStorageByteArray        writerStorage(iSocketTmpBuffer);
             GpByteWriter                        writer(writerStorage);
-            const GpHttpRequest::SerializeRes   serializeRes = GpHttpRequest::SSerialize(iRqSP.V(), writer);
+            const GpHttpRequest::SerializeRes   serializeRes = GpHttpRequest::SSerialize(*iRqUP, writer);
 
             iRqBytesToWriteTotal    = writer.TotalWrite();
             iRqBytesWrited          = 0;
@@ -210,7 +252,7 @@ void    GpHttpClientRequestTask::WriteRqToSocket (GpSocket& aSocket)
             if (serializeRes == GpHttpRequest::SerializeRes::WRITE_HEADERS_AND_BODY)
             {
                 // Write headers and body with single buffer
-                iRqSP.Clear();
+                iRqUP.reset();
             }
         }
 
@@ -236,13 +278,13 @@ void    GpHttpClientRequestTask::WriteRqToSocket (GpSocket& aSocket)
     {
         if (iRqWriteState == RqWriteStateT::WRITE_BODY_S0)
         {
-            if (iRqSP.IsNotNULL()) [[likely]]
+            if (iRqUP != nullptr) [[likely]]
             {
-                GpHttpBodyPayload::SP& bodySP = iRqSP.Vn().iBody;
+                GpHttpBodyPayload::SP& bodySP = iRqUP->iBody;
                 if (bodySP.IsNotNULL()) [[likely]]
                 {
                     iRqWriteState           = RqWriteStateT::WRITE_BODY_S1;
-                    iRqBytesToWriteTotal    = iRqSP.Vn().iBody->Size();
+                    iRqBytesToWriteTotal    = iRqUP->iBody->Size();
                     iRqBytesWrited          = 0;
                 } else
                 {
@@ -257,7 +299,7 @@ void    GpHttpClientRequestTask::WriteRqToSocket (GpSocket& aSocket)
         if (iRqWriteState == RqWriteStateT::WRITE_BODY_S1)
         {
             // TODO: implement multipart
-            const GpSpanByteR rqBodyPayloadFixed = static_cast<const GpHttpBodyPayloadFixed&>(iRqSP.Vn().iBody.V()).Data();
+            const GpSpanByteR rqBodyPayloadFixed = static_cast<const GpHttpBodyPayloadFixed&>(iRqUP->iBody.V()).Data();
 
             // -------
             GpByteReaderStorage rqReaderStorage(rqBodyPayloadFixed);

@@ -40,7 +40,7 @@ void    GpIOEventPollerEpoll::Configure
         )
     );
 
-    GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+    GpUniqueLock uniqueLock{iSpinLock};
 
     VERIFY
     (
@@ -85,7 +85,7 @@ GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
     int             epollId = -1;
     milliseconds_t  maxStepTime;
     {
-        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+        GpUniqueLock uniqueLock{iSpinLock};
 
         eventsPtr   = std::data(iEvents);
         eventsSize  = NumOps::SConvert<int>(std::size(iEvents));
@@ -151,8 +151,8 @@ GpTaskRunRes::EnumT GpIOEventPollerEpoll::OnStep (void)
             | GpIOEventsTypes::value_type((1 << GpIOEventType::ERROR_OCCURRED) * bool(eventsMask & EPOLLERR));
 
         {
-            GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
-            ProcessEvents(fd, GpIOEventsTypes(events));
+            GpUniqueLock uniqueLock{iSpinLock};
+            std::ignore = ProcessEvents(fd, GpIOEventsTypes(events));
         }
     }
 
@@ -172,7 +172,7 @@ void    GpIOEventPollerEpoll::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
             )
         );
 
-        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+        GpUniqueLock uniqueLock{iSpinLock};
 
         if (iEpollId >= 0)
         {
@@ -205,10 +205,10 @@ void    GpIOEventPollerEpoll::OnStopException (const GpException& aException) no
     );
 }
 
-void    GpIOEventPollerEpoll::OnAddObject
+void    GpIOEventPollerEpoll::OnAddSocket
 (
     const GpSocketId        aSocketId,
-    [[maybe_unused]] const GpIOEventsTypes  aEventTypes
+    const GpIOEventsTypes   aEventTypes
 )
 {
     const int fd = NumOps::SConvert<int>(aSocketId);
@@ -228,7 +228,7 @@ void    GpIOEventPollerEpoll::OnAddObject
     }
 }
 
-void    GpIOEventPollerEpoll::OnRemoveObject (const GpSocketId aSocketId)
+void    GpIOEventPollerEpoll::OnRemoveSocket (const GpSocketId aSocketId)
 {
     if (aSocketId == GpSocketId_Default()) [[unlikely]]
     {

@@ -2,8 +2,8 @@
 
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCore_global.hpp>
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/Routers/GpHttpRouter.hpp>
-#include <GpNetwork/GpNetworkCore/Tasks/GpTcpServerTask.hpp>
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/RqRs/GpHttpParser.hpp>
+#include <GpNetwork/GpNetworkCore/Tasks/GpTcpServerTask.hpp>
 
 namespace GPlatform {
 
@@ -33,33 +33,28 @@ public:
     };
 
 public:
-                        GpHttpServerRequestTask     (GpSocketTCP::SP    aSocketTCP,
-                                                     GpIOEventPollerIdx aIOEventPollerIdx,
-                                                     GpHttpRouter::SP   aRouterSP) noexcept;
-    virtual             ~GpHttpServerRequestTask    (void) noexcept override final;
+                    GpHttpServerRequestTask     (GpSocketTCP::UP    aSocketTcpUP,
+                                                 GpHttpRouter::SP   aRouterSP) noexcept;
+    virtual         ~GpHttpServerRequestTask    (void) noexcept override final;
 
 protected:
-    virtual void        OnStart                     (void) override final;
-    virtual void        OnStop                      (ExceptionsT& aStopExceptionsOut) noexcept override final;
-    virtual void        OnStopException             (const GpException& aException) noexcept override final;
+    virtual void    OnStart                     (void) override final;
+    virtual void    OnStop                      (ExceptionsT& aStopExceptionsOut) noexcept override final;
+    virtual void    OnStopException             (const GpException& aException) noexcept override final;
 
-    virtual void        OnReadyToRead               (GpSocket& aSocket) override final;
-    virtual void        OnReadyToWrite              (GpSocket& aSocket) override final;
-    virtual void        OnClosed                    (GpSocket& aSocket) override final;
-    virtual void        OnError                     (GpSocket& aSocket) override final;
-    virtual void        ProcessOtherMessages        (GpAny& aMessage) override final;
-
-private:
-    void                InitCycle                   (void);
-    void                FinishCycle                 (void);
-
-    static size_t       SReadFromSocket             (GpSocket&      aSocket,
-                                                     GpBytesArray&  aBufferOut);
-    void                WriteRsToSocket             (GpSocket&      aSocket);
+    virtual void    OnReadyToRead               (GpSocket& aSocket) override final;
+    virtual void    OnReadyToWrite              (GpSocket& aSocket) override final;
+    virtual void    OnClosed                    (GpSocket& aSocket) override final;
+    virtual void    OnError                     (GpSocket& aSocket) override final;
 
 private:
-    GpBytesArray        iSocketTmpBuffer;
-    ProcessStateT       iProcessState           = ProcessStateT::WAIT_FOR_RQ;
+    void            InitCycle                   (void);
+    void            FinishCycle                 (void);
+    void            WriteRsToSocket             (GpSocket& aSocket);
+
+private:
+    GpByteArray         iSocketTmpBuffer;
+    ProcessStateT       iProcessState   = ProcessStateT::WAIT_FOR_RQ;
 
     // Http router
     GpHttpRouter::SP    iRouterSP;

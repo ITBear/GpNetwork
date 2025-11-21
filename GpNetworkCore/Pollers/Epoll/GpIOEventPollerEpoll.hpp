@@ -30,14 +30,14 @@ protected:
     virtual void                OnStop                  (ExceptionsT& aStopExceptionsOut) noexcept override final;
     virtual void                OnStopException         (const GpException& aException) noexcept override final;
 
-    virtual void                OnAddObject             (GpSocketId         aSocketId,
+    virtual void                OnAddSocket             (GpSocketId         aSocketId,
                                                          GpIOEventsTypes    aEventTypes) REQUIRES(iSpinLock) override final;
-    virtual void                OnRemoveObject          (GpSocketId aSocketId) REQUIRES(iSpinLock) override final;
+    virtual void                OnRemoveSocket          (GpSocketId aSocketId) REQUIRES(iSpinLock) override final;
 
 private:
-    milliseconds_t              iMaxStepTime    GUARDED_BY(iSpinLock);
-    int                         iEpollId        GUARDED_BY(iSpinLock) = -1;
-    EventsT                     iEvents         GUARDED_BY(iSpinLock);
+    milliseconds_t  iMaxStepTime    GUARDED_BY(iSpinLock);
+    int             iEpollId        GUARDED_BY(iSpinLock) = -1;
+    EventsT         iEvents         GUARDED_BY(iSpinLock);
 };
 
 }// namespace GPlatform

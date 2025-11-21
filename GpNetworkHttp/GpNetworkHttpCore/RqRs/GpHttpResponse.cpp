@@ -16,7 +16,7 @@ GpHttpResponse::SP  GpHttpResponse::SFromException
     //
     GpHttpBodyPayloadFixed::SP payloadSP = MakeSP<GpHttpBodyPayloadFixed>
     (
-        GpArrayUtils::SMake<GpBytesArray>(std::string_view(aHttpEx.what()))
+        GpArrayUtils::SMake<GpByteArray>(std::string_view(aHttpEx.what()))
     );
 
     //
@@ -45,7 +45,7 @@ GpHttpResponse::SP  GpHttpResponse::SFromException
     //
     GpHttpBodyPayloadFixed::SP payloadSP = MakeSP<GpHttpBodyPayloadFixed>
     (
-        GpArrayUtils::SMake<GpBytesArray>(std::string_view(aEx.what()))
+        GpArrayUtils::SMake<GpByteArray>(std::string_view(aEx.what()))
     );
 
     //
@@ -84,7 +84,7 @@ GpHttpResponse::SP  GpHttpResponse::SFromException
         std::move(rsDesc),
         MakeSP<GpHttpBodyPayloadFixed>
         (
-            GpArrayUtils::SMake<GpBytesArray>(std::string_view(aEx.what()))
+            GpArrayUtils::SMake<GpByteArray>(std::string_view(aEx.what()))
         )
     );
 }

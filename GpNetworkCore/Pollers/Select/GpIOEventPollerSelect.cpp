@@ -6,8 +6,6 @@
 #include <GpNetwork/GpNetworkCore/GpNetworkErrors.hpp>
 #include <GpNetwork/GpNetworkCore/Sockets/GpSocketTCP.hpp>
 
-#include <iostream>
-
 namespace GPlatform {
 
 GpIOEventPollerSelect::GpIOEventPollerSelect (std::string aName) noexcept:
@@ -30,13 +28,13 @@ void    GpIOEventPollerSelect::Configure (const milliseconds_t aMaxStepTime)
         )
     );
 
-    GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+    GpUniqueLock uniqueLock{iSpinLock};
     iMaxStepTime = aMaxStepTime;
 }
 
 void    GpIOEventPollerSelect::OnStart (void)
 {   
-    GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+    GpUniqueLock uniqueLock{iSpinLock};
 
     FD_ZERO(&iFdSetMaster);
     FD_ZERO(&iReadFdSetWorking);
@@ -57,13 +55,13 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
 {
     milliseconds_t maxStepTime;
     {
-        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+        GpUniqueLock uniqueLock{iSpinLock};
         maxStepTime = iMaxStepTime;
     }
 
     // Copy iFdSetMaster to READ, WRITE, ERROR sets
     {
-        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+        GpUniqueLock uniqueLock{iSpinLock};
 
         std::memcpy(&iReadFdSetWorking,  &iFdSetMaster, sizeof(fd_set));
         std::memcpy(&iWriteFdSetWorking, &iFdSetMaster, sizeof(fd_set));
@@ -90,7 +88,7 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
     {
         bool socketsIsEmpty = false;
         {
-            GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+            GpUniqueLock uniqueLock{iSpinLock};
             socketsIsEmpty = iSockets.empty();
         }
 
@@ -112,7 +110,7 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
     // Do select
     int maxSocketId = -1;
     {
-        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+        GpUniqueLock uniqueLock{iSpinLock};
         maxSocketId = iMaxSocketId;
     }
 
@@ -143,7 +141,7 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
     // Copy iSockets
     SocketsSetT socketsCopy;
     {
-        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+        GpUniqueLock uniqueLock{iSpinLock};
         socketsCopy = iSockets;
     }
 
@@ -182,8 +180,8 @@ GpTaskRunRes::EnumT GpIOEventPollerSelect::OnStep (void)
 
         if (!events.Empty())
         {
-            GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
-            ProcessEvents(socketId, events);
+            GpUniqueLock uniqueLock{iSpinLock};
+            std::ignore = ProcessEvents(socketId, events);
         }
     }// while (testIterFn(socketsIter))
 
@@ -203,7 +201,7 @@ void    GpIOEventPollerSelect::OnStop (ExceptionsT& aStopExceptionsOut) noexcept
             )
         );
 
-        GpUniqueLock<GpSpinLock> uniqueLock{iSpinLock};
+        GpUniqueLock uniqueLock{iSpinLock};
 
         iSockets.clear();
     } catch (const GpException& e)
@@ -229,7 +227,7 @@ void    GpIOEventPollerSelect::OnStopException (const GpException& aException) n
     );
 }
 
-void    GpIOEventPollerSelect::OnAddObject
+void    GpIOEventPollerSelect::OnAddSocket
 (
     const GpSocketId    aSocketId,
     GpIOEventsTypes     aEventTypes
@@ -269,7 +267,7 @@ void    GpIOEventPollerSelect::OnAddObject
     }
 }
 
-void    GpIOEventPollerSelect::OnRemoveObject (const GpSocketId aSocketId)
+void    GpIOEventPollerSelect::OnRemoveSocket (const GpSocketId aSocketId)
 {
     if (aSocketId == GpSocketId_Default()) [[unlikely]]
     {

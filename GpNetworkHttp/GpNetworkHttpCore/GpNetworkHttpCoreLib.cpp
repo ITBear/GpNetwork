@@ -1,7 +1,10 @@
 #include <GpNetwork/GpNetworkHttp/GpNetworkHttpCore/GpNetworkHttpCoreLib.hpp>
+#include <GpCore2/GpUtils/Other/GpLinkedLibsInfo.hpp>
 
-namespace GPlatform {
+GP_STATIC_INITIALIZER_IMPL(GpNetworkHttpCore)
+GP_LIB_REGISTRATOR(GpNetworkHttpCoreLib)
 
-GP_IMPLEMENT_LIB_REGISTRATOR(GpNetworkHttpCoreLib)
-
-}// namespace GPlatform
+void    GpNetworkHttpCore_StaticInitializer::OnInitialize (void)
+{
+    GpNetworkHttpCoreLib::SRegisterSelf();
+}

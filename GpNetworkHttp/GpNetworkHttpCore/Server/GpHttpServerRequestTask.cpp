@@ -13,14 +13,12 @@ namespace GPlatform {
 
 GpHttpServerRequestTask::GpHttpServerRequestTask
 (
-    GpSocketTCP::SP             aSocketTCP,
-    const GpIOEventPollerIdx    aIOEventPollerIdx,
-    GpHttpRouter::SP            aRouterSP
+    GpSocketTCP::UP     aSocketTcpUP,
+    GpHttpRouter::SP    aRouterSP
 ) noexcept:
 GpTcpServerTask
 {
-    std::move(aSocketTCP),
-    aIOEventPollerIdx
+    std::move(aSocketTcpUP)
 },
 iRouterSP{std::move(aRouterSP)}
 {
@@ -32,20 +30,20 @@ GpHttpServerRequestTask::~GpHttpServerRequestTask (void) noexcept
 
 void    GpHttpServerRequestTask::OnStart (void)
 {
-    GpTcpServerTask::OnStart();
+    GpUniqueLock uniqueLock{SpinLock()};
 
-    const GpSocketTCP&  socketTcp   = SocketTCP();
-    const GpSocketAddr& remoteAddr  = socketTcp.AddrRemote();
-    const GpSocketAddr& localAddr   = socketTcp.AddrLocal();
+    const GpSocket&     socket      = Socket();
+    const GpSocketAddr& remoteAddr  = socket.AddrRemote();
+    const GpSocketAddr& localAddr   = socket.AddrLocal();
 
-    LOG_INFO
+    LOG_DEBUG
     (
         fmt::format
         (
             "[GpHttpServerRequestTask::OnStart]: New connection: from {} to {}, socket id {}",
             remoteAddr.ToString(),
             localAddr.ToString(),
-            socketTcp.Id()
+            socket.Id()
         )
     );
 }
@@ -54,18 +52,20 @@ void    GpHttpServerRequestTask::OnStop (ExceptionsT& aStopExceptionsOut) noexce
 {
     try
     {
-        const GpSocketTCP&  socketTcp   = SocketTCP();
-        const GpSocketAddr& remoteAddr  = socketTcp.AddrRemote();
-        const GpSocketAddr& localAddr   = socketTcp.AddrLocal();
+        GpUniqueLock uniqueLock{SpinLock()};
 
-        LOG_INFO
+        const GpSocket&     socket      = Socket();
+        const GpSocketAddr& remoteAddr  = socket.AddrRemote();
+        const GpSocketAddr& localAddr   = socket.AddrLocal();
+
+        LOG_DEBUG
         (
             fmt::format
             (
                 "[GpHttpServerRequestTask::OnStop]: Close connection: from {} to {}, socket id {}",
                 remoteAddr.ToString(),
                 localAddr.ToString(),
-                socketTcp.Id()
+                socket.Id()
             )
         );
     } catch (const GpException& ex)
@@ -89,6 +89,8 @@ void    GpHttpServerRequestTask::OnStopException (const GpException& aException)
 
 void    GpHttpServerRequestTask::OnReadyToRead (GpSocket& aSocket)
 {
+    GpSocketTCP& socketTcp = static_cast<GpSocketTCP&>(aSocket);
+
     try
     {
         if (iProcessState == ProcessStateT::WAIT_FOR_RQ)
@@ -99,7 +101,10 @@ void    GpHttpServerRequestTask::OnReadyToRead (GpSocket& aSocket)
         if (iProcessState == ProcessStateT::PARSE_RQ)
         {
             // Read from socket
-            const size_t readFromSocketSize = SReadFromSocket(aSocket, iSocketTmpBuffer);
+            GpByteWriterStorageByteArray    writerStorage(iSocketTmpBuffer);
+            GpByteWriter                    writer(writerStorage);
+
+            const size_t readFromSocketSize = socketTcp.Read(writer);
 
             if (readFromSocketSize > 0)
             {
@@ -151,13 +156,16 @@ void    GpHttpServerRequestTask::OnReadyToRead (GpSocket& aSocket)
             || (iProcessState == ProcessStateT::RS_IN_PROGRESS)
             || (iProcessState == ProcessStateT::WRITE_RS))
         {
-            GpBytesArray buff;
-            const size_t readFromSocketSize = SReadFromSocket(aSocket, buff);
+            GpByteArray buff;
+            GpByteWriterStorageByteArray    writerStorage(buff);
+            GpByteWriter                    writer(writerStorage);
+
+            const size_t readFromSocketSize = socketTcp.Read(writer);
 
             VERIFY
             (
                 readFromSocketSize == 0,
-                "Data income after RQ was full read"
+                "Data received after request complete"
             );
         }
     } catch (const GpHttpException& httpEx)
@@ -176,7 +184,7 @@ void    GpHttpServerRequestTask::OnReadyToWrite (GpSocket& aSocket)
 
 void    GpHttpServerRequestTask::OnClosed ([[maybe_unused]] GpSocket& aSocket)
 {
-    LOG_INFO
+    LOG_DEBUG
     (
         fmt::format
         (
@@ -200,18 +208,6 @@ void    GpHttpServerRequestTask::OnError (GpSocket& aSocket)
     );
 
     std::ignore = RequestStop();
-}
-
-void    GpHttpServerRequestTask::ProcessOtherMessages (GpAny& aMessage)
-{
-    LOG_ERROR
-    (
-        fmt::format
-        (
-            "[GpHttpServerRequestTask::ProcessOtherMessages]: Get not socket message {}",
-            aMessage.TypeInfo().name()
-        )
-    );
 }
 
 void    GpHttpServerRequestTask::InitCycle (void)
@@ -263,19 +259,6 @@ void    GpHttpServerRequestTask::FinishCycle (void)
     {
         std::ignore = RequestStop();
     }
-}
-
-size_t  GpHttpServerRequestTask::SReadFromSocket
-(
-    GpSocket&       aSocket,
-    GpBytesArray&   aBufferOut
-)
-{
-    GpByteWriterStorageByteArray    writerStorage(aBufferOut);
-    GpByteWriter                    writer(writerStorage);
-
-    GpSocketTCP& socketTcp = static_cast<GpSocketTCP&>(aSocket);
-    return socketTcp.Read(writer);
 }
 
 void    GpHttpServerRequestTask::WriteRsToSocket (GpSocket& aSocket)

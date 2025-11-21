@@ -16,7 +16,7 @@ os_linux {
 	SUBDIRS += \
 		./GpNetworkCore \
 		./GpNetworkHttp
-} else:os_macx {
+} else:os_macos {
 	SUBDIRS += \
 		./GpNetworkCore \
 		./GpNetworkHttp

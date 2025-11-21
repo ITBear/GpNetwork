@@ -39,7 +39,7 @@ public:
                                                                  GpHttpRequestHandlerFactory::SP    aHandlerFactory);
 
 private:
-    mutable GpSpinLockRW                iSpinLockRW;
+    mutable GpSpinLockRW<>              iSpinLockRW;
     HandlerFactoryCatalogT              iRouteRable             GUARDED_BY(iSpinLockRW);
     GpHttpRequestHandlerFactory::SP     iDefaultHandlerFactory  GUARDED_BY(iSpinLockRW);
 };
